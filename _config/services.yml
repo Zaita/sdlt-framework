@@ -38,8 +38,8 @@ NZTA\SDLT\Model\TaskSubmission:
 
 NZTA\SDLT\Model\SecurityComponent:
   dependencies:
-    issueTrackerService: %$IssueTrackerService
+    issueTrackerService: '%$IssueTrackerService'
 
 NZTA\SDLT\Model\JiraTicket:
   dependencies:
-    issueTrackerService: %$IssueTrackerService
+    issueTrackerService: '%$IssueTrackerService'
