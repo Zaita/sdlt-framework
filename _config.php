@@ -17,4 +17,4 @@ use SilverStripe\Admin\CMSMenu;
 use SilverStripe\Reports\ReportAdmin;
 
 CMSMenu::remove_menu_class(CampaignAdmin::class);
-CMSMenu::remove_menu_class(ReportAdmin::class);
+// CMSMenu::remove_menu_class(ReportAdmin::class);
