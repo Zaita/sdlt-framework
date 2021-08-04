@@ -71,6 +71,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     const STATUS_INVALID = 'invalid';
     const STATUS_SUBMITTED = 'submitted';
     const STATUS_APPROVED = 'approved';
+    const STATUS_NOT_APPROVED = 'not_approved';
     const STATUS_DENIED = 'denied';
     const STATUS_EXPIRED ='expired';
     const STATUS_AWAITING_SA_REVIEW = 'awaiting_security_architect_review';
@@ -108,7 +109,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         'BusinessOwnerIPAddress' => 'Varchar(255)',
         'BusinessOwnerEmailAddress' => 'Varchar(255)',
         'BusinessOwnerName' => 'Varchar(255)',
-        'SecurityArchitectApprovalStatus' => 'Enum(array("not_applicable", "pending", "approved", "denied", "not_required"))',
+        'SecurityArchitectApprovalStatus' => 'Enum(array("not_applicable", "pending", "approved", "denied", "not_required", "not_approved"))',
         'SecurityArchitectApproverIPAddress' => 'Varchar(255)',
         'SecurityArchitectApproverMachineName' => 'Varchar(255)',
         'SecurityArchitectStatusUpdateDate' => 'Varchar(255)',
@@ -929,6 +930,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         // Approve/Deny for Security Architect and Chief Information Security Officer
         $this->updateQuestionnaireOnApproveByGroupMember($scaffolder);
         $this->updateQuestionnaireOnDenyByGroupMember($scaffolder);
+        $this->updateQuestionnaireSAStatusToNotApprove($scaffolder);
         $this->addCollaborator($scaffolder);
 
         return $scaffolder;
@@ -1473,6 +1475,56 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
 
                     $questionnaireSubmission->write();
 
+                    return $questionnaireSubmission;
+                }
+            })
+            ->end();
+    }
+
+    /**
+     * this api will call when sa will click on not approved button
+     *
+     * @param SchemaScaffolder $scaffolder SchemaScaffolder
+     *
+     * @return void
+     */
+    public function updateQuestionnaireSAStatusToNotApprove(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('updateQuestionnaireSAStatusToNotApprove', QuestionnaireSubmission::class)
+            ->addArgs([
+                'ID' => 'ID!',
+                'SkipBoAndCisoApproval' => 'Boolean',
+            ])
+            ->setResolver(new class implements ResolverInterface {
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws Exception
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    QuestionnaireValidation::is_user_logged_in();
+
+                    $skipBoAndCisoApproval = false;
+
+                    if (isset($args['SkipBoAndCisoApproval'])) {
+                        $skipBoAndCisoApproval = $args['SkipBoAndCisoApproval'];
+                    }
+
+                    $questionnaireSubmission =
+                        QuestionnaireSubmission::validate_before_updating_questionnaire_submission($args['ID']);
+
+                        $questionnaireSubmission->updateQuestionnaireOnApproveAndDenyByGroup(
+                            'not_approved',
+                            $skipBoAndCisoApproval
+                        );
                     return $questionnaireSubmission;
                 }
             })
@@ -2042,7 +2094,6 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     public function updateQuestionnaireOnApproveAndDenyByGroup($status, $skipBoAndCisoApproval = false)
     {
         $member = Security::getCurrentUser();
-
         $accessDetail = $this->doesCurrentUserHasAccessToApproveDeny($member);
 
         if (!$accessDetail['hasAccess'] || !$accessDetail['group']) {
@@ -2054,7 +2105,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             // update Security-Architect member details
             $this->updateSecurityArchitectDetail($member, $status);
 
-            if ($status == 'approved') {
+            if ($status == self::STATUS_APPROVED || $status == self::STATUS_NOT_APPROVED) {
                 // skipBoAndCisoApproval is not set then send email to CISO and BO
                 // else skip the CISO and BO approval and chane questionnaire status to approved
                 if (!$skipBoAndCisoApproval) {
@@ -2087,7 +2138,13 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                         );
                     }
                 } else {
-                    $this->QuestionnaireStatus = $status;
+                    // skip approval for ba and ciso and set as not required
+                    // for risk type questionnaire
+                    if ($status == self::STATUS_NOT_APPROVED) {
+                        $this->QuestionnaireStatus = self::STATUS_DENIED;
+                    } else {
+                        $this->QuestionnaireStatus = $status;
+                    }
 
                     $this->CisoApprovalStatus = self::STATUS_NOT_REQUIRED;
                     $this->BusinessOwnerApprovalStatus = self::STATUS_NOT_REQUIRED;
@@ -2476,8 +2533,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     public function getIsCurrentUserABusinessOwnerApprover()
     {
         // check access details for business owner
-        if ($this->isWaitingForApproval() &&
-            $this->isBusinessOwner() &&
+        if ($this->isBusinessOwner() &&
             $this->isBOApprovalPending()
         ) {
             return true;
