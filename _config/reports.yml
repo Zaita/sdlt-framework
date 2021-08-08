@@ -1,0 +1,11 @@
+---
+Name: remove_default_reports
+---
+SilverStripe\Reports\Report:
+  excluded_reports:
+    - 'SilverStripe\CMS\Reports\BrokenFilesReport'
+    - 'SilverStripe\CMS\Reports\BrokenLinksReport'
+    - 'SilverStripe\CMS\Reports\BrokenRedirectorPagesReport'
+    - 'SilverStripe\CMS\Reports\BrokenVirtualPagesReport'
+    - 'SilverStripe\CMS\Reports\EmptyPagesReport'
+    - 'SilverStripe\CMS\Reports\RecentlyEditedReport'
