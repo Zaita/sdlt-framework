@@ -54,6 +54,8 @@ use SilverStripe\Forms\DropdownField;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Forms\DateField;
 use NZTA\SDLT\Extension\GroupExtension;
+use NZTA\SDLT\Extension\SDLTSiteConfigExtension;
+use NZTA\SDLT\Job\SendReminderEmailsJob;
 
 /**
  * Class QuestionnaireSubmission
@@ -2131,11 +2133,16 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
 
                     // send email to CISO group and Business owner
                     if (!empty($cisoMembers) || !empty($businessOwnerEmail)) {
+                        // create a job to send an approval email link to Bo and Ciso
                         $qs = QueuedJobService::create();
                         $qs->queueJob(
                             new SendApprovalLinkEmailJob($this, $cisoMembers, $businessOwnerEmail),
                             date('Y-m-d H:i:s', time() + 90)
                         );
+
+                        // create a reminder email job to send approval email link
+                        // to ciso and bo after x number of days
+                        $this->sendReminderEmails($cisoMembers, $businessOwnerEmail);
                     }
                 } else {
                     // skip approval for ba and ciso and set as not required
@@ -2867,5 +2874,30 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         }
 
         return json_encode($collaboratorList);
+    }
+
+    /**
+     * Called from updateQuestionnaireOnApproveByGroupMember()
+     * Sets up a job that checks if approvals are pending from ciso or bo
+     *
+     * @param ManyManyList $members            A list of {@link Member} records.
+     * @param string       $businessOwnerEmail business owner email address
+     *
+     * @return void
+     */
+    public function sendReminderEmails($cisoMembers, $businessOwnerEmail)
+    {
+        $siteConfig = SiteConfig::current_site_config();
+        $numberOfDays = 0;
+
+        if ($siteConfig) {
+            $numberOfDays = $siteConfig->NumberOfDaysForApprovalReminderEmail;
+        }
+
+        $queuedJobService = QueuedJobService::create();
+        $queuedJobService->queueJob(
+            new SendReminderEmailsJob($this, $cisoMembers, $businessOwnerEmail, $numberOfDays),
+            date('Y-m-d H:i:s', strtotime("+". $numberOfDays . " day", time()))
+        );
     }
 }

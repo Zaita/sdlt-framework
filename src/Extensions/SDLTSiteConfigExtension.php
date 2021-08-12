@@ -30,6 +30,7 @@ use SilverStripe\Forms\EmailField;
 use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Security\Group;
 use SilverStripe\Forms\DropdownField;
+use SilverStripe\Forms\NumericField;
 
 /**
  * Site Config Extension for SDLT Tool
@@ -48,6 +49,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'DataExportEmailSubject' => 'Text',
         'DataExportEmailBody' => 'HTMLText',
         'EmailSignature' => 'HTMLText',
+        'NumberOfDaysForApprovalReminderEmail' => 'Int',
         // Customisation Config
         'FooterCopyrightText' => 'Text',
     ];
@@ -254,15 +256,34 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     'Security Architect Group',
                     Group::get()->map('ID', 'Title')
                 )
-                ->setDescription('These people will receive emails when
-                a submission is sent for approval once first submitted.'),
+                    ->setDescription(
+                        'These people will receive emails when
+                        a submission is sent for approval once first submitted.'
+                    ),
                 DropdownField::create(
                     'CisoGroupID',
                     'Ciso Group',
                     Group::get()->map('ID', 'Title')
                 )
-                ->setDescription('These users in this group will receive emails when a submission
-                is sent for approval once the above security architect/analysts group has approved.')
+                    ->setDescription(
+                        'These users in this group will receive
+                        emails when a submission is sent for approval once the above
+                        security architect/analysts group has approved.'
+                    ),
+
+                // reminder email
+                LiteralField::create(
+                    'ReminderEmails',
+                    '<p class="message notice">Reminder Emails </p>'
+                ),
+                NumericField::create(
+                    'NumberOfDaysForApprovalReminderEmail',
+                    'Resend approval emails'
+                )
+                    ->setDescription(
+                        'Set the number of days to resend the approval
+                        emails to the Business Owner (if applicable) and CISO groups.'
+                    ),
             ]
         );
     }
