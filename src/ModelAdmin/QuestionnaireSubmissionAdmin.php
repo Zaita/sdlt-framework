@@ -25,6 +25,7 @@ use SilverStripe\Forms\GridField\GridFieldViewButton;
 use SilverStripe\Forms\GridField\GridFieldAddExistingAutocompleter;
 use SilverStripe\Forms\GridField\GridFieldDetailForm;
 use SilverStripe\Forms\GridField\GridFieldDeleteAction;
+use SilverStripe\Forms\GridField\GridFieldFilterHeader;
 use SilverStripe\Forms\TabSet;
 use SilverStripe\Forms\Tab;
 
@@ -80,6 +81,16 @@ class QuestionnaireSubmissionAdmin extends ModelAdmin
         $config->getComponentByType(GridFieldDetailForm::class)
             ->setItemRequestClass(QuestionnaireSubmissionDetailForm_ItemRequest::class);
 
+        // Remove default and add our own filter header with extension points
+        // to retain API until deprecation in 5.0
+        $config->removeComponentsByType(GridFieldFilterHeader::class);
+        $config->addComponent(new GridFieldFilterHeader(
+            false,
+            function ($context) {
+                $this->extend('updateSearchContext', $context);
+            }
+        ));
+
         $currentGridField->setConfig($config);
 
         $expiredSubmission = $list->filter(
@@ -122,5 +133,35 @@ class QuestionnaireSubmissionAdmin extends ModelAdmin
         $this->extend('updateEditForm', $form);
 
         return $form;
+    }
+
+    /**
+     *
+     * @return \SilverStripe\ORM\Datalist
+     */
+    public function getList()
+    {
+        $list = parent::getList();
+
+        //access all the search parameters
+        $searchParams = $this->getRequest()->requestVar('filter');
+
+        if(isset($searchParams)){
+            //get the value set in the DefaultSearch hidden field
+            $defaultSearch = array_column($searchParams, 'DefaultSearch');
+
+            //apply search filters to list if input is in the searchbox
+            if(($defaultSearch)){
+                $searchResults = $list->filterAny([
+                    'ProductName:PartialMatch' => $defaultSearch[0],
+                    'SubmitterName:PartialMatch' => $defaultSearch[0],
+                    'SubmitterEmail:PartialMatch' => $defaultSearch[0]
+                ]);
+
+                return $searchResults;
+            }
+        }
+
+        return $list;
     }
 }

@@ -17,3 +17,6 @@ NZTA\SDLT\Model\LikelihoodThreshold:
 SilverStripe\Security\Member:
   extensions:
     - NZTA\SDLT\Extension\MemberExtension
+SilverStripe\Admin\ModelAdmin:
+  extensions:
+    - NZTA\SDLT\Extension\ModelAdminExtension
