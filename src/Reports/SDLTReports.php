@@ -612,3 +612,60 @@ class SDLTReports_TimeBetweenApprovalAndSAApproval extends Report
         return $fields;
     }
 }
+/**
+ * A custom report that generates all penetration tasks that have been completed
+ */
+class SDLTReports_CompletedPenetrationTests extends Report
+{
+    /**
+     * @return string
+     */
+    public function title()
+    {
+        return 'Show all penetration tests that have been completed';
+    }
+
+    /**
+     * @param mixed|null $params
+     * @return ArrayList
+     */
+    public function sourceRecords($params = null)
+    {
+        $submissions = TaskSubmission::get()->filter([
+            'Task.Name' => ['Penetration Test'],
+            'Status' => ['approved', 'complete'],
+            'QuestionnaireSubmission.ProductName:not' => [null]
+        ])->sort('CompletedAt DESC');
+
+        $records = [];
+        foreach ($submissions as $submission) {
+            $records[] = [
+                'ProductName' => $submission->QuestionnaireSubmission->ProductName,
+                'Submitter' => $submission->QuestionnaireSubmission->SubmitterName,
+                'SubmitterEmail' => $submission->QuestionnaireSubmission->SubmitterEmail,
+                'BusinessOwner' => $submission->QuestionnaireSubmission->BusinessOwnerEmailAddress,
+                'Date' => $submission->CompletedAt,
+                'Link' => $submission->QuestionnaireSubmission->getSummaryPageLink(),
+            ];
+        }
+
+        return ArrayList::create($records);
+    }
+
+    /**
+     * @return string[] $fields
+     */
+    public function columns()
+    {
+        $fields = [
+            'ProductName' => 'Product Name',
+            'Submitter' => 'Submitter',
+            'SubmitterEmail' => 'Submitter Email',
+            'BusinessOwner' => 'Business Owner Contact',
+            'Date' => 'Date',
+            'Link' => 'Link',
+        ];
+
+        return $fields;
+    }
+}
