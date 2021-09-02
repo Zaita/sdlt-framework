@@ -72,6 +72,12 @@ class SendReminderEmailsJob extends AbstractQueuedJob implements QueuedJob
         // get the updated value of the questionnaire submission to check the current status
         $this->questionnaireSubmission = QuestionnaireSubmission::get_by_id($this->questionnaireSubmission->ID);
 
+        // do not send reminder emails when submission is expired
+        if ($this->questionnaireSubmission->QuestionnaireStatus == "expired") {
+            $this->isComplete = true;
+            return;
+        }
+
         if ($this->questionnaireSubmission->isCisoApprovalPending()) {
             new SendApprovalLinkEmail($this->questionnaireSubmission, $this->cisoMembers);
         }
