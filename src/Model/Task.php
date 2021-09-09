@@ -52,6 +52,7 @@ use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
 use SilverStripe\Versioned\Versioned;
 use SilverStripe\SnapshotAdmin\SnapshotHistoryExtension;
+use SilverStripe\Control\Controller;
 
 /**
  * Class Task
@@ -669,6 +670,13 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     public function validate()
     {
         $result = parent::validate();
+
+        // due to versioning module we have to run the task to publish the records
+        $params = controller::curr()->getRequest()->allParams();
+        if (array_key_exists("TaskName", $params) &&
+            $params['TaskName'] == 'PublishArchivedRecordTask') {
+            return $result;
+        }
 
         // validation for require field
         if ($this->IsApprovalRequired && !$this->ApprovalGroup()->exists()) {

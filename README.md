@@ -4,9 +4,12 @@ The SDLT is Web Application that supports, and expedites I.T. security professio
 
 ## Requirements
 
-The SDLT is written in ReactJS and PHP and built on the [SilverStripe](https://silverstripe.org) framework. 
+The SDLT is written in ReactJS and PHP and built on the [SilverStripe](https://silverstripe.org) framework.
 
 This repository is the PHP component of [NZTA's SDLT project](https://github.com/nzta/sdlt) and intended to be checked out as a dependency. View that project for setup instructions.
 
 ## Migrations
 As of 3.2.0, users migrating to this version will need to set the CISO and Security Architect groups in the SiteConfig before using SDLT to receive emails. Previous versions automatically defined this, and they will stop working if the group name is changed.
+
+## Upgrade to Silverstripe 4.8
+SilverStripe 4.8 and versioned-snapshot-admin modules are using different version of Graphql. To resolve conflict please add this `"silverstripe/graphql": "3.5.1 as 3.5.0"` line in your project root "composer.json" file in the require block.
