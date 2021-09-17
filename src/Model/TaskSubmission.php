@@ -1428,6 +1428,12 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 }
             }
 
+            $isTaskApprover = $taskSubmission->getIsTaskApprover();
+            if ($isTaskApprover &&
+                $taskSubmission->Status === TaskSubmission::STATUS_WAITING_FOR_APPROVAL) {
+                return true;
+            }
+
             // SA can edit it
             if ($isSA) {
                 return true;
@@ -2412,6 +2418,30 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         return false;
     }
 
+    /**
+     * Get is logged in user is approver
+     * @return bool
+     */
+    public function getIsTaskApprover() : bool
+    {
+        $member = Security::getCurrentUser();
+
+        if (!$member || $member == null || !$this->approvalGroupMembers()) {
+            return false;
+        }
+
+        $approverIDs = $this->approvalGroupMembers()->column('ID');
+
+        if (empty($approverIDs)) {
+            return false;
+        }
+
+        if (in_array($member->ID, $approverIDs)) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * If all sibling tasks are completed or approved then send an email to notify submitter
