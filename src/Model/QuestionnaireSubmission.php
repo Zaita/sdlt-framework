@@ -2505,7 +2505,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             return false;
         }
 
-        if (strstr($req->getBody(), $this->ApprovalLinkToken)) {
+        if ($this->ApprovalLinkToken && strstr($req->getBody(), $this->ApprovalLinkToken)) {
             return true;
         }
 
