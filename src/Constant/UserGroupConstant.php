@@ -29,6 +29,8 @@ class UserGroupConstant
     const GROUP_CODE_USER = 'sdlt-users';
     const GROUP_CODE_REPORTER = 'sdlt-reporters';
     const GROUP_CODE_ADMIN = 'administrators';
+    const GROUP_CODE_ASSURANCEADMIN = 'sdlt-assurance-admin';
+    const GROUP_CODE_CERTIFICATIONAUTHORITY = 'sdlt-certification-authority';
 
     /**
      * @var string Role names used in {@link Member} logic throughout the system.
@@ -39,4 +41,6 @@ class UserGroupConstant
     const ROLE_CODE_REPORTER = 'Reporters';
     const ROLE_CODE_ADMIN = 'Administrators';
     const ROLE_CODE_BO = 'BusinessOwner'; // Note: This role is not represented in a de-facto "Member" record
+    const ROLE_CODE_ASSURANCEADMIN = 'AssuranceAdmin';
+    const ROLE_CODE_CERTIFICATIONAUTHORITY = 'CertificationAuthority';
 }

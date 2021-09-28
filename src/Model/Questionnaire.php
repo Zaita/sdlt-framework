@@ -438,6 +438,33 @@ class Questionnaire extends DataObject implements ScaffoldingProvider, Permissio
                 $p->write();
             }
         }
+
+        $assuranceAdminGroup = Group::get()->find('Code', UserGroupConstant::GROUP_CODE_ASSURANCEADMIN);
+        if (!($assuranceAdminGroup && $assuranceAdminGroup->ID)) {
+            $assuranceAdminGroup = Group::create();
+            $assuranceAdminGroup->Title = 'SDLT-AssuranceAdmin';
+            $assuranceAdminGroup->Code = UserGroupConstant::GROUP_CODE_ASSURANCEADMIN;
+            $assuranceAdminGroup->write();
+
+            $assuranceAdminGroupPermissions = [
+                'EDIT_SERVICE',
+                'IMPORT_SERVICE',
+            ];
+
+            foreach ($assuranceAdminGroupPermissions as $perm) {
+                $p = Permission::get()->filter(['Code' => $perm, 'GroupID' => $assuranceAdminGroup->ID])->first()
+                    ?: Permission::create()->update(['Code' => $perm, 'GroupID' => $assuranceAdminGroup->ID]);
+                $p->write();
+            }
+        }
+
+        $certificationAuthorityGroup = Group::get()->find('Code', UserGroupConstant::GROUP_CODE_CERTIFICATIONAUTHORITY);
+        if (!($certificationAuthorityGroup && $certificationAuthorityGroup->ID)) {
+            $certificationAuthorityGroup= Group::create();
+            $certificationAuthorityGroup->Title = 'SDLT-CertificationAuthority';
+            $certificationAuthorityGroup->Code = UserGroupConstant::GROUP_CODE_CERTIFICATIONAUTHORITY;
+            $certificationAuthorityGroup->write();
+       }
     }
 
     /**
