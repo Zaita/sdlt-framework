@@ -121,6 +121,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         'IsTaskApprovalLinkSent' => 'Boolean',
         'IsStakeholdersEmailSent' => 'Boolean',
         'RiskResultData' => 'Text',
+        'TaskRecommendationData' => 'Text',
         'CVATaskData' => 'Text',
     ];
 
@@ -336,6 +337,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
         $fields->removeByName([
           'RiskResultData',
+          'TaskRecommendationData',
           'QuestionnaireData',
           'AnswerData',
           'Result',
@@ -369,7 +371,13 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         TextField::create('Result'),
                     ]
                 ),
-
+                ToggleCompositeField::create(
+                    'ToggleTaskRecommendationData',
+                    'Task Recommendation Data',
+                    [
+                        TextareaField::create('TaskRecommendationData')
+                    ]
+                )
             ]
         );
 
@@ -475,6 +483,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         $this->provideGraphQLScaffoldingForReadTaskSubmission($dataObjectScaffolder);
         $this->provideGraphQLScaffoldingForUpdateTaskSubmissionStatusToApproved($scaffolder);
         $this->provideGraphQLScaffoldingForUpdateTaskSubmissionStatusToDenied($scaffolder);
+        $this->provideGraphQLScaffoldingForUpdateTaskRecommendationData($scaffolder);
         $this->provideGraphQLScaffoldingForUpdateControlValidationAuditTaskSubmission($scaffolder);
         $this->provideGraphQLScaffoldingtoReSyncWithJira($scaffolder);
     }
@@ -504,6 +513,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'IsTaskApprovalRequired',
                 'IsCurrentUserAnApprover',
                 'RiskResultData',
+                'TaskRecommendationData',
                 'ComponentTarget',
                 'ProductAspects',
                 //you would be forgiven for thinking this returns a TaskSubmission
@@ -1306,6 +1316,64 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
                     $submission->Status = TaskSubmission::STATUS_DENIED;
                     $submission->TaskApproverID = $member->ID;
+                    $submission->write();
+
+                    return $submission;
+                }
+            })
+            ->end();
+    }
+
+    /**
+     * add/update task recommendation
+     *
+     * @param SchemaScaffolder $scaffolder SchemaScaffolder
+     *
+     * @return void
+     */
+    public function provideGraphQLScaffoldingForUpdateTaskRecommendationData(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('updateTaskRecommendation', TaskSubmission::class)
+            ->addArgs([
+                'UUID' => 'String!',
+                'TaskRecommendationData' => 'String',
+            ])
+            ->setResolver(new class implements ResolverInterface {
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws Exception
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    // Check authentication
+                    QuestionnaireValidation::is_user_logged_in();
+
+                    $member = Security::getCurrentUser();
+                    $uuid = Convert::raw2sql($args['UUID']);
+
+                    if (empty($args['UUID'])) {
+                        throw new Exception('Please enter a valid argument data.');
+                    }
+
+                    $submission = TaskSubmission::get_task_submission_by_uuid($uuid);
+
+                    if (!$submission) {
+                        throw new Exception('No data available for Task Submission.');
+                    }
+
+                    if ($submission->Status != TaskSubmission::STATUS_WAITING_FOR_APPROVAL) {
+                        throw new Exception('Task Submission is not ready for approval.');
+                    }
+
+                    $submission->TaskRecommendationData = json_encode(json_decode(base64_decode($args['TaskRecommendationData'])));
                     $submission->write();
 
                     return $submission;
