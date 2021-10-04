@@ -465,6 +465,14 @@ class Questionnaire extends DataObject implements ScaffoldingProvider, Permissio
             $certificationAuthorityGroup->Code = UserGroupConstant::GROUP_CODE_CERTIFICATIONAUTHORITY;
             $certificationAuthorityGroup->write();
        }
+
+       $accreditationAuthorityGroup = Group::get()->find('Code', UserGroupConstant::GROUP_CODE_ACCREDITATIONAUTHORITY);
+       if (!($accreditationAuthorityGroup  && $accreditationAuthorityGroup->ID)) {
+           $accreditationAuthorityGroup = Group::create();
+           $accreditationAuthorityGroup->Title = 'SDLT-AccreditationAuthority';
+           $accreditationAuthorityGroup->Code = UserGroupConstant::GROUP_CODE_ACCREDITATIONAUTHORITY;
+           $accreditationAuthorityGroup->write();
+       }   
     }
 
     /**
