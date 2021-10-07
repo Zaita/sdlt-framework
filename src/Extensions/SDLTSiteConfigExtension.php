@@ -69,7 +69,9 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'QuestionnairePdfFooterImage' => Image::class,
         'FavIcon' => Image::class,
         'SecurityArchitectGroup' => Group::class,
-        'CisoGroup' => Group::class
+        'CisoGroup' => Group::class,
+        'AssuranceAdminGroup' => Group::class,
+        'CertificationAuthorityGroup' => Group::class,
     ];
 
     /**
@@ -257,19 +259,30 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     Group::get()->map('ID', 'Title')
                 )
                     ->setDescription(
-                        'These people will receive emails when
-                        a submission is sent for approval once first submitted.'
-                    ),
+                    'These people will receive emails when
+                    a submission is sent for approval once first submitted.'),
+
                 DropdownField::create(
                     'CisoGroupID',
                     'Ciso Group',
                     Group::get()->map('ID', 'Title')
                 )
                     ->setDescription(
-                        'These users in this group will receive
-                        emails when a submission is sent for approval once the above
-                        security architect/analysts group has approved.'
-                    ),
+                    'These users in this group will receive
+                    emails when a submission is sent for approval once the above
+                    security architect/analysts group has approved.'),
+
+                DropdownField::create(
+                    'CertificationAuthorityGroupID',
+                    'Certification Authority Group',
+                    Group::get()->map('ID', 'Title')
+                ),
+
+                DropdownField::create(
+                    'AssuranceAdminGroupID',
+                    'Assurance Admin Group',
+                    Group::get()->map('ID', 'Title')
+                ),
 
                 // reminder email
                 LiteralField::create(
