@@ -921,6 +921,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         $this->createQuestionnaireSubmission($scaffolder);
         $this->updateQuestionnaireSubmission($scaffolder);
         $this->updateQuestionnaireStatusToSubmitted($scaffolder);
+        $this->updateQuestionnaireStatusToSendBackForChanges($scaffolder);
         $this->updateQuestionnaireStatusToInProgress($scaffolder);
         $this->updateQuestionnaireStatusToAssignToSecurityArchitect($scaffolder);
         $this->updateQuestionnaireStatusToWaitingForSecurityArchitectApproval($scaffolder);
@@ -1357,6 +1358,70 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                             $taskSubmission->CVATaskData = '';
                         }
                         if ($taskSubmission->getTaskType() == 'security risk assessment') {
+                            $taskSubmission->AnswerData = '';
+                        }
+                        $taskSubmission->write();
+                    });
+
+                    return $questionnaireSubmission;
+                }
+            })
+            ->end();
+    }
+
+    /**
+     * updateQuestionnaireStatusToSendBackForChanges - this api will call when sa will
+     * click on send back for changes
+     *
+     * @param SchemaScaffolder $scaffolder SchemaScaffolder
+     *
+     * @return void
+     */
+    public function updateQuestionnaireStatusToSendBackForChanges(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('updateQuestionnaireStatusToSendBackForChanges', QuestionnaireSubmission::class)
+            ->addArgs([
+                'ID' => 'ID!',
+            ])
+            ->setResolver(new class implements ResolverInterface {
+
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws Exception
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    QuestionnaireValidation::is_user_logged_in();
+
+                    $questionnaireSubmission =
+                        QuestionnaireSubmission::validate_before_updating_questionnaire_submission($args['ID']);
+
+                    $questionnaireSubmission->QuestionnaireStatus = QuestionnaireSubmission::STATUS_SUBMITTED;
+                    $questionnaireSubmission->SecurityArchitectApproverID = '';
+                    $questionnaireSubmission->SecurityArchitectStatusUpdateDate = '';
+                    $questionnaireSubmission->SecurityArchitectApproverIPAddress = '';
+                    $questionnaireSubmission->SecurityArchitectApproverMachineName = '';
+                    $questionnaireSubmission->QuestionnaireStatus = QuestionnaireSubmission::STATUS_SUBMITTED;
+
+                    $questionnaireSubmission->write();
+
+                    // Mark control validation audit and security risk assessment as start
+                    $questionnaireSubmission->TaskSubmissions()->each(function (TaskSubmission $taskSubmission) {
+
+                        if ($taskSubmission->getTaskType() == 'control validation audit') {
+                            $taskSubmission->Status = TaskSubmission::STATUS_START;
+                            $taskSubmission->CVATaskData = '';
+                        }
+                        if ($taskSubmission->getTaskType() == 'security risk assessment') {
+                            $taskSubmission->Status = TaskSubmission::STATUS_START;
                             $taskSubmission->AnswerData = '';
                         }
                         $taskSubmission->write();
