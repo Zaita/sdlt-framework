@@ -933,7 +933,6 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         // Approve/Deny for Security Architect and Chief Information Security Officer
         $this->updateQuestionnaireOnApproveByGroupMember($scaffolder);
         $this->updateQuestionnaireOnDenyByGroupMember($scaffolder);
-        $this->updateQuestionnaireSAStatusToNotApprove($scaffolder);
         $this->addCollaborator($scaffolder);
 
         return $scaffolder;
@@ -1549,56 +1548,6 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
-     * this api will call when sa will click on not approved button
-     *
-     * @param SchemaScaffolder $scaffolder SchemaScaffolder
-     *
-     * @return void
-     */
-    public function updateQuestionnaireSAStatusToNotApprove(SchemaScaffolder $scaffolder)
-    {
-        $scaffolder
-            ->mutation('updateQuestionnaireSAStatusToNotApprove', QuestionnaireSubmission::class)
-            ->addArgs([
-                'ID' => 'ID!',
-                'SkipBoAndCisoApproval' => 'Boolean',
-            ])
-            ->setResolver(new class implements ResolverInterface {
-                /**
-                 * Invoked by the Executor class to resolve this mutation / query
-                 * @see Executor
-                 *
-                 * @param mixed       $object  object
-                 * @param array       $args    args
-                 * @param mixed       $context context
-                 * @param ResolveInfo $info    info
-                 * @throws Exception
-                 * @return mixed
-                 */
-                public function resolve($object, array $args, $context, ResolveInfo $info)
-                {
-                    QuestionnaireValidation::is_user_logged_in();
-
-                    $skipBoAndCisoApproval = false;
-
-                    if (isset($args['SkipBoAndCisoApproval'])) {
-                        $skipBoAndCisoApproval = $args['SkipBoAndCisoApproval'];
-                    }
-
-                    $questionnaireSubmission =
-                        QuestionnaireSubmission::validate_before_updating_questionnaire_submission($args['ID']);
-
-                        $questionnaireSubmission->updateQuestionnaireOnApproveAndDenyByGroup(
-                            'not_approved',
-                            $skipBoAndCisoApproval
-                        );
-                    return $questionnaireSubmission;
-                }
-            })
-            ->end();
-    }
-
-    /**
      * this api will call if group member (Security architect and CISO) will click
      * on approve button
      *
@@ -2172,82 +2121,73 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             // update Security-Architect member details
             $this->updateSecurityArchitectDetail($member, $status);
 
-            if ($status == self::STATUS_APPROVED || $status == self::STATUS_NOT_APPROVED) {
-                // skipBoAndCisoApproval is not set then send email to CISO and BO
-                // else skip the CISO and BO approval and chane questionnaire status to approved
-                if (!$skipBoAndCisoApproval) {
-                    $this->QuestionnaireStatus = self::STATUS_WAITING_FOR_APPROVAL;
+            // skipBoAndCisoApproval is not set then send email to CISO and BO
+            // else skip the CISO and BO approval and change questionnaire status to approved/denied
+            if (!$skipBoAndCisoApproval) {
+                $this->QuestionnaireStatus = self::STATUS_WAITING_FOR_APPROVAL;
 
-                    // if member is ciso then approved a questioonaire as ciso as well
-                    $cisoMembers = [];
+                // if member is ciso then approved a questioonaire as ciso as well
+                $cisoMembers = [];
 
-                    if ($member->getIsCISO()) {
-                        $this->updateCisoDetail($member, $status);
-                    } else {
-                        $cisoMembers = $this->getApprovalMembersListByGroup(GroupExtension::ciso_group());
-                    }
-
-                    // if member is business owner then approved a questioonaire as BO as well
-                    $businessOwnerEmail = $this->BusinessOwnerEmailAddress;
-
-                    if ($this->isBusinessOwnerEmailAddress()) {
-                        $this->updateBusinessOwnerDetail($member, $status);
-                        $this->QuestionnaireStatus = $status;
-                        $businessOwnerEmail = '';
-                    }
-
-                    // send email to CISO group and Business owner
-                    if (!empty($cisoMembers) || !empty($businessOwnerEmail)) {
-                        // create a job to send an approval email link to Bo and Ciso
-                        $qs = QueuedJobService::create();
-                        $qs->queueJob(
-                            new SendApprovalLinkEmailJob($this, $cisoMembers, $businessOwnerEmail),
-                            date('Y-m-d H:i:s', time() + 90)
-                        );
-
-                        // create a reminder email job to send approval email link
-                        // to ciso and bo after x number of days
-                        $this->sendReminderEmails($cisoMembers, $businessOwnerEmail);
-                    }
+                if ($member->getIsCISO()) {
+                    $this->updateCisoDetail($member, $status);
                 } else {
-                    // skip approval for ba and ciso and set as not required
-                    // for risk type questionnaire
-                    if ($status == self::STATUS_NOT_APPROVED) {
-                        $this->QuestionnaireStatus = self::STATUS_DENIED;
-                    } else {
-                        $this->QuestionnaireStatus = $status;
-                    }
+                    $cisoMembers = $this->getApprovalMembersListByGroup(GroupExtension::ciso_group());
+                }
 
-                    $this->CisoApprovalStatus = self::STATUS_NOT_REQUIRED;
-                    $this->BusinessOwnerApprovalStatus = self::STATUS_NOT_REQUIRED;
+                // if member is business owner then approved a questioonaire as BO as well
+                $businessOwnerEmail = $this->BusinessOwnerEmailAddress;
 
-                    // handle if there is no business owner question field exist in the questionnaire
-                    // or if $this->BusinessOwnerEmailAddress is null then convert that into empty string
-                    if (!$this->BusinessOwnerEmailAddress || is_null($this->BusinessOwnerEmailAddress)) {
-                        $this->BusinessOwnerEmailAddress = '';
-                    }
+                if ($this->isBusinessOwnerEmailAddress()) {
+                    $this->updateBusinessOwnerDetail($member, $status);
+                    $this->QuestionnaireStatus = $status;
+                    $businessOwnerEmail = '';
+                }
 
-                    // send approved email notification to the user (submitter)
-                    $queuedJobService = QueuedJobService::create();
+                // send email to CISO group and Business owner
+                if (!empty($cisoMembers) || !empty($businessOwnerEmail)) {
+                    // create a job to send an approval email link to Bo and Ciso
+                    $qs = QueuedJobService::create();
+                    $qs->queueJob(
+                        new SendApprovalLinkEmailJob($this, $cisoMembers, $businessOwnerEmail),
+                        date('Y-m-d H:i:s', time() + 90)
+                    );
+
+                    // create a reminder email job to send approval email link
+                    // to ciso and bo after x number of days
+                    $this->sendReminderEmails($cisoMembers, $businessOwnerEmail);
+                }
+            } else {
+                $this->QuestionnaireStatus = $status;
+
+                $this->CisoApprovalStatus = self::STATUS_NOT_REQUIRED;
+                $this->BusinessOwnerApprovalStatus = self::STATUS_NOT_REQUIRED;
+
+                // handle if there is no business owner question field exist in the questionnaire
+                // or if $this->BusinessOwnerEmailAddress is null then convert that into empty string
+                if (!$this->BusinessOwnerEmailAddress || is_null($this->BusinessOwnerEmailAddress)) {
+                    $this->BusinessOwnerEmailAddress = '';
+                }
+
+                $queuedJobService = QueuedJobService::create();
+
+                // send approved email notification to the user (submitter) if status is approved
+                // else send denied email notification to the submitter
+                if ($status == self::STATUS_APPROVED) {
                     $queuedJobService->queueJob(
                         new SendApprovedNotificationEmailJob($this),
                         date('Y-m-d H:i:s', time() + 30)
                     );
+                } elseif ($status == self::STATUS_DENIED) {
+                    $queuedJobService->queueJob(
+                        new SendDeniedNotificationEmailJob($this),
+                        date('Y-m-d H:i:s', time() + 30)
+                    );
                 }
-            } else {
-                // if denied- no email, internal communication between Submitter and security-architect
-                $this->QuestionnaireStatus = self::STATUS_IN_PROGRESS;
-
-                // Mark all related task submissions as "invalid"
-                $this->TaskSubmissions()->each(function (TaskSubmission $taskSubmission) {
-                    $taskSubmission->Status = TaskSubmission::STATUS_INVALID;
-                    $taskSubmission->write();
-                });
             }
-
             $this->write();
         } elseif ($accessDetail['group'] == GroupExtension::ciso_group()->Code) {
-            // update CISO member details
+            // update CISO member details and status
             $this->updateCisoDetail($member, $status);
             $this->write();
         }
