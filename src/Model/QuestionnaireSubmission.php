@@ -115,6 +115,8 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         'SecurityArchitectApproverIPAddress' => 'Varchar(255)',
         'SecurityArchitectApproverMachineName' => 'Varchar(255)',
         'SecurityArchitectStatusUpdateDate' => 'Varchar(255)',
+        'CertificationAuthorityApprovalStatus' => 'Enum(array("pending", "approved", "denied", "not_required"))',
+        'AccreditationAuthorityApprovalStatus' => 'Enum(array("pending", "approved", "denied", "not_required"))',
         'SubmittedDate' => 'Varchar(255)',
         'SubmittedForApprovalDate'=> 'Varchar(255)',
         'ApprovalLinkToken' => 'Varchar(64)',
@@ -678,6 +680,20 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         if (isset($isBusinessOwnerName)) {
             $fields->addFieldsToTab('Root.BusinessOwnerDetails', $isBusinessOwnerName);
         }
+
+        $fields->addFieldsToTab(
+            'Root.CertificationAuthorityDetails',
+            [
+                $fields->dataFieldByName('CertificationAuthorityApprovalStatus')
+            ]
+        );
+
+        $fields->addFieldsToTab(
+            'Root.AccreditationAuthorityDetails',
+            [
+                $fields->dataFieldByName('AccreditationAuthorityApprovalStatus')
+            ]
+        );
 
         $fields
             ->dataFieldByName('ApprovalOverrideBySecurityArchitect')
@@ -2094,6 +2110,12 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 new SendDeniedNotificationEmailJob($this),
                 date('Y-m-d H:i:s', time() + 30)
             );
+
+            // check if C&A task exists
+            if ($this->isTaskTypeExist("Certification and Accreditation")) {
+                $this->CertificationAuthorityApprovalStatus = self::STATUS_NOT_REQUIRED;
+                $this->AccreditationAuthorityApprovalStatus = self::STATUS_NOT_REQUIRED;
+            }
         }
 
         $this->write();
@@ -2904,5 +2926,16 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             new SendReminderEmailsJob($this, $cisoMembers, $businessOwnerEmail, $numberOfDays),
             date('Y-m-d H:i:s', strtotime("+". $numberOfDays . " day", time()))
         );
+    }
+
+    public function isTaskTypeExist($type)
+    {
+        $isTaskTypeExist = $this->TaskSubmissions()->find('Task.TaskType', $type);
+
+        if ($isTaskTypeExist) {
+            return true;
+        }
+
+        return false;
     }
 }
