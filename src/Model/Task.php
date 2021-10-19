@@ -85,7 +85,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     private static $db = [
         'Name' => 'Varchar(255)',
         'KeyInformation' => 'HTMLText',
-        'TaskType' => 'Enum(array("questionnaire", "selection", "risk questionnaire", "security risk assessment", "control validation audit", "Certification and Accreditation"))',
+        'TaskType' => 'Enum(array("questionnaire", "selection", "risk questionnaire", "security risk assessment", "control validation audit", "certification and accreditation"))',
         'LockAnswersWhenComplete' => 'Boolean',
         'IsApprovalRequired' => 'Boolean',
         'IsStakeholdersSelected' => "Enum('No,Yes', 'No')",

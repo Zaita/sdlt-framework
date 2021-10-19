@@ -2112,7 +2112,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             );
 
             // check if C&A task exists
-            if ($this->isTaskTypeExist("Certification and Accreditation")) {
+            if ($this->isTaskTypeExist("certification and accreditation")) {
                 $this->CertificationAuthorityApprovalStatus = self::STATUS_NOT_REQUIRED;
                 $this->AccreditationAuthorityApprovalStatus = self::STATUS_NOT_REQUIRED;
             }
@@ -2928,6 +2928,13 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         );
     }
 
+    /**
+     * Check if task type exist
+     *
+     * @param string $type business owner email address
+     *
+     * @return boolean
+     */
     public function isTaskTypeExist($type)
     {
         $isTaskTypeExist = $this->TaskSubmissions()->find('Task.TaskType', $type);
