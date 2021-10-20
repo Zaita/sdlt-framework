@@ -56,6 +56,7 @@ class AccreditationMemo extends DataObject
      */
     private static $summary_fields = [
         'Service.ServiceName' => 'Service Name',
+        'MemoType' => 'Memo Type',
         'getPrettifyAccreditationStatus' => 'Accreditation Status',
         'Created' => 'Creation Date',
         'ExpirationDate' => 'Expiration Date',

@@ -18,6 +18,7 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
 use SilverStripe\Security\Security;
+use SilverStripe\ORM\HasManyList;
 
 /**
  * This service record will be used apart of the ServiceInventory
@@ -48,10 +49,21 @@ class ServiceInventory extends DataObject implements PermissionProvider
     /**
      * @var array
      */
+    private static $has_many = [
+        'AccreditationMemos' => AccreditationMemo::class,
+    ];
+
+    /**
+     * @var array
+     */
     private static $summary_fields = [
         'ServiceName',
         'BusinessOwner.Name' => 'Business Owner',
         'getPrettifyOperationalStatus' => 'Operational Status',
+        'ActiveServiceMemo' => 'Active Service Memos',
+        'ActiveChangeMemo' => 'Active Change Memos',
+        'IssueDate' => 'Issue Date',
+        'ExpirationDate' => 'Expiration Date',
     ];
 
     /**
@@ -67,6 +79,108 @@ class ServiceInventory extends DataObject implements PermissionProvider
         return isset($mapping[$this->OperationalStatus])
             ? $mapping[$this->OperationalStatus]
             : $this->OperationalStatus;
+    }
+
+    /**
+     * Active Service Memos is a count() query on the
+     * number of "Service" Type Accreditation Memos
+     *
+     * @return integer
+     */
+    public function getActiveServiceMemo()
+    {
+        $accreditationMemos = $this->AccreditationMemos();
+
+        if ($accreditationMemos && $accreditationMemos instanceof HasManyList) {
+            $activeServiceMemos = $accreditationMemos
+                ->filter([
+                    'AccreditationStatus' => 'active',
+                    'MemoType' => 'service'
+                ])
+                ->count();
+
+            return $activeServiceMemos;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Active Change Memos is a count() query on the
+     * number of "Change" Type Accreditation Memos
+     *
+     * @return integer
+     */
+    public function getActiveChangeMemo()
+    {
+        $accreditationMemos = $this->AccreditationMemos();
+
+        if ($accreditationMemos && $accreditationMemos instanceof HasManyList) {
+            $activeChangeMemos = $accreditationMemos
+                ->filter([
+                    'AccreditationStatus' => 'active',
+                    'MemoType' => 'change'
+                ])
+                ->count();
+
+                return $activeChangeMemos;
+        }
+
+        return 0;
+    }
+
+    /**
+     * Issue Date is the created_at for the oldest
+     * active "Service" Type accreditation memo
+     *
+     * @return string
+     */
+    public function getIssueDate()
+    {
+        $accreditationMemos = $this->AccreditationMemos();
+
+        if ($accreditationMemos && $accreditationMemos instanceof HasManyList) {
+            $accreditationMemo =  $accreditationMemos
+                ->filter([
+                     'AccreditationStatus' => 'active',
+                     'MemoType' => 'service'
+                ])
+                ->sort('Created', 'ASC')
+                ->first();
+
+            if ($accreditationMemo && ($date = $accreditationMemo->Created)) {
+                return date('d/m/Y', strtotime($date));
+            }
+        }
+
+        return "";
+    }
+
+    /**
+     * Expiration Date is the most recent (or furtherest into the future)
+     * "ExpirationDate" for the "Service" Type accreditation memo
+     *
+     * @return string
+     */
+    public function getExpirationDate()
+    {
+        $accreditationMemos = $this->AccreditationMemos();
+
+        if ($accreditationMemos && $accreditationMemos instanceof HasManyList) {
+            $accreditationMemo =  $accreditationMemos
+                ->filter([
+                    'AccreditationStatus' => 'active',
+                    'MemoType' => 'service'
+                ])
+                ->sort('ExpirationDate', 'DESC')
+                ->first();
+
+            if ($accreditationMemo && ($date = $accreditationMemo->ExpirationDate)) {
+                return date('d/m/Y', strtotime($date));
+            }
+        }
+
+        return "";
     }
 
     /**
