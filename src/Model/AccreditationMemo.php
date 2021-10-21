@@ -56,10 +56,10 @@ class AccreditationMemo extends DataObject
      */
     private static $summary_fields = [
         'Service.ServiceName' => 'Service Name',
-        'MemoType' => 'Memo Type',
+        'getPrettifyMemoType' => 'Memo Type',
         'getPrettifyAccreditationStatus' => 'Accreditation Status',
-        'Created' => 'Creation Date',
-        'ExpirationDate' => 'Expiration Date',
+        'getPrettifyCreated' => 'Creation Date',
+        'getPrettifyExpirationDate' => 'Expiration Date',
         'SummaryPageLink' => 'Submission Summary Link',
     ];
 
@@ -73,9 +73,29 @@ class AccreditationMemo extends DataObject
             'expired' => 'Expired'
         ];
 
-        return isset($mapping[$this->AccreditationStatus])
-            ? $mapping[$this->AccreditationStatus]
-            : $this->AccreditationStatus;
+        if ($this->ExpirationDate) {
+            $status = $this->getAccreditationStatusforDisplay($this->ExpirationDate);
+
+            return isset($mapping[$status])
+                ? $mapping[$status] : $this->AccreditationStatus;
+        }
+
+        return "";
+    }
+
+    /**
+     * @return string
+     */
+    public function getPrettifyMemoType()
+    {
+        $mapping = [
+            'service' => 'Service',
+            'change' => 'Change'
+        ];
+
+        return isset($mapping[$this->MemoType])
+            ? $mapping[$this->MemoType]
+            : $this->MemoType;
     }
 
     /**
@@ -85,6 +105,22 @@ class AccreditationMemo extends DataObject
     public function getSummaryPageLink()
     {
        return "";
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPrettifyExpirationDate()
+    {
+        return $this->dbObject('ExpirationDate')->format('dd/MM/y');
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPrettifyCreated()
+    {
+        return $this->dbObject('Created')->format('dd/MM/y');
     }
 
     /**
@@ -105,6 +141,25 @@ class AccreditationMemo extends DataObject
                 )->setEmptyString(' ')
             ]);
 
+        if ($this->ExpirationDate) {
+            $status = $this->getAccreditationStatusforDisplay($this->ExpirationDate);
+            $fields
+                ->dataFieldByName('AccreditationStatus')
+                ->setValue($status);
+        }
+
         return $fields;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAccreditationStatusforDisplay($date)
+    {
+        if ($this->ExpirationDate >= date('Y-m-d')) {
+            return $this->AccreditationStatus = "active";
+        } else {
+            return $this->AccreditationStatus = "expired";
+        }
     }
 }
