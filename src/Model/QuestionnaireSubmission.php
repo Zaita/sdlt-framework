@@ -79,6 +79,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     const STATUS_AWAITING_SA_REVIEW = 'awaiting_security_architect_review';
     const STATUS_WAITING_FOR_SA_APPROVAL = 'waiting_for_security_architect_approval';
     const STATUS_WAITING_FOR_APPROVAL = 'waiting_for_approval';
+    const STATUS_AWAITING_CERTIFICATION_AND_ACCREDITATION = 'awaiting_certification_and_accreditation';
 
     /**
      * @var string
@@ -95,7 +96,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         'SubmitterEmail'=> 'Varchar(255)',
         'QuestionnaireData' => 'Text',
         'AnswerData' => 'Text',
-        'QuestionnaireStatus' => 'Enum(array("in_progress", "submitted", "awaiting_security_architect_review", "waiting_for_security_architect_approval","waiting_for_approval", "approved", "denied", "expired"))',
+        'QuestionnaireStatus' => 'Enum(array("in_progress", "submitted", "awaiting_security_architect_review", "waiting_for_security_architect_approval","waiting_for_approval", "awaiting_certification_and_accreditation", "approved", "denied", "expired"))',
         'UUID' => 'Varchar(36)',
         'IsStartLinkEmailSent' => 'Boolean',
         'IsEmailSentToSecurityArchitect' => 'Boolean',
@@ -787,7 +788,9 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'RiskResultData',
                 'ReleaseDate',
                 'HideWeightsAndScore',
-                'CollaboratorList'
+                'CollaboratorList',
+                'IsCertificationAndAccreditationTaskExists',
+                'BusinessOwnerAcknowledgementText'
             ]);
 
         $submissionScaffolder
@@ -2090,17 +2093,24 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             $this->updateCisoDetail($member, $status);
         }
 
-        // if approve by business owner then change questionnaire status to approved
-        // else denied and send email notification to the questionnaire submitter
+        // if approve by business owner then change questionnaire status to
+        // approved/awaiting_certification_and_accreditation else denied and send
+        // email notification to the questionnaire submitter
         if ($status == self::STATUS_APPROVED) {
-            $this->QuestionnaireStatus = $status;
+            // check if C&A task exists then change questionnairre status to
+            // awaiting_certification_and_accreditation
+            if ($this->getIsCertificationAndAccreditationTaskExists()) {
+                $this->QuestionnaireStatus = self::STATUS_AWAITING_CERTIFICATION_AND_ACCREDITATION;
+            } else {
+                $this->QuestionnaireStatus = $status;
 
-            // send approved email notification to the user (submitter)
-            $queuedJobService = QueuedJobService::create();
-            $queuedJobService->queueJob(
-                new SendApprovedNotificationEmailJob($this),
-                date('Y-m-d H:i:s', time() + 30)
-            );
+                // send approved email notification to the user (submitter)
+                $queuedJobService = QueuedJobService::create();
+                $queuedJobService->queueJob(
+                    new SendApprovedNotificationEmailJob($this),
+                    date('Y-m-d H:i:s', time() + 30)
+                );
+            }
         } else {
             $this->QuestionnaireStatus = $status;
 
@@ -2112,7 +2122,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             );
 
             // check if C&A task exists
-            if ($this->isTaskTypeExist("certification and accreditation")) {
+            if ($this->getIsCertificationAndAccreditationTaskExists()) {
                 $this->CertificationAuthorityApprovalStatus = self::STATUS_NOT_REQUIRED;
                 $this->AccreditationAuthorityApprovalStatus = self::STATUS_NOT_REQUIRED;
             }
@@ -2935,14 +2945,30 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
      *
      * @return boolean
      */
-    public function isTaskTypeExist($type)
+    public function isTaskTypeExists($type)
     {
-        $isTaskTypeExist = $this->TaskSubmissions()->find('Task.TaskType', $type);
+        $isTaskTypeExists = $this->TaskSubmissions()->find('Task.TaskType', $type);
 
-        if ($isTaskTypeExist) {
+        if ($isTaskTypeExists) {
             return true;
         }
 
         return false;
+    }
+
+    public function getBusinessOwnerAcknowledgementText()
+    {
+        $config = SiteConfig::current_site_config();
+
+        if ($config->BusinessOwnerAcknowledgementText) {
+            return $config->BusinessOwnerAcknowledgementText;
+        }
+
+        return "";
+    }
+
+    public function getIsCertificationAndAccreditationTaskExists()
+    {
+        return $this->isTaskTypeExists('certification and accreditation');
     }
 }
