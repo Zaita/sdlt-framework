@@ -2958,9 +2958,13 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
 
     public function getBusinessOwnerAcknowledgementText()
     {
+        if (Director::is_cli()) {
+            return "";
+        }
+
         $config = SiteConfig::current_site_config();
 
-        if ($config->BusinessOwnerAcknowledgementText) {
+        if ($config && $config->BusinessOwnerAcknowledgementText) {
             return $config->BusinessOwnerAcknowledgementText;
         }
 
