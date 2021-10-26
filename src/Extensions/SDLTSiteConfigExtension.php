@@ -23,6 +23,7 @@ use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\HTMLEditor\HtmlEditorField;
 use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\Forms\FormField;
@@ -52,6 +53,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'NumberOfDaysForApprovalReminderEmail' => 'Int',
         // Customisation Config
         'FooterCopyrightText' => 'Text',
+        'BusinessOwnerAcknowledgementText' => 'Text'
     ];
 
     /**
@@ -297,6 +299,26 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                         'Set the number of days to resend the approval
                         emails to the Business Owner (if applicable) and CISO groups.'
                     ),
+            ]
+        );
+
+
+        // "Acknowledgement " tab
+        $fields->addFieldsToTab(
+            'Root.Acknowledgements',
+            [
+                TextareaField::create(
+                    'BusinessOwnerAcknowledgementText',
+                    'Business Owner Acknowledgement Text'
+                ),
+                LiteralField::create(
+                    'QuestionnaireAcknowledgementText',
+                    '<p class="message notice">You can use the following variable substitutions in the acknowledgement text:<br/><br/>' .
+                    '<b>{$serviceName}</b> For service name taken from the Certification and Accreditation Memo task<br/>' .
+                    '<b>{$expirationDate }</b> Expiration date of the Certification and Accreditation taken from the Certification and Accreditation Memo task<br/>' .
+                    '<b>{$accreditationDuration}</b> Taken from Certification and Accreditation task as recommended duration.<br/>' .
+                    '<b>{$accreditationType}</b> Service or Change based on the type picked in the Certification and Accreditation Memo Task</p>'
+                )
             ]
         );
     }
