@@ -206,11 +206,13 @@ class SetupSDLTDataTask extends BuildTask
             }
             $csv = Reader::createFromPath($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath, 'r');
 
+            $csv->setHeaderOffset(0);
+
             //get the first row, usually the CSV header
-            $headers = $csv->fetchOne();
+            $headers = $csv->getHeader();
 
             // $res = $csv->setOffset(1)->fetchAll();
-            $res = $csv->setOffset(1)->fetchAll();
+            $res = $csv->getRecords();
 
             $className = '';
             foreach ($res as $row) {
@@ -256,12 +258,13 @@ class SetupSDLTDataTask extends BuildTask
                 throw new \Exception($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath . ' does not exist');
             }
             $csv = Reader::createFromPath($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath, 'r');
+            $csv->setHeaderOffset(0);
 
             //get the first row, usually the CSV header
-            $headers = $csv->fetchOne();
+            $headers = $csv->getHeader();
 
             // $res = $csv->setOffset(1)->fetchAll();
-            $res = $csv->setOffset(1)->fetchAll();
+            $res = $csv->getRecords();
 
             $className = '';
             foreach ($res as $row) {
