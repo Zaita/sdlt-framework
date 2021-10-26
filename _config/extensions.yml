@@ -1,3 +1,6 @@
+---
+Name: sdlt-extensions
+---
 SilverStripe\SiteConfig\SiteConfig:
   extensions:
     - 'NZTA\SDLT\Extension\SDLTSiteConfigExtension'
