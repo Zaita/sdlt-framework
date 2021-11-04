@@ -13,6 +13,12 @@
 
 namespace NZTA\SDLT\Model;
 
+use SilverStripe\Forms\GridField\GridField;
+use SilverStripe\Forms\GridField\GridFieldConfig_Base;
+use SilverStripe\Forms\GridField\GridFieldDataColumns;
+use SilverStripe\Forms\GridField\GridFieldFilterHeader;
+use SilverStripe\Forms\GridField\GridFieldSortableHeader;
+use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
@@ -36,14 +42,8 @@ class ServiceInventory extends DataObject implements PermissionProvider
      */
     private static $db = [
         'ServiceName' => 'Varchar(255)',
+        'BusinessOwner' => 'Varchar(255)',
         'OperationalStatus' => 'Enum(array("live", "retired"))',
-    ];
-
-    /**
-     * @var array
-     */
-    private static $has_one = [
-        'BusinessOwner' => Member::class,
     ];
 
     /**
@@ -58,7 +58,7 @@ class ServiceInventory extends DataObject implements PermissionProvider
      */
     private static $summary_fields = [
         'ServiceName',
-        'BusinessOwner.Name' => 'Business Owner',
+        'BusinessOwner' => 'Business Owner',
         'getPrettifyOperationalStatus' => 'Operational Status',
         'ActiveServiceMemo' => 'Active Service Memos',
         'ActiveChangeMemo' => 'Active Change Memos',
@@ -184,6 +184,33 @@ class ServiceInventory extends DataObject implements PermissionProvider
     }
 
     /**
+     * Determines the AccreditationStatus displayed in detail view
+     * @return string
+     */
+    public function getAccreditationStatus()
+    {
+        $accreditationMemos = $this->AccreditationMemos();
+
+        if ($accreditationMemos && $accreditationMemos instanceof HasManyList) {
+            $activeAccreditationStatus = $accreditationMemos
+                ->filter([
+                    'AccreditationStatus' => 'active',
+                    'MemoType' => 'service',
+                    'ExpirationDate:GreaterThanOrEqual' => date('Y-m-d')
+                ])
+                ->count();
+
+            if ($activeAccreditationStatus > 0) {
+                return "active";
+            } else {
+                return "expired";
+            }
+        }
+
+        return "";
+    }
+
+    /**
      * Permission-provider to import and edit a Service
      *
      * @return array
@@ -274,5 +301,77 @@ class ServiceInventory extends DataObject implements PermissionProvider
         }
 
         return $result;
+    }
+
+    /**
+     * CMS Fields
+     * @return FieldList
+     */
+    public function getCMSFields()
+    {
+        $fields = parent::getCMSFields();
+
+        $fields->removeFieldFromTab('Root', 'AccreditationMemos');
+
+        // hides AccreditationStatus and ExpirationDate
+        // when creating new service inventory
+        if (!empty($this->getAccreditationStatus())) {
+            $fields->insertAfter(
+                'BusinessOwner',
+                ReadonlyField::create(
+                    'AccreditationStatus',
+                    'Accreditation status'
+                )
+            );
+
+            $fields->insertAfter(
+                'AccreditationStatus',
+                ReadonlyField::create(
+                    'ExpirationDate',
+                    'Expiration date'
+                )
+            );
+        }
+
+        $config = GridFieldConfig_Base::create();
+        $dataColumns = $config->getComponentByType(GridFieldDataColumns::class);
+        $sortableHeader = $config->getComponentByType(GridFieldSortableHeader::class);
+        $config->removeComponentsByType(GridFieldFilterHeader::class);
+
+        $accreditationMemos = $this->AccreditationMemos();
+
+        if ($accreditationMemos && $accreditationMemos instanceof HasManyList) {
+            $fields->addFieldsToTab(
+                'Root.Main',
+                [
+                    $accreditationMemosGrid = new GridField(
+                        'IssuedAccreditationMemo',
+                        'Issued Accreditation Memos',
+                        $this->AccreditationMemos(),
+                        $config
+                    )
+                ],
+            );
+        }
+
+        $dataColumns->setDisplayFields([
+            'getPrettifyMemoType' => 'Type',
+            'getPrettifyCreated'=> 'Issue Date',
+            'getPrettifyExpirationDate' => 'Expiration Date',
+            'getPrettifyAccreditationStatus' => 'Status',
+            'IssuedBy' => 'Issued By',
+            'CertifiedBy' => 'Certified By',
+            'AccreditedBy' => 'Accredited By',
+            'SummaryPageLink' => 'Link'
+        ]);
+
+        $sortableHeader->setFieldSorting([
+            'getPrettifyMemoType'=> 'MemoType',
+            'getPrettifyCreated'=> 'Created',
+            'getPrettifyExpirationDate' => 'ExpirationDate',
+            'getPrettifyAccreditationStatus' => 'AccreditationStatus',
+        ]);
+
+        return $fields;
     }
 }

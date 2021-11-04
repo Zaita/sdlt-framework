@@ -15,7 +15,8 @@
         "tractorcow/silverstripe-colorpicker": "^4.0",
         "swaggest/json-schema": "^0.12.24",
         "ergebnis/json-printer": "^3.0",
-        "silverstripe/versioned-snapshot-admin": "^0.3"
+        "silverstripe/versioned-snapshot-admin": "^0.3",
+        "silverstripe/crontask": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7",
