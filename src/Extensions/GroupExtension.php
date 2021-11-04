@@ -53,15 +53,47 @@ class GroupExtension extends DataExtension
         return $groupInDB;
     }
 
+    /**
+     * return Security Architect Group details
+     *
+     * @return Object
+     */
     public static function security_architect_group()
     {
         $config = SiteConfig::current_site_config();
         return $config->SecurityArchitectGroup();
     }
 
+    /**
+     * return CISO Group details
+     *
+     * @return Object
+     */
     public static function ciso_group()
     {
         $config = SiteConfig::current_site_config();
         return $config->CisoGroup();
+    }
+
+    /**
+     * return Accreditation Authority Group details
+     *
+     * @return Object
+     */
+    public static function accreditation_authority_group()
+    {
+        $config = SiteConfig::current_site_config();
+        return $config->AccreditationAuthorityGroup();
+    }
+
+    /**
+     * return Certification Authority Group details
+     *
+     * @return Object
+     */
+    public static function certification_authority_group()
+    {
+        $config = SiteConfig::current_site_config();
+        return $config->CertificationAuthorityGroup();
     }
 }

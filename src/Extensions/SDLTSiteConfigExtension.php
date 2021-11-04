@@ -53,7 +53,9 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'NumberOfDaysForApprovalReminderEmail' => 'Int',
         // Customisation Config
         'FooterCopyrightText' => 'Text',
-        'BusinessOwnerAcknowledgementText' => 'Text'
+        'BusinessOwnerAcknowledgementText' => 'Text',
+        'CertificationAuthorityAcknowledgementText' => 'Text',
+        'AccreditationAuthorityAcknowledgementText' => 'Text'
     ];
 
     /**
@@ -74,6 +76,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'CisoGroup' => Group::class,
         'AssuranceAdminGroup' => Group::class,
         'CertificationAuthorityGroup' => Group::class,
+        'AccreditationAuthorityGroup' => Group::class,
     ];
 
     /**
@@ -281,6 +284,12 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                 ),
 
                 DropdownField::create(
+                    'AccreditationAuthorityGroupID',
+                    'Accreditation Authority Group',
+                    Group::get()->map('ID', 'Title')
+                ),
+
+                DropdownField::create(
                     'AssuranceAdminGroupID',
                     'Assurance Admin Group',
                     Group::get()->map('ID', 'Title')
@@ -310,6 +319,14 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                 TextareaField::create(
                     'BusinessOwnerAcknowledgementText',
                     'Business Owner Acknowledgement Text'
+                ),
+                TextareaField::create(
+                    'CertificationAuthorityAcknowledgementText',
+                    'Certification Authority Acknowledgement Text'
+                ),
+                TextareaField::create(
+                    'AccreditationAuthorityAcknowledgementText',
+                    'Accreditation Authority Acknowledgement Text'
                 ),
                 LiteralField::create(
                     'QuestionnaireAcknowledgementText',
