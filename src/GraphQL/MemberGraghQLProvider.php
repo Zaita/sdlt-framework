@@ -54,7 +54,9 @@ class MemberGraphQLProvider implements ScaffoldingProvider
                'FirstName',
                'Surname',
                'IsSA',
-               'IsCISO'
+               'IsCISO',
+               'IsCertificationAuthority',
+               'IsAccreditationAuthority'
             ];
         }
 

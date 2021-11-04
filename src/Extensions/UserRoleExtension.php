@@ -84,9 +84,23 @@ class UserRoleExtension extends DataExtension
     {
         return $this->owner
             ->Groups()
-            ->filter('Code', UserGroupConstant::GROUP_CODE_ACCREDITATIONAUTHORITY )
+            ->filter('Code', GroupExtension::accreditation_authority_group()->Code)
             ->exists();
     }
+
+    /**
+     * Check if the member is Certification Authority
+     *
+     * @return boolean
+     */
+    public function getIsCertificationAuthority()
+    {
+        return $this->owner
+            ->Groups()
+            ->filter('Code', GroupExtension::certification_authority_group()->Code)
+            ->exists();
+    }
+
     /**
      * Return the role-name for a given user. The returned string is in compound
      * form, but you can use {@link FormField::name_to_label()} to prettify it.

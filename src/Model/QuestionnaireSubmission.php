@@ -80,6 +80,8 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     const STATUS_WAITING_FOR_SA_APPROVAL = 'waiting_for_security_architect_approval';
     const STATUS_WAITING_FOR_APPROVAL = 'waiting_for_approval';
     const STATUS_AWAITING_CERTIFICATION_AND_ACCREDITATION = 'awaiting_certification_and_accreditation';
+    const STATUS_AWAITING_CERTIFICATION = 'awaiting_certification';
+    const STATUS_AWAITING_ACCREDITATION = 'awaiting_accreditation';
 
     /**
      * @var string
@@ -96,7 +98,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         'SubmitterEmail'=> 'Varchar(255)',
         'QuestionnaireData' => 'Text',
         'AnswerData' => 'Text',
-        'QuestionnaireStatus' => 'Enum(array("in_progress", "submitted", "awaiting_security_architect_review", "waiting_for_security_architect_approval","waiting_for_approval", "awaiting_certification_and_accreditation", "approved", "denied", "expired"))',
+        'QuestionnaireStatus' => 'Enum(array("in_progress", "submitted", "awaiting_security_architect_review", "waiting_for_security_architect_approval","waiting_for_approval", "awaiting_certification_and_accreditation", "awaiting_accreditation", "awaiting_certification", "approved", "denied", "expired"))',
         'UUID' => 'Varchar(36)',
         'IsStartLinkEmailSent' => 'Boolean',
         'IsEmailSentToSecurityArchitect' => 'Boolean',
@@ -117,7 +119,13 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         'SecurityArchitectApproverMachineName' => 'Varchar(255)',
         'SecurityArchitectStatusUpdateDate' => 'Varchar(255)',
         'CertificationAuthorityApprovalStatus' => 'Enum(array("pending", "approved", "denied", "not_required"))',
+        'CertificationAuthorityApproverIPAddress' => 'Varchar(255)',
+        'CertificationAuthorityApproverMachineName' => 'Varchar(255)',
+        'CertificationAuthorityApprovalStatusUpdateDate' => 'Varchar(255)',
         'AccreditationAuthorityApprovalStatus' => 'Enum(array("pending", "approved", "denied", "not_required"))',
+        'AccreditationAuthorityApproverIPAddress' => 'Varchar(255)',
+        'AccreditationAuthorityApproverMachineName' => 'Varchar(255)',
+        'AccreditationAuthorityApprovalStatusUpdateDate' => 'Varchar(255)',
         'SubmittedDate' => 'Varchar(255)',
         'SubmittedForApprovalDate'=> 'Varchar(255)',
         'ApprovalLinkToken' => 'Varchar(64)',
@@ -138,7 +146,9 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         'Questionnaire' => Questionnaire::class,
         'CisoApprover' => Member::class,
         'SecurityArchitectApprover' => Member::class,
-        'BusinessOwnerApprover' => Member::class
+        'BusinessOwnerApprover' => Member::class,
+        'CertificationAuthorityApprover' => Member::class,
+        'AccreditationAuthorityApprover' => Member::class,
     ];
 
     /**
@@ -356,6 +366,43 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     /**
      * @return boolean
      */
+    public function isAwaitingCertificationAndAccreditation() : bool
+    {
+        if ($this->QuestionnaireStatus === self::STATUS_AWAITING_CERTIFICATION_AND_ACCREDITATION) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isAwaitingCertification() : bool
+    {
+        if ($this->QuestionnaireStatus === self::STATUS_AWAITING_CERTIFICATION) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isAwaitingAccreditation() : bool
+    {
+        if ($this->QuestionnaireStatus === self::STATUS_AWAITING_ACCREDITATION) {
+            return true;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * @return boolean
+     */
     public function isApproved() : bool
     {
         if ($this->QuestionnaireStatus === self::STATUS_APPROVED) {
@@ -443,6 +490,78 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     public function isDeniedByCiso() : bool
     {
         if ($this->CisoApprovalStatus === self::STATUS_DENIED) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isCertificationAuthorityApprovalPending() : bool
+    {
+        if ($this->CertificationAuthorityApprovalStatus === self::STATUS_PENDING) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isApprovedByCertificationAuthority() : bool
+    {
+        if ($this->CertificationAuthorityApprovalStatus === self::STATUS_APPROVED) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isDeniedByCertificationAuthority() : bool
+    {
+        if ($this->CertificationAuthorityApprovalStatus === self::STATUS_DENIED) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isAccreditationAuthorityApprovalPending() : bool
+    {
+        if ($this->AccreditationAuthorityApprovalStatus === self::STATUS_PENDING) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isApprovedByAccreditationAuthority() : bool
+    {
+        if ($this->AccreditationAuthorityApprovalStatus === self::STATUS_APPROVED) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isDeniedByAccreditationAuthority() : bool
+    {
+        if ($this->AccreditationAuthorityApprovalStatus === self::STATUS_DENIED) {
             return true;
         }
 
@@ -608,7 +727,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             ]
         );
 
-        // memeber list for SA group
+        // member list for SA group
         $group = GroupExtension::security_architect_group();
 
         $saMemberList = [];
@@ -635,9 +754,8 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             ]
         );
 
-        // memeber list for CISO group
+        // member list for CISO group
         $group = GroupExtension::ciso_group();
-;
 
         $cisoMemberList = [];
 
@@ -682,17 +800,51 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             $fields->addFieldsToTab('Root.BusinessOwnerDetails', $isBusinessOwnerName);
         }
 
+        // member list for Certification Authority group
+        $group = GroupExtension::certification_authority_group();
+
+        $certificationAuthorityMemberList = [];
+
+        if ($group) {
+            $certificationAuthorityMemberList = $group->Members()->map('ID', 'Name');
+        }
         $fields->addFieldsToTab(
             'Root.CertificationAuthorityDetails',
             [
-                $fields->dataFieldByName('CertificationAuthorityApprovalStatus')
+                DropdownField::create(
+                    'CertificationAuthorityApproverID',
+                    'Certification Authority Approver',
+                    $certificationAuthorityMemberList
+                )->setEmptyString(' '),
+                $fields->dataFieldByName('CertificationAuthorityApprovalStatus'),
+                $fields->dataFieldByName('CertificationAuthorityApproverIPAddress'),
+                $fields->dataFieldByName('CertificationAuthorityApproverMachineName'),
+                $fields->dataFieldByName('CertificationAuthorityApprovalStatusUpdateDate')
+                        ->setDescription('Collect the date when Certification Authority approved/denied the submission.')
             ]
         );
 
+        // member list for Accreditation Authority group
+        $group = GroupExtension::accreditation_authority_group();
+
+        $accreditationAuthorityMemberList = [];
+
+        if ($group) {
+            $accreditationAuthorityMemberList = $group->Members()->map('ID', 'Name');
+        }
         $fields->addFieldsToTab(
             'Root.AccreditationAuthorityDetails',
             [
-                $fields->dataFieldByName('AccreditationAuthorityApprovalStatus')
+                DropdownField::create(
+                    'AccreditationAuthorityApproverID',
+                    'Accreditation Authority Approver',
+                    $accreditationAuthorityMemberList
+                )->setEmptyString(' '),
+                $fields->dataFieldByName('AccreditationAuthorityApprovalStatus'),
+                $fields->dataFieldByName('AccreditationAuthorityApproverIPAddress'),
+                $fields->dataFieldByName('AccreditationAuthorityApproverMachineName'),
+                $fields->dataFieldByName('AccreditationAuthorityApprovalStatusUpdateDate')
+                        ->setDescription('Collect the date when Accreditation Authority approved/denied the submission.')
             ]
         );
 
@@ -765,6 +917,8 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'BusinessOwnerEmailAddress',
                 'CisoApprover',
                 'SecurityArchitectApprover',
+                'CertificationAuthorityApprover',
+                'AccreditationAuthorityApprover',
                 'CisoApproverIPAddress',
                 'CisoApproverMachineName',
                 'CisoApprovalStatusUpdateDate',
@@ -776,6 +930,8 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'SecurityArchitectApproverIPAddress',
                 'SecurityArchitectApproverMachineName',
                 'SecurityArchitectStatusUpdateDate',
+                'CertificationAuthorityApprovalStatus',
+                'AccreditationAuthorityApprovalStatus',
                 'IsCurrentUserAnApprover',
                 'IsCurrentUserABusinessOwnerApprover',
                 'IsEmailSentToSecurityArchitect',
@@ -790,7 +946,9 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'HideWeightsAndScore',
                 'CollaboratorList',
                 'IsCertificationAndAccreditationTaskExists',
-                'BusinessOwnerAcknowledgementText'
+                'BusinessOwnerAcknowledgementText',
+                'CertificationAuthorityAcknowledgementText',
+                'AccreditationAuthorityAcknowledgementText'
             ]);
 
         $submissionScaffolder
@@ -893,10 +1051,29 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                             $data = QuestionnaireSubmission::get()->filter([
                                 'QuestionnaireStatus' => [
                                   QuestionnaireSubmission::STATUS_WAITING_FOR_APPROVAL,
+                                  QuestionnaireSubmission::STATUS_AWAITING_CERTIFICATION_AND_ACCREDITATION,
+                                  QuestionnaireSubmission::STATUS_AWAITING_CERTIFICATION,
+                                  QuestionnaireSubmission::STATUS_AWAITING_ACCREDITATION,
                                   QuestionnaireSubmission::STATUS_APPROVED,
                                   QuestionnaireSubmission::STATUS_DENIED
                                 ],
                                 'CisoApprovalStatus' => QuestionnaireSubmission::STATUS_PENDING
+                            ])->exclude('QuestionnaireStatus', QuestionnaireSubmission::STATUS_EXPIRED);
+                        } elseif ($member->getIsCertificationAuthority()) {
+                            $data = QuestionnaireSubmission::get()->filter([
+                                'QuestionnaireStatus' => [
+                                  QuestionnaireSubmission::STATUS_AWAITING_CERTIFICATION_AND_ACCREDITATION,
+                                  QuestionnaireSubmission::STATUS_AWAITING_CERTIFICATION
+                                ],
+                                'CertificationAuthorityApprovalStatus' => QuestionnaireSubmission::STATUS_PENDING
+                            ])->exclude('QuestionnaireStatus', QuestionnaireSubmission::STATUS_EXPIRED);
+                        } elseif ($member->getIsAccreditationAuthority()) {
+                            $data = QuestionnaireSubmission::get()->filter([
+                                'QuestionnaireStatus' => [
+                                  QuestionnaireSubmission::STATUS_AWAITING_CERTIFICATION_AND_ACCREDITATION,
+                                  QuestionnaireSubmission::STATUS_AWAITING_ACCREDITATION
+                                ],
+                                'AccreditationAuthorityApprovalStatus' => QuestionnaireSubmission::STATUS_PENDING
                             ])->exclude('QuestionnaireStatus', QuestionnaireSubmission::STATUS_EXPIRED);
                         } else {
                             // @todo : We might need to change this logic in future for Story:-
@@ -953,6 +1130,14 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         $this->updateQuestionnaireOnApproveByGroupMember($scaffolder);
         $this->updateQuestionnaireOnDenyByGroupMember($scaffolder);
         $this->addCollaborator($scaffolder);
+
+        // Grant/Deny certification
+        $this->updateQuestionnaireStatusForGrantCertification($scaffolder);
+        $this->updateQuestionnaireStatusForDenyCertification($scaffolder);
+
+        // Issue/Deny Accreditation
+        $this->updateQuestionnaireStatusForIssueAccreditation($scaffolder);
+        $this->updateQuestionnaireStatusForDenyAccreditation($scaffolder);
 
         return $scaffolder;
     }
@@ -1720,6 +1905,282 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
+     * this api will call when certification authority group member will click on grant button
+     *
+     * @param SchemaScaffolder $scaffolder SchemaScaffolder
+     *
+     * @return void
+     */
+    public function updateQuestionnaireStatusForGrantCertification(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('grantCertification', QuestionnaireSubmission::class)
+            ->addArgs([
+                'ID' => 'ID!'
+            ])
+            ->setResolver(new class implements ResolverInterface {
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws Exception
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    QuestionnaireValidation::is_user_logged_in();
+
+                    $questionnaireSubmission =
+                        QuestionnaireSubmission::validate_before_updating_questionnaire_submission($args['ID']);
+
+                    $member = Security::getCurrentUser();
+                    $accessDetail = $questionnaireSubmission->doesCurrentUserHasAccessToApproveDeny($member);
+
+                    if (!$accessDetail['hasAccess'] || !$accessDetail['group']) {
+                        throw new Exception($accessDetail['message']);
+                    }
+
+                    // update Certification Authority member details
+                    if ($accessDetail['group'] == GroupExtension::certification_authority_group()->Code) {
+                        // update Certification Authority member details
+                        $questionnaireSubmission->updateCertificationAuthorityDetail($member, QuestionnaireSubmission::STATUS_APPROVED);
+
+                        // update questionnaire status
+                        $questionnaireSubmission->updateQuestionnaireSubmissionStatusForCertificationAndAccreditation();
+
+                        $questionnaireSubmission->write();
+                    }
+
+                    return $questionnaireSubmission;
+                }
+            })
+            ->end();
+    }
+
+    /**
+     *  this api will call when certification authority group member will click on deny button
+     *
+     * @param SchemaScaffolder $scaffolder SchemaScaffolder
+     *
+     * @return void
+     */
+    public function updateQuestionnaireStatusForDenyCertification(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('denyCertification', QuestionnaireSubmission::class)
+            ->addArgs([
+                'ID' => 'ID!'
+            ])
+            ->setResolver(new class implements ResolverInterface {
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws Exception
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    QuestionnaireValidation::is_user_logged_in();
+
+                    $questionnaireSubmission =
+                        QuestionnaireSubmission::validate_before_updating_questionnaire_submission($args['ID']);
+
+                    $member = Security::getCurrentUser();
+                    $accessDetail = $questionnaireSubmission->doesCurrentUserHasAccessToApproveDeny($member);
+
+                    if (!$accessDetail['hasAccess'] || !$accessDetail['group']) {
+                        throw new Exception($accessDetail['message']);
+                    }
+
+                    // update Certification Authority member details
+                    if ($accessDetail['group'] == GroupExtension::certification_authority_group()->Code) {
+                        // update Certification Authority member details
+                        $questionnaireSubmission->updateCertificationAuthorityDetail($member, QuestionnaireSubmission::STATUS_DENIED);
+
+                        // update questionnaire status
+                        $questionnaireSubmission->updateQuestionnaireSubmissionStatusForCertificationAndAccreditation();
+
+                        $questionnaireSubmission->write();
+                    }
+
+                    return $questionnaireSubmission;
+                }
+            })
+            ->end();
+    }
+
+    /**
+     *  this api will call when accreditation authority group member will click on issue button
+     *
+     * @param SchemaScaffolder $scaffolder SchemaScaffolder
+     *
+     * @return void
+     */
+    public function updateQuestionnaireStatusForIssueAccreditation(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('issueAccreditation', QuestionnaireSubmission::class)
+            ->addArgs([
+                'ID' => 'ID!'
+            ])
+            ->setResolver(new class implements ResolverInterface {
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws Exception
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    QuestionnaireValidation::is_user_logged_in();
+
+                    $questionnaireSubmission =
+                        QuestionnaireSubmission::validate_before_updating_questionnaire_submission($args['ID']);
+
+                    $member = Security::getCurrentUser();
+                    $accessDetail = $questionnaireSubmission->doesCurrentUserHasAccessToApproveDeny($member);
+
+                    if (!$accessDetail['hasAccess'] || !$accessDetail['group']) {
+                        throw new Exception($accessDetail['message']);
+                    }
+
+                    // update Certification Authority member details
+                    if ($accessDetail['group'] == GroupExtension::accreditation_authority_group()->Code) {
+                        // update Accreditation Authority member details
+                        $questionnaireSubmission->updateAccreditationAuthorityDetail($member, QuestionnaireSubmission::STATUS_APPROVED);
+
+                        // update questionnaire status
+                        $questionnaireSubmission->updateQuestionnaireSubmissionStatusForCertificationAndAccreditation();
+
+                        $questionnaireSubmission->write();
+                    }
+
+                    return $questionnaireSubmission;
+                }
+            })
+            ->end();
+    }
+
+    /**
+     *  this api will call when accreditation authority group member will click on deny button
+     *
+     * @param SchemaScaffolder $scaffolder SchemaScaffolder
+     *
+     * @return void
+     */
+    public function updateQuestionnaireStatusForDenyAccreditation(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('denyAccreditation', QuestionnaireSubmission::class)
+            ->addArgs([
+                'ID' => 'ID!'
+            ])
+            ->setResolver(new class implements ResolverInterface {
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws Exception
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    QuestionnaireValidation::is_user_logged_in();
+
+                    $questionnaireSubmission =
+                        QuestionnaireSubmission::validate_before_updating_questionnaire_submission($args['ID']);
+
+                    $member = Security::getCurrentUser();
+                    $accessDetail = $questionnaireSubmission->doesCurrentUserHasAccessToApproveDeny($member);
+
+                    if (!$accessDetail['hasAccess'] || !$accessDetail['group']) {
+                        throw new Exception($accessDetail['message']);
+                    }
+
+                    // update Certification Authority member details
+                    if ($accessDetail['group'] == GroupExtension::accreditation_authority_group()->Code) {
+                        // update Accreditation Authority member details
+                        $questionnaireSubmission->updateAccreditationAuthorityDetail($member, QuestionnaireSubmission::STATUS_DENIED);
+
+                        // update questionnaire status
+                        $questionnaireSubmission->updateQuestionnaireSubmissionStatusForCertificationAndAccreditation();
+
+                        $questionnaireSubmission->write();
+                    }
+
+                    return $questionnaireSubmission;
+                }
+            })
+            ->end();
+    }
+
+    /**
+     * update questionnaire status if grant/deny certification or issue/deny accreditation
+     *
+     * @return void
+     */
+    public function updateQuestionnaireSubmissionStatusForCertificationAndAccreditation()
+    {
+        // if questionnaire status STATUS_AWAITING_CERTIFICATION_AND_ACCREDITATION
+        if ($this->QuestionnaireStatus == self::STATUS_AWAITING_CERTIFICATION_AND_ACCREDITATION) {
+
+            if ($this->CertificationAuthorityApprovalStatus == self::STATUS_PENDING) {
+                $this->QuestionnaireStatus =  self::STATUS_AWAITING_CERTIFICATION;
+            }
+
+            if ($this->AccreditationAuthorityApprovalStatus == self::STATUS_PENDING) {
+                $this->QuestionnaireStatus = self::STATUS_AWAITING_ACCREDITATION;
+            }
+        } else if ($this->QuestionnaireStatus == self::STATUS_AWAITING_CERTIFICATION ||
+            $this->QuestionnaireStatus == self::STATUS_AWAITING_ACCREDITATION) {
+
+            // if both status is approved then set questionnaire status as approved
+            if ($this->CertificationAuthorityApprovalStatus == self::STATUS_APPROVED &&
+                $this->AccreditationAuthorityApprovalStatus == self::STATUS_APPROVED) {
+                $this->QuestionnaireStatus = self::STATUS_APPROVED;
+
+                // send approved email notification to the user (submitter)
+                $queuedJobService = QueuedJobService::create();
+                $queuedJobService->queueJob(
+                    new SendApprovedNotificationEmailJob($this),
+                    date('Y-m-d H:i:s', time() + 30)
+                );
+            }
+
+            // if any one status is denied then set questionnaire status as denied
+            if ($this->CertificationAuthorityApprovalStatus == self::STATUS_DENIED ||
+                $this->AccreditationAuthorityApprovalStatus == self::STATUS_DENIED) {
+                $this->QuestionnaireStatus = self::STATUS_DENIED;
+
+                // send denied email notification to the user (submitter)
+                $queuedJobService = QueuedJobService::create();
+                $queuedJobService->queueJob(
+                    new SendDeniedNotificationEmailJob($this),
+                    date('Y-m-d H:i:s', time() + 30)
+                );
+            }
+        }
+    }
+
+    /**
      * this api will call if only business owner will click on Deny button
      *
      * @param SchemaScaffolder $scaffolder SchemaScaffolder
@@ -2277,7 +2738,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     */
     public function updateCisoDetail($member = null, $status = null)
     {
-        $this->CisoApprover = $member->ID;
+        $this->CisoApproverID = $member->ID;
         $this->CisoApprovalStatus = $status;
         $this->CisoApprovalStatusUpdateDate = date('Y-m-d H:i:s');
 
@@ -2287,6 +2748,50 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
 
         if (gethostname()) {
             $this->CisoApproverMachineName = Convert::raw2sql(gethostname());
+        }
+    }
+
+    /**
+    * update approver details for group Certification Authority
+    *
+    * @param DataObject $member member
+    * @param string     $status status
+    * @return void
+    */
+    public function updateCertificationAuthorityDetail($member = null, $status = null)
+    {
+        $this->CertificationAuthorityApproverID = $member->ID;
+        $this->CertificationAuthorityApprovalStatus = $status;
+        $this->CertificationAuthorityApprovalStatusUpdateDate = date('Y-m-d H:i:s');
+
+        if ($_SERVER['REMOTE_ADDR']) {
+            $this->CertificationAuthorityApproverIPAddress = Convert::raw2sql($_SERVER['REMOTE_ADDR']);
+        }
+
+        if (gethostname()) {
+            $this->CertificationAuthorityApproverMachineName = Convert::raw2sql(gethostname());
+        }
+    }
+
+    /**
+    * update approver details for group Accreditation Authority
+    *
+    * @param DataObject $member member
+    * @param string     $status status
+    * @return void
+    */
+    public function updateAccreditationAuthorityDetail($member = null, $status = null)
+    {
+        $this->AccreditationAuthorityApproverID = $member->ID;
+        $this->AccreditationAuthorityApprovalStatus = $status;
+        $this->AccreditationAuthorityApprovalStatusUpdateDate = date('Y-m-d H:i:s');
+
+        if ($_SERVER['REMOTE_ADDR']) {
+            $this->AccreditationAuthorityApproverIPAddress = Convert::raw2sql($_SERVER['REMOTE_ADDR']);
+        }
+
+        if (gethostname()) {
+            $this->AccreditationAuthorityApproverMachineName = Convert::raw2sql(gethostname());
         }
     }
 
@@ -2651,10 +3156,30 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         }
 
         // check access details for CISO
-        if ($this->isWaitingForApproval() ||
+        if ($member->getIsCiso() && (
+            $this->isWaitingForApproval() ||
+            $this->isAwaitingCertificationAndAccreditation() ||
+            $this->isAwaitingCertification() ||
+            $this->isAwaitingAccreditation() ||
             $this->isApproved() ||
-            $this->isDenied()) {
+            $this->isDenied())) {
             return $this->getCISOAccessDetail($member);
+        }
+
+        //check access details for Certification Authority
+        if ($member->getIsCertificationAuthority() && (
+            $this->isAwaitingCertificationAndAccreditation() ||
+            $this->isAwaitingCertification()
+        )) {
+            return $this->getCertificationAuthorityAccessDetail($member);
+        }
+
+        // check access details for Accreditation Authority
+        if ($member->getIsAccreditationAuthority() && (
+            $this->isAwaitingCertificationAndAccreditation() ||
+            $this->isAwaitingAccreditation()
+        )) {
+            return $this->getAccreditationAuthorityAccessDetail($member);
         }
 
         return [
@@ -2778,10 +3303,100 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             ];
         }
 
-        // default acess details
+        // default access details
         return [
             "hasAccess" => false,
             "message" => 'Sorry, there is some problem for CISO Group Approval.',
+            "group" => $group
+        ];
+    }
+
+    /**
+    * get access details for Certification Authority member
+    *
+    * @param DataObject $member member
+    * @return array
+    */
+    public function getCertificationAuthorityAccessDetail($member)
+    {
+        $group = GroupExtension::certification_authority_group()->Code;
+
+        // if member is not belongs to Certification Authority group
+        if (!$member->getIsCertificationAuthority()) {
+            return [
+              "hasAccess" => false,
+              "message" => 'Sorry, user is not belongs to certification authority group.',
+              "group" => $group
+            ];
+        }
+
+        // if approval is pending for Certification Authority
+        if ($this->isCertificationAuthorityApprovalPending()) {
+            return [
+                "hasAccess" => true,
+                "message" => 'Yes, current user has access to approve and deny.',
+                "group" => $group
+            ];
+        }
+
+        // if already approved or denied by Certification Authority group member
+        if ($this->isApprovedByCertificationAuthority() || $this->isDeniedByCertificationAuthority()) {
+            return [
+                "hasAccess" => false,
+                "message" => 'Sorry, questionnaire is already approved and denied by certification authority group member.',
+                "group" => $group
+            ];
+        }
+
+        // default access details
+        return [
+            "hasAccess" => false,
+            "message" => 'Sorry, there is some problem for certification Group Approval.',
+            "group" => $group
+        ];
+    }
+
+    /**
+    * get access details for Accreditation Authority member
+    *
+    * @param DataObject $member member
+    * @return array
+    */
+    public function getAccreditationAuthorityAccessDetail($member)
+    {
+        $group = GroupExtension::accreditation_authority_group()->Code;
+
+        // if member is not belongs to Accreditation Authority group
+        if (!$member->getIsAccreditationAuthority()) {
+            return [
+              "hasAccess" => false,
+              "message" => 'Sorry, user is not belongs to certification authority group.',
+              "group" => $group
+            ];
+        }
+
+        // if approval is pending for Accreditation Authority
+        if ($this->isAccreditationAuthorityApprovalPending()) {
+            return [
+                "hasAccess" => true,
+                "message" => 'Yes, current user has access to approve and deny.',
+                "group" => $group
+            ];
+        }
+
+        // if already approved or denied by Accreditation Authority group member
+        if ($this->isApprovedByAccreditationAuthority() || $this->isDeniedByAccreditationAuthority()) {
+            return [
+                "hasAccess" => false,
+                "message" => 'Sorry, questionnaire is already approved and denied by certification authority group member.',
+                "group" => $group
+            ];
+        }
+
+        // default access details
+        return [
+            "hasAccess" => false,
+            "message" => 'Sorry, there is some problem for certification Group Approval.',
             "group" => $group
         ];
     }
@@ -2956,6 +3571,9 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         return false;
     }
 
+    /**
+     * @return string
+     */
     public function getBusinessOwnerAcknowledgementText()
     {
         if (Director::is_cli()) {
@@ -2971,6 +3589,45 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         return "";
     }
 
+    /**
+     * @return string
+     */
+    public function getCertificationAuthorityAcknowledgementText()
+    {
+        if (Director::is_cli()) {
+            return "";
+        }
+
+        $config = SiteConfig::current_site_config();
+
+        if ($config && $config->CertificationAuthorityAcknowledgementText) {
+            return $config->CertificationAuthorityAcknowledgementText;
+        }
+
+        return "";
+    }
+
+    /**
+     * @return string
+     */
+    public function getAccreditationAuthorityAcknowledgementText()
+    {
+        if (Director::is_cli()) {
+            return "";
+        }
+
+        $config = SiteConfig::current_site_config();
+
+        if ($config && $config->AccreditationAuthorityAcknowledgementText) {
+            return $config->AccreditationAuthorityAcknowledgementText;
+        }
+
+        return "";
+    }
+
+    /**
+     * @return boolean
+     */
     public function getIsCertificationAndAccreditationTaskExists()
     {
         return $this->isTaskTypeExists('certification and accreditation');
