@@ -67,6 +67,14 @@ class ServiceInventory extends DataObject implements PermissionProvider
     ];
 
     /**
+     * @var array
+     */
+    private static $searchable_fields = [
+        'ServiceName',
+        'BusinessOwner',
+    ];
+
+    /**
      * @return string
      */
     public function getPrettifyOperationalStatus()

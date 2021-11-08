@@ -73,4 +73,33 @@ class ServiceInventoryAdmin extends ModelAdmin
 
         return $form;
     }
+
+    /**
+     *
+     * @return \SilverStripe\ORM\Datalist
+     */
+    public function getList()
+    {
+        $list = parent::getList();
+
+        // access all the search parameters
+        $searchParams = $this->getRequest()->requestVar('filter');
+
+        if (isset($searchParams)) {
+            // get the input in the DefaultSearch hidden field
+            $defaultSearch = array_column($searchParams, 'DefaultSearch');
+
+            // apply search filters to list if input is in the searchbox
+            if ($defaultSearch) {
+                $searchResults = $list->filterAny([
+                    'ServiceName:PartialMatch' => $defaultSearch,
+                    'BusinessOwner:PartialMatch' => $defaultSearch,
+                ]);
+
+                return $searchResults;
+            }
+        }
+
+        return $list;
+    }
 }
