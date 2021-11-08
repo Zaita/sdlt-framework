@@ -91,7 +91,8 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'IsStakeholdersSelected' => "Enum('No,Yes', 'No')",
         'RiskCalculation' => "Enum('NztaApproxRepresentation,Maximum')",
         'ComponentTarget' => "Enum('JIRA Cloud,Local')", // when task type is SRA
-        'HideRiskWeightsAndScore' => 'Boolean' // when task type is risk questionnaire
+        'HideRiskWeightsAndScore' => 'Boolean', // when task type is risk questionnaire
+        'MessageForSubmitterAndCollborator' => 'HTMLText' // display message for C&A memo task
     ];
 
     /**
@@ -107,6 +108,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
      */
     private static $has_one = [
         'ApprovalGroup' => Group::class,
+        'CertificationAndAccreditationGroup' => Group::class, // group to edit/complete C&A memo task
         'StakeholdersGroup' => Group::class,
         //this is a task of type "risk questionnaire" to grab question data from
         //it must be filtered to RiskQuestionnaires only, and is required
@@ -251,35 +253,57 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             ->end()
         );
 
-        $fields->addFieldsToTab(
-            'Root.TaskApproval',
-            [
-                $fields
-                    ->dataFieldByName('IsApprovalRequired')
-                    ->setTitle('Always require approval'),
-                $fields
-                    ->dataFieldByName('ApprovalGroupID')
-                    ->setDescription('Please select the task approval group.'),
-                OptionsetField::create(
-                    'IsStakeholdersSelected',
-                    'Email Stakeholders when task is ready for review (Complete or Awaiting Approval)?',
-                    $this->dbObject('IsStakeholdersSelected')->enumValues()
-                )->setDescription(
-                    sprintf(
-                        '<p>If this is not set, emails will not'
-                        . ' be sent to the selected stakeholders group.</p>'
-                        . '<p>Please click on the <a href="%s"> Email Format Link </a>'
-                        . 'to add and edit the email format.</p>',
-                        $this->getTaskEmailLink()
-                    )
-                ),
-                $fields
-                    ->dataFieldByName('StakeholdersGroupID')
-                    ->displayIf('IsStakeholdersSelected')
-                    ->isEqualTo('Yes')
-                    ->end()
-            ]
-        );
+        if (!$this->isCertificationAndAccreditationType()) {
+            $fields->addFieldsToTab(
+                'Root.TaskApproval',
+                [
+                    $fields
+                        ->dataFieldByName('IsApprovalRequired')
+                        ->setTitle('Always require approval'),
+                    $fields
+                        ->dataFieldByName('ApprovalGroupID')
+                        ->setDescription('Please select the task approval group.'),
+                    OptionsetField::create(
+                        'IsStakeholdersSelected',
+                        'Email Stakeholders when task is ready for review (Complete or Awaiting Approval)?',
+                        $this->dbObject('IsStakeholdersSelected')->enumValues()
+                    )->setDescription(
+                        sprintf(
+                            '<p>If this is not set, emails will not'
+                            . ' be sent to the selected stakeholders group.</p>'
+                            . '<p>Please click on the <a href="%s"> Email Format Link </a>'
+                            . 'to add and edit the email format.</p>',
+                            $this->getTaskEmailLink()
+                        )
+                    ),
+                    $fields
+                        ->dataFieldByName('StakeholdersGroupID')
+                        ->displayIf('IsStakeholdersSelected')
+                        ->isEqualTo('Yes')
+                        ->end()
+                ]
+            );
+        } else {
+            $fields->removeByName([
+                'IsApprovalRequired',
+                'ApprovalGroupID',
+                'IsStakeholdersSelected',
+                'StakeholdersGroupID'
+            ]);
+
+            $fields->addFieldsToTab(
+                'Root.CertificationAndAccreditationTaskDetails',
+                [
+                    $fields
+                        ->dataFieldByName('CertificationAndAccreditationGroupID')
+                        ->setDescription('Please select a group to edit/complete certification and accreditation task.'),
+                    $fields
+                        ->dataFieldByName('MessageForSubmitterAndCollborator')
+                        ->setDescription('A message that will be displayed to submitters/collaborators when they try to start the task.'),
+                ]
+            );
+        }
+
 
         // add used on tab for task
         if ($this->getUsedOnData()->Count()) {
@@ -620,6 +644,14 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     public function isSRAType() : bool
     {
         return $this->TaskType === 'security risk assessment';
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isCertificationAndAccreditationType() : bool
+    {
+        return $this->TaskType === 'certification and accreditation';
     }
 
     /**
