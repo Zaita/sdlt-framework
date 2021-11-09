@@ -19,6 +19,7 @@ use SilverStripe\Forms\GridField\GridFieldImportButton;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
 use SilverStripe\Forms\GridField\GridFieldPrintButton;
 use SilverStripe\ORM\HasManyList;
+use SilverStripe\Forms\GridField\GridFieldSortableHeader;
 
 /**
  * Class ServiceInventoryAdmin
@@ -61,6 +62,13 @@ class ServiceInventoryAdmin extends ModelAdmin
         $config->removeComponent($config->getComponentByType(GridFieldPrintButton::class));
         $config->removeComponent($config->getComponentByType(GridFieldImportButton::class));
         $config->removeComponent($config->getComponentByType(GridFieldExportButton::class));
+
+        $sortableHeader = $config->getComponentByType(GridFieldSortableHeader::class);
+        $sortableHeader->setFieldSorting([
+            'getPrettifyOperationalStatus' => 'OperationalStatus',
+            'IssueDate' => 'Created',
+        ]);
+
         $gridField->setConfig($config);
 
         return $form;
