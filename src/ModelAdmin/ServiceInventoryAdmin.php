@@ -12,8 +12,10 @@
 
 namespace NZTA\SDLT\ModelAdmin;
 
+use NZTA\SDLT\Form\GridField\GridFieldImportJsonButton;
 use NZTA\SDLT\Model\AccreditationMemo;
 use NZTA\SDLT\Model\ServiceInventory;
+use NZTA\SDLT\Traits\SDLTAdminCommon;
 use SilverStripe\Admin\ModelAdmin;
 use SilverStripe\Forms\GridField\GridFieldImportButton;
 use SilverStripe\Forms\GridField\GridFieldExportButton;
@@ -27,6 +29,8 @@ use SilverStripe\Forms\GridField\GridFieldSortableHeader;
  */
 class ServiceInventoryAdmin extends ModelAdmin
 {
+    use SDLTAdminCommon;
+
     /**
      * @var string
      */
@@ -60,14 +64,28 @@ class ServiceInventoryAdmin extends ModelAdmin
         $gridField = $form->Fields()->fieldByName($gridFieldName);
         $config = $gridField->getConfig();
         $config->removeComponent($config->getComponentByType(GridFieldPrintButton::class));
-        $config->removeComponent($config->getComponentByType(GridFieldImportButton::class));
         $config->removeComponent($config->getComponentByType(GridFieldExportButton::class));
+
+        if (!$this->modelClass::config()->get('show_import_button')) {
+            $config->removeComponent($config->getComponentByType(GridFieldImportButton::class));
+        }
 
         $sortableHeader = $config->getComponentByType(GridFieldSortableHeader::class);
         $sortableHeader->setFieldSorting([
             'getPrettifyOperationalStatus' => 'OperationalStatus',
             'IssueDate' => 'Created',
         ]);
+
+        // show json import button only for the model has "canImport" method
+        // and user has permission to import (set in CMS with user group permission)
+        if (singleton($this->modelClass)->hasMethod('canImport') &&
+            singleton($this->modelClass)->canImport()) {
+            $config->addComponent(
+                GridFieldImportJsonButton::create('buttons-before-left')
+                ->setImportJsonForm($this->ImportJsonForm())
+                ->setModalTitle('Import from Json')
+            );
+        }
 
         $gridField->setConfig($config);
 

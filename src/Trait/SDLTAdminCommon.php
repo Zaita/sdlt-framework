@@ -50,6 +50,13 @@ trait SDLTAdminCommon
     private static $json_schema_security_component = '/src/ImportJsonSchema/Schema/SecurityComponentSchema.json';
 
     /**
+    * Default location of service inventory schema, allow dev to override for alternative schema
+    *
+    * @var string
+    */
+    private static $json_schema_service_inventory = '/src/ImportJsonSchema/Schema/ServiceInventorySchema.json';
+
+    /**
      * @var array
      */
     private static $allowed_actions = array(
@@ -232,6 +239,10 @@ trait SDLTAdminCommon
                 break;
             case 'Security Component':
                 $pathToSchema = $sdltFrameworkPath . $this->config()->json_schema_security_component;
+                $schemaJson = file_get_contents($pathToSchema);
+                break;
+            case 'Service Inventory':
+                $pathToSchema = $sdltFrameworkPath . $this->config()->json_schema_service_inventory;
                 $schemaJson = file_get_contents($pathToSchema);
                 break;
         }
