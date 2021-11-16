@@ -38,6 +38,11 @@ class ServiceInventory extends DataObject implements PermissionProvider
     private static $table_name = 'ServiceInventory';
 
     /**
+     * @var boolean
+     */
+    private static $show_overwrite_for_json_import = true;
+
+    /**
      * @var array
      */
     private static $db = [
@@ -382,4 +387,58 @@ class ServiceInventory extends DataObject implements PermissionProvider
 
         return $fields;
     }
+
+    /**
+     * create service inventory from json import
+     * @param object  $incomingJson service inventory json object
+     * @param boolean $overwrite    overwrite the existing service inventory
+     * @return void
+     */
+    public static function create_record_from_json($incomingJson, $overwrite = false)
+    {
+        $serviceInventoriesJson = $incomingJson->service;
+        $serviceInventoryObj = '';
+
+        foreach ($serviceInventoriesJson as $serviceInventoryJson) {
+            $serviceInventoryObj = self::get_by_name($serviceInventoryJson->service_name);
+            // if service is existing then update business owner
+            if ($overwrite) {
+                if (!empty($serviceInventoryObj)) {
+                    $serviceInventoryObj->BusinessOwner = $serviceInventoryJson->business_owner;
+                }
+            }
+
+            // if service obj doesn't exist with the same name then create a new object
+            if (empty($serviceInventoryObj)) {
+                $serviceInventoryObj = self::create();
+                $serviceInventoryObj->ServiceName = $serviceInventoryJson->service_name;
+                $serviceInventoryObj->BusinessOwner = $serviceInventoryJson->business_owner;
+
+                // update value of OperationalStatus based on if it was included in json
+                if (property_exists($serviceInventoryJson, "operational_status")) {
+                    $serviceInventoryObj->OperationalStatus = $serviceInventoryJson->operational_status;
+                } else {
+                    $serviceInventoryObj->OperationalStatus = "live";
+                }
+            }
+
+            $serviceInventoryObj->write();
+        }
+    }
+
+    /**
+     * get service inventory by name
+     *
+     * @param string $serviceName service inventory name
+     * @return object|null
+     */
+    public static function get_by_name($serviceName)
+    {
+        $service = self::get()
+            ->filter(['ServiceName' => $serviceName])
+            ->first();
+
+        return $service;
+    }
+
 }
