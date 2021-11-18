@@ -23,6 +23,7 @@ use NZTA\SDLT\Model\RiskRating;
 use NZTA\SDLT\Model\TaskSubmission;
 use NZTA\SDLT\Traits\SDLTModelPermissions;
 use NZTA\SDLT\Traits\SDLTRiskCalc;
+use NZTA\SDLT\Traits\CertificationAndAccreditationTaskQuestions;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
@@ -68,6 +69,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
 {
     use SDLTModelPermissions;
     use SDLTRiskCalc;
+    use CertificationAndAccreditationTaskQuestions;
 
     /**
      * @var string
@@ -92,7 +94,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'RiskCalculation' => "Enum('NztaApproxRepresentation,Maximum')",
         'ComponentTarget' => "Enum('JIRA Cloud,Local')", // when task type is SRA
         'HideRiskWeightsAndScore' => 'Boolean', // when task type is risk questionnaire
-        'MessageForSubmitterAndCollborator' => 'HTMLText' // display message for C&A memo task
+        'PreventMessage' => 'HTMLText', // display message for C&A memo task
     ];
 
     /**
@@ -298,7 +300,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                         ->dataFieldByName('CertificationAndAccreditationGroupID')
                         ->setDescription('Please select a group to edit/complete certification and accreditation task.'),
                     $fields
-                        ->dataFieldByName('MessageForSubmitterAndCollborator')
+                        ->dataFieldByName('PreventMessage')
                         ->setDescription('A message that will be displayed to submitters/collaborators when they try to start the task.'),
                 ]
             );
@@ -692,6 +694,21 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         parent::onBeforeWrite();
 
         $this->auditService->audit($this);
+    }
+
+    /**
+     * Deal with post-write processes.
+     *
+     * @return void
+     */
+    public function onAfterWrite()
+    {
+        parent::onAfterWrite();
+
+        // write default question if task type is "certification and accreditation"
+        if (!$this->Questions()->count() && $this->isCertificationAndAccreditationType()) {
+            $this->questionOne();
+        }
     }
 
     /**
