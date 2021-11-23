@@ -25,12 +25,13 @@ use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
 use SilverStripe\Security\Security;
 use SilverStripe\ORM\HasManyList;
-
+use SilverStripe\GraphQL\Scaffolding\Interfaces\ScaffoldingProvider;
+use SilverStripe\GraphQL\Scaffolding\Scaffolders\SchemaScaffolder;
 /**
  * This service record will be used apart of the ServiceInventory
  * ModelAdmin and Accreditation Memo
  */
-class ServiceInventory extends DataObject implements PermissionProvider
+class ServiceInventory extends DataObject implements PermissionProvider, ScaffoldingProvider
 {
     /**
      * @var string
@@ -439,6 +440,26 @@ class ServiceInventory extends DataObject implements PermissionProvider
             ->first();
 
         return $service;
+    }
+
+    /**
+     * @param SchemaScaffolder $scaffolder Scaffolder
+     * @return SchemaScaffolder
+     */
+    public function provideGraphQLScaffolding(SchemaScaffolder $scaffolder)
+    {
+        // Provide entity type
+        $scaffolder
+            ->type(serviceinventory::class)
+            ->addFields([
+                'ID',
+                'ServiceName',
+            ])
+            ->operation(SchemaScaffolder::READ)
+            ->setName('readServiceInventory')
+            ->setUsePagination(false);
+
+        return $scaffolder;
     }
 
 }
