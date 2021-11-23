@@ -526,6 +526,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'HideWeightsAndScore',
                 'CanUpdateTask',
                 'IsTaskCollborator',
+                'TimeToReview',
+                'TimeToComplete',
+                'CanTaskCreateNewTasks',
                 'InformationClassificationTaskResult',
                 'RiskProfileData'
             ]);
@@ -2545,44 +2548,46 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
-     * For C&A memo task return the result for information classification task result
+     * @return string
+     */
+    public function getTimetoComplete()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->TimeToComplete;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTimetoReview()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->TimeToReview;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getCanTaskCreateNewTasks()
+    {
+        return $this->Task()->getCanTaskCreateNewTasks();
+    }
+
+    /**
+     * return risk profile data for question 4 for C&A memo task
      *
      * @return string
      */
-    public function getInformationClassificationTaskResult()
-    {
-        $result = '';
-        $siblingTasks = $this->getSiblingTaskSubmissions();
-
-        if ($siblingTasks && $siblingTasks->Count()) {
-            foreach ($siblingTasks as $task) {
-                if ($task->Task()->ID === $this->Task()->InformationClassificationTask()->ID &&
-                    ($task->Status == self::STATUS_COMPLETE || $task->Status == self::STATUS_APPROVED) &&
-                    $task->Result) {
-                    $resultArray = explode(":", $task->Result);
-                    $taskResult = isset($resultArray[1]) ?
-                        trim($resultArray[1]): trim($resultArray[0]);
-
-                    $optionArray = [
-                        'unclassified',
-                        'in-confidence',
-                        'sensitive',
-                        'restricted',
-                        'confidential',
-                        'secret',
-                        'top-secret'
-                    ];
-
-                    if ($taskResult && in_array(strtolower($taskResult), $optionArray)) {
-                        $result = json_encode(['value' => strtolower($taskResult), 'label' => $taskResult]);
-                    }
-                }
-            }
-        }
-
-        return $result;
-    }
-
     public function getRiskProfileData()
     {
         // check sibling sra tasks
@@ -2631,4 +2636,43 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
         return json_encode($finalResult);
     }
+
+    /**
+     * For C&A memo task return the result for information classification task result
+     *
+     * @return string
+     */
+   public function getInformationClassificationTaskResult()
+   {
+       $result = '';
+       $siblingTasks = $this->getSiblingTaskSubmissions();
+
+       if ($siblingTasks && $siblingTasks->Count()) {
+           foreach ($siblingTasks as $task) {
+               if ($task->Task()->ID === $this->Task()->InformationClassificationTask()->ID &&
+                   ($task->Status == self::STATUS_COMPLETE || $task->Status == self::STATUS_APPROVED) &&
+                   $task->Result) {
+                   $resultArray = explode(":", $task->Result);
+                   $taskResult = isset($resultArray[1]) ?
+                       trim($resultArray[1]): trim($resultArray[0]);
+
+                   $optionArray = [
+                       'unclassified',
+                       'in-confidence',
+                       'sensitive',
+                       'restricted',
+                       'confidential',
+                       'secret',
+                       'top-secret'
+                   ];
+
+                   if ($taskResult && in_array(strtolower($taskResult), $optionArray)) {
+                       $result = json_encode(['value' => strtolower($taskResult), 'label' => $taskResult]);
+                   }
+               }
+           }
+       }
+
+       return $result;
+   }
 }
