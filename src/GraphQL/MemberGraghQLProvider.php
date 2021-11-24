@@ -43,7 +43,7 @@ class MemberGraphQLProvider implements ScaffoldingProvider
      */
     public function provideGraphQLScaffoldingForEntityType(SchemaScaffolder $scaffolder)
     {
-        // we have add this consition to resolve dev/build error for
+        // we have to add this consition to resolve dev/build error for
         // Siteconfig.SecurityArchitectGroupID field not found
         if (Director::is_cli()) {
             $fieldsNames = [];

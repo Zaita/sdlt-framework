@@ -705,9 +705,10 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     {
         parent::onAfterWrite();
 
-        // write default question if task type is "certification and accreditation"
+        // write default questions if task type is "certification and accreditation"
         if (!$this->Questions()->count() && $this->isCertificationAndAccreditationType()) {
             $this->questionOne();
+            $this->questionTwo();
         }
     }
 

@@ -46,7 +46,6 @@ trait CertificationAndAccreditationTaskQuestions
 
         if ($question->ID) {
             $inputField = AnswerInputField::create();
-
             $inputField->InputType = "rich text editor";
             $inputField->QuestionID = $question->ID;
             $inputField->write();
@@ -59,6 +58,20 @@ trait CertificationAndAccreditationTaskQuestions
     public function questionTwo()
     {
         // question two
-    }
+        $question = QUESTION::create();
 
+        $question->Title = "Service name";
+        $question->QuestionHeading = "Service name";
+        $question->Description = "Please specify the name of the service. If you can't find the service, please add it to the service inventory in the administration panel.";
+        $question->AnswerFieldType = 'input';
+        $question->TaskID = $this->ID;
+        $question->write();
+
+        if ($question->ID) {
+            $inputField = AnswerInputField::create();
+            $inputField->InputType = "service register";
+            $inputField->QuestionID = $question->ID;
+            $inputField->write();
+        }
+    }
 }
