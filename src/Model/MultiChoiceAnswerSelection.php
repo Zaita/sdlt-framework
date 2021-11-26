@@ -130,9 +130,9 @@ class MultiChoiceAnswerSelection extends DataObject
             'AnswerActionFieldID'
         ]);
         $fields->dataFieldByName('Label')
-                ->setDescription('This is the label for a single checkbox or radio selection.');
+                ->setDescription('This is the label for a single dropdown, checkbox or radio selection.');
         $fields->dataFieldByName('Value')
-                ->setDescription('This should be a <em>unique</em> value for a single checkbox or radio selection.');
+                ->setDescription('This should be a <em>unique</em> value for a single dropdown, checkbox or radio selection.');
 
         if ($this->isRiskType()) {
             // Allow inline-editing for the "Weight" value

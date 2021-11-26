@@ -22,9 +22,9 @@ use SilverStripe\ORM\ValidationResult;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\Form;
 use SilverStripe\Forms\CheckboxField;
-
-use NZTA\SDLT\Model\Question;
 use NZTA\SDLT\Model\AnswerInputField;
+use NZTA\SDLT\Model\Question;
+use NZTA\SDLT\Model\MultiChoiceAnswerSelection;
 
 trait CertificationAndAccreditationTaskQuestions
 {
@@ -72,6 +72,54 @@ trait CertificationAndAccreditationTaskQuestions
             $inputField->InputType = "service register";
             $inputField->QuestionID = $question->ID;
             $inputField->write();
+        }
+    }
+
+    /**
+     * @return void
+     */
+    public function questionThree()
+    {
+        // question three
+        $question = QUESTION::create();
+
+        $question->Title = "Information classification";
+        $question->QuestionHeading = "Information classification";
+        $question->Description = "Please select the Information classification for this change or project.
+            The following value has been populated from the 'Information Classification' task if one exists,
+            please override this if there is a legitimate reason to modify the classification.";
+        $question->AnswerFieldType = 'input';
+        $question->TaskID = $this->ID;
+        $question->write();
+
+        // add dropdown field
+        if ($question->ID) {
+            $inputField = AnswerInputField::create();
+            $inputField->InputType = "information classification";
+            $inputField->QuestionID = $question->ID;
+            $inputField->Required = true;
+            $inputField->write();
+
+            // add dropdown value
+            if ($inputField->ID) {
+                $resultArray = [
+                    'Unclassified',
+                    'In-Confidence',
+                    'Sensitive',
+                    'Restricted',
+                    'Confidential',
+                    'Secret',
+                    'Top-Secret'
+                ];
+
+                foreach ($resultArray as $result) {
+                    $optionObj = MultiChoiceAnswerSelection::create();
+                    $optionObj->Label = $result;
+                    $optionObj->Value = strtolower($result);
+                    $optionObj->AnswerInputFieldID = $inputField->ID;
+                    $optionObj->write();
+                }
+            }
         }
     }
 }
