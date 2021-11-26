@@ -525,7 +525,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'Created',
                 'HideWeightsAndScore',
                 'CanUpdateTask',
-                'IsTaskCollborator'
+                'IsTaskCollborator',
+                'InformationClassificationTaskResult'
             ]);
 
         $dataObjectScaffolder
@@ -2540,5 +2541,44 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 date('Y-m-d H:i:s', time() + 30)
             );
         }
+    }
+
+    /**
+     * For C&A memo task return the result for information classification task result
+     *
+     * @return string
+     */
+    public function getInformationClassificationTaskResult()
+    {
+        $result = '';
+        $siblingTasks = $this->getSiblingTaskSubmissions();
+
+        if ($siblingTasks && $siblingTasks->Count()) {
+            foreach ($siblingTasks as $task) {
+                if ($task->Task()->ID === $this->Task()->InformationClassificationTask()->ID &&
+                    ($task->Status == self::STATUS_COMPLETE || $task->Status == self::STATUS_APPROVED) &&
+                    $task->Result) {
+                    $resultArray = explode(":", $task->Result);
+                    $taskResult = isset($resultArray[1]) ?
+                        trim($resultArray[1]): trim($resultArray[0]);
+
+                    $optionArray = [
+                        'unclassified',
+                        'in-confidence',
+                        'sensitive',
+                        'restricted',
+                        'confidential',
+                        'secret',
+                        'top-secret'
+                    ];
+
+                    if ($taskResult && in_array(strtolower($taskResult), $optionArray)) {
+                        $result = json_encode(['value' => strtolower($taskResult), 'label' => $taskResult]);
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 }

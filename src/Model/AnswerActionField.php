@@ -150,7 +150,13 @@ class AnswerActionField extends DataObject implements ScaffoldingProvider
 
         $fields
             ->dataFieldByName('Result')
-            ->setDescription('The result will be used only if Questionnaire type is a task.');
+            ->setDescription(
+                'The result will be used only if Questionnaire type is a task.
+                If task is for the "Information Classification" then please use the preset
+                (Unclassified, In-Confidence, Sensitive, Restricted, Confidential, Secret, Top-Secret)
+                value for the result just because the same values used for the "information classification"
+                dropdown for the "Certification and accreditation memo" task.'
+            );
 
         $fields->addFieldsToTab(
             'Root.Main',

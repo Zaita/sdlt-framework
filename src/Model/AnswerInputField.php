@@ -56,7 +56,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
      */
     private static $db = [
         'Label' => 'Varchar(255)',
-        'InputType' => 'Enum("text, email, textarea, rich text editor, service register, product aspects, date, release date, url, multiple-choice: single selection, multiple-choice: multiple selection", "text")',
+        'InputType' => 'Enum("text, email, textarea, rich text editor, service register, information classification, dropdown, product aspects, date, release date, url, multiple-choice: single selection, multiple-choice: multiple selection", "text")',
         'Required' => 'Boolean',
         'MinLength' => 'Int',
         'MaxLength' => 'Int',
@@ -147,7 +147,9 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
                 'Root.Main',
                 Wrapper::create($blocksField)
                 ->hideUnless('InputType')
-                ->startsWith('multiple-choice')
+                ->group()
+                    ->orIf("InputType")->contains("multiple-choice")
+                    ->orIf("InputType")->contains("dropdown")
                 ->end()
             );
         }

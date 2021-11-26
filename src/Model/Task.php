@@ -112,9 +112,11 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'ApprovalGroup' => Group::class,
         'CertificationAndAccreditationGroup' => Group::class, // group to edit/complete C&A memo task
         'StakeholdersGroup' => Group::class,
-        //this is a task of type "risk questionnaire" to grab question data from
-        //it must be filtered to RiskQuestionnaires only, and is required
-        'RiskQuestionnaireDataSource' => Task::class
+        // this is a task of type "risk questionnaire" to grab question data from
+        // it must be filtered to RiskQuestionnaires only, and is required
+        'RiskQuestionnaireDataSource' => Task::class,
+        // in C&A memo task to get the result of task for question 3
+        'InformationClassificationTask' => Task::class
     ];
 
     /**
@@ -194,7 +196,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             'DefaultSecurityComponents',
             'Questionnaires',
             'AnswerActionFields',
-            'HideRiskWeightsAndScore'
+            'HideRiskWeightsAndScore',
         ]);
 
         $fields->insertAfter(
@@ -256,6 +258,12 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         );
 
         if (!$this->isCertificationAndAccreditationType()) {
+            $fields->removeByName([
+                'CertificationAndAccreditationGroupID',
+                'PreventMessage',
+                'InformationClassificationTaskID'
+            ]);
+
             $fields->addFieldsToTab(
                 'Root.TaskApproval',
                 [
@@ -299,6 +307,10 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                     $fields
                         ->dataFieldByName('CertificationAndAccreditationGroupID')
                         ->setDescription('Please select a group to edit/complete certification and accreditation task.'),
+                    $fields->dataFieldByName('InformationClassificationTaskID')
+                        ->setDescription('Please select the information and classification task.
+                            The result of this task will be used to set a default value of "information classification"
+                            field for the "Certification and Accreditation" task.'),
                     $fields
                         ->dataFieldByName('PreventMessage')
                         ->setDescription('A message that will be displayed to submitters/collaborators when they try to start the task.'),
@@ -709,6 +721,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         if (!$this->Questions()->count() && $this->isCertificationAndAccreditationType()) {
             $this->questionOne();
             $this->questionTwo();
+            $this->questionThree();
         }
     }
 
