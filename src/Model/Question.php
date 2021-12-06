@@ -57,7 +57,7 @@ class Question extends DataObject implements ScaffoldingProvider
         'Title' => 'Varchar(255)',
         'QuestionHeading' => 'Text',
         'Description' => 'HTMLText',
-        'AnswerFieldType' => 'Enum(array("input", "action"))',
+        'AnswerFieldType' => 'Enum(array("input", "action", "display"))',
         'SortOrder' => 'Int',
     ];
 
