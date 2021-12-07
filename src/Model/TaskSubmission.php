@@ -526,7 +526,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'HideWeightsAndScore',
                 'CanUpdateTask',
                 'IsTaskCollborator',
-                'InformationClassificationTaskResult'
+                'InformationClassificationTaskResult',
+                'RiskProfileData'
             ]);
 
         $dataObjectScaffolder
@@ -2580,5 +2581,54 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         }
 
         return $result;
+    }
+
+    public function getRiskProfileData()
+    {
+        // check sibling sra tasks
+        $siblingTaskSubmissions = $this->getSiblingTaskSubmissions();
+
+        $finalResult["message"] = "There are no digital security risk assessments to link against this Certification and Accreditation.";
+        $finalResult["isDisplayMessage"] = true;
+
+        if ($this->Task()->isCertificationAndAccreditationType() &&
+            $siblingTaskSubmissions && $siblingTaskSubmissions->Count()) {
+            foreach ($siblingTaskSubmissions as $taskSubmission) {
+
+                if ($taskSubmission->Task()->isSRAType() &&
+                    $taskSubmission->Status == self::STATUS_COMPLETE &&
+                    $taskSubmission->AnswerData)
+                {
+                    $result = json_decode($taskSubmission->AnswerData, true);
+                    $hasProductAspects = $result["hasProductAspects"];
+                    $calculatedSRAData = $result["calculatedSRAData"];
+                    $finalResult['hasProductAspects'] = $hasProductAspects;
+                    $finalResult["isDisplayMessage"] = false;
+
+                    if ($hasProductAspects) {
+                        foreach ($calculatedSRAData as $risk) {
+                            foreach ($risk["productAspects"] as $productAspect) {
+                                $productAspectName = $productAspect["productAspectName"];
+                                $riskresult["riskId"] = $risk["riskId"];
+                                $riskresult["riskName"] = $risk["riskName"];
+                                $riskresult["currentRiskRating"] = $productAspect["currentRiskRating"];
+                                $productAspectriskResult[$productAspectName][] = $riskresult;
+                            }
+                        }
+
+                        $finalResult["result"] = $productAspectriskResult;
+                    } else {
+                        foreach ($calculatedSRAData as $risk) {
+                            $riskresult["riskId"] = $risk["riskId"];
+                            $riskresult["riskName"] = $risk["riskName"];
+                            $riskresult["currentRiskRating"] = $risk["riskDetail"]["currentRiskRating"];
+                            $finalResult["result"][] = $riskresult;
+                        }
+                    }
+                }
+            }
+        }
+
+        return json_encode($finalResult);
     }
 }

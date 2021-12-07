@@ -122,4 +122,20 @@ trait CertificationAndAccreditationTaskQuestions
             }
         }
     }
+
+    /**
+     * @return void
+     */
+    public function questionFour()
+    {
+        $question = QUESTION::create();
+
+        $question->Title = "Risk Profile";
+        $question->QuestionHeading = "Risk Profile";
+        $question->Description = "The following is a pre-populated table with the
+        outcome of the security risk assessment task(s).";
+        $question->TaskID = $this->ID;
+        $question->AnswerFieldType = 'display';
+        $question->write();
+    }
 }

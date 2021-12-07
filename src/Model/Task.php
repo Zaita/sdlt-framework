@@ -722,6 +722,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             $this->questionOne();
             $this->questionTwo();
             $this->questionThree();
+            $this->questionFour();
         }
     }
 
