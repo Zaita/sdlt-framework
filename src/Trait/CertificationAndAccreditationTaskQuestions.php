@@ -31,24 +31,38 @@ trait CertificationAndAccreditationTaskQuestions
     /**
      * @return void
      */
+    public function addQuestionsForCertificationAndAccreditationTask()
+    {
+        if (!$this->Questions()->count()) {
+            $this->questionOne();
+            $this->questionTwo();
+            $this->questionThree();
+            $this->questionFour();
+            $this->questionFive();
+        }
+    }
+
+    /**
+     * @return void
+     */
     public function questionOne()
     {
         // question one
-        $question = QUESTION::create();
+        $questionID = $this->addQuestion(
+            "Description",
+            "Description of the change or project",
+            "Please provide a short description of the change or
+            project that can be used in the accreditation memo.",
+            "input"
+        );
 
-        $question->Title = "Description";
-        $question->QuestionHeading = "Description of the change or project";
-        $question->Description = "Please provide a short description of the change or
-            project that can be used in the accreditation memo.";
-        $question->AnswerFieldType = 'input';
-        $question->TaskID = $this->ID;
-        $question->write();
-
-        if ($question->ID) {
-            $inputField = AnswerInputField::create();
-            $inputField->InputType = "rich text editor";
-            $inputField->QuestionID = $question->ID;
-            $inputField->write();
+        if ($questionID) {
+            $inputFieldID = $this->addInputField(
+                "",
+                "rich text editor",
+                false,
+                $questionID
+            );
         }
     }
 
@@ -58,20 +72,21 @@ trait CertificationAndAccreditationTaskQuestions
     public function questionTwo()
     {
         // question two
-        $question = QUESTION::create();
+        $questionID = $this->addQuestion(
+            "Service name",
+            "Service name",
+            "Please specify the name of the service. If you can't find the service,
+            please add it to the service inventory in the administration panel.",
+            "input"
+        );
 
-        $question->Title = "Service name";
-        $question->QuestionHeading = "Service name";
-        $question->Description = "Please specify the name of the service. If you can't find the service, please add it to the service inventory in the administration panel.";
-        $question->AnswerFieldType = 'input';
-        $question->TaskID = $this->ID;
-        $question->write();
-
-        if ($question->ID) {
-            $inputField = AnswerInputField::create();
-            $inputField->InputType = "service register";
-            $inputField->QuestionID = $question->ID;
-            $inputField->write();
+        if ($questionID) {
+            $inputFieldID = $this->addInputField(
+                "",
+                "service register",
+                false,
+                $questionID
+            );
         }
     }
 
@@ -81,27 +96,26 @@ trait CertificationAndAccreditationTaskQuestions
     public function questionThree()
     {
         // question three
-        $question = QUESTION::create();
-
-        $question->Title = "Information classification";
-        $question->QuestionHeading = "Information classification";
-        $question->Description = "Please select the Information classification for this change or project.
+        $questionID = $this->addQuestion(
+            "Information classification",
+            "Information classification",
+            "Please select the Information classification for this change or project.
             The following value has been populated from the 'Information Classification' task if one exists,
-            please override this if there is a legitimate reason to modify the classification.";
-        $question->AnswerFieldType = 'input';
-        $question->TaskID = $this->ID;
-        $question->write();
+            please override this if there is a legitimate reason to modify the classification.",
+            "input"
+        );
 
         // add dropdown field
-        if ($question->ID) {
-            $inputField = AnswerInputField::create();
-            $inputField->InputType = "information classification";
-            $inputField->QuestionID = $question->ID;
-            $inputField->Required = true;
-            $inputField->write();
+        if ($questionID) {
+            $inputFieldID = $this->addInputField(
+                "",
+                "information classification",
+                true,
+                $questionID
+            );
 
             // add dropdown value
-            if ($inputField->ID) {
+            if ($inputFieldID) {
                 $resultArray = [
                     'Unclassified',
                     'In-Confidence',
@@ -113,11 +127,11 @@ trait CertificationAndAccreditationTaskQuestions
                 ];
 
                 foreach ($resultArray as $result) {
-                    $optionObj = MultiChoiceAnswerSelection::create();
-                    $optionObj->Label = $result;
-                    $optionObj->Value = strtolower($result);
-                    $optionObj->AnswerInputFieldID = $inputField->ID;
-                    $optionObj->write();
+                    $selectionFieldID = $this->addselectionField(
+                        $result,
+                        strtolower($result),
+                        $inputFieldID
+                    );
                 }
             }
         }
@@ -128,14 +142,129 @@ trait CertificationAndAccreditationTaskQuestions
      */
     public function questionFour()
     {
+        //question four
+        $questionID = $this->addQuestion(
+            "Risk Profile",
+            "Risk Profile",
+            "The following is a pre-populated table with the
+                outcome of the security risk assessment task(s).",
+            "display"
+        );
+    }
+
+    /**
+     * @return void
+     */
+    public function questionFive()
+    {
+        //question five
+        $questionID = $this->addQuestion(
+            "Accreditation scope",
+            "Accreditation scope",
+            "Please select and describe the level of Accreditation to be issued.",
+            "input"
+        );
+
+        if ($questionID) {
+            // add accreditation level field
+            $inputFieldID = $this->addInputField(
+                "Accreditation level",
+                "multiple-choice: single selection",
+                true,
+                $questionID,
+                "Service"
+            );
+
+            if ($inputFieldID) {
+                $selectionFieldID = $this->addselectionField(
+                    "Service level",
+                    "Service",
+                    $inputFieldID
+                );
+
+                $selectionFieldID = $this->addselectionField(
+                    "Change level",
+                    "Change",
+                    $inputFieldID
+                );
+            }
+
+            // add description field
+            $inputFieldID = $this->addInputField(
+                "Description",
+                "rich text editor",
+                false,
+                $questionID
+            );
+        }
+    }
+
+    /**
+     * @param string $title
+     * @param string $heading
+     * @param string $description
+     * @param string $answerFieldType
+     *
+     * @return integer
+     */
+    public function addQuestion($title, $heading, $description, $answerFieldType)
+    {
         $question = QUESTION::create();
 
-        $question->Title = "Risk Profile";
-        $question->QuestionHeading = "Risk Profile";
-        $question->Description = "The following is a pre-populated table with the
-        outcome of the security risk assessment task(s).";
+        $question->Title = $title;
+        $question->QuestionHeading = $heading;
+        $question->Description = $description;
+        $question->AnswerFieldType = $answerFieldType;
         $question->TaskID = $this->ID;
-        $question->AnswerFieldType = 'display';
         $question->write();
+
+        return $question->ID;
+    }
+
+    /**
+     * @param string  $label
+     * @param string  $inputType
+     * @param boolean $required
+     * @param integer $questionID
+     * @param string  $defaultValue
+     *
+     * @return integer
+     */
+    public function addInputField($label, $inputType, $required, $questionID, $defaultValue='')
+    {
+        $inputField = AnswerInputField::create();
+
+        $inputField->Label = $label;
+        $inputField->InputType = $inputType;
+        $inputField->Required = $required;
+        $inputField->QuestionID = $questionID;
+
+        if (!empty($defaultValue)) {
+            $inputField->MultiChoiceSingleAnswerDefault = $defaultValue;
+        }
+
+        $inputField->write();
+
+        return $inputField->ID;
+    }
+
+    /**
+     * @param string  $label
+     * @param string  $value
+     * @param integer $inputFieldID
+     *
+     * @return integer
+     */
+    public function addselectionField($label, $value, $inputFieldID)
+    {
+        $selectionField =  MultiChoiceAnswerSelection::create();
+
+        $selectionField->Label = $label;
+        $selectionField->Value = $value;
+        $selectionField->AnswerInputFieldID = $inputFieldID;
+
+        $selectionField->write();
+
+        return $selectionField->ID;
     }
 }
