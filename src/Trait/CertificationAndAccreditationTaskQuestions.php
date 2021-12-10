@@ -39,6 +39,7 @@ trait CertificationAndAccreditationTaskQuestions
             $this->questionThree();
             $this->questionFour();
             $this->questionFive();
+            $this->questionSix();
         }
     }
 
@@ -108,7 +109,7 @@ trait CertificationAndAccreditationTaskQuestions
         // add dropdown field
         if ($questionID) {
             $inputFieldID = $this->addInputField(
-                "",
+                "Classification level",
                 "information classification",
                 true,
                 $questionID
@@ -170,7 +171,7 @@ trait CertificationAndAccreditationTaskQuestions
             $inputFieldID = $this->addInputField(
                 "Accreditation level",
                 "multiple-choice: single selection",
-                true,
+                false,
                 $questionID,
                 "Service"
             );
@@ -199,6 +200,74 @@ trait CertificationAndAccreditationTaskQuestions
         }
     }
 
+    /**
+     * @return void
+     */
+    public function questionSix()
+    {
+        //question six
+        $questionID = $this->addQuestion(
+            "Type of accreditation",
+            "Type of accreditation",
+            "Please select the type of accreditation you wish to recommend the
+            issuance of. A full accreditation should have minimal renewal recommendations
+            and a longer period. An interim accreditation should be a short-term one to
+            allow remediation of serious renewal recommendations.",
+            "input"
+        );
+
+        if ($questionID) {
+            // add type field
+            $inputFieldID = $this->addInputField(
+                "Type",
+                "dropdown",
+                false,
+                $questionID
+            );
+
+            foreach (['Full accreditation', 'Interim accreditation'] as $type) {
+                $selectionFieldID = $this->addselectionField(
+                    $type,
+                    strtolower($type),
+                    $inputFieldID
+                );
+            }
+
+          // add period field
+            $inputFieldID = $this->addInputField(
+                "Period",
+                "dropdown",
+                false,
+                $questionID
+            );
+
+            $periods = [
+                '1 month',
+                '3 months',
+                '6 months',
+                '9 months',
+                '12 months',
+                '18 months',
+                '24 months'
+            ];
+
+            foreach ($periods as $period) {
+                $selectionFieldID = $this->addselectionField(
+                    $period,
+                    $period,
+                    $inputFieldID
+                );
+            }
+
+          // add rich text Editor for Accreditation renewal recommendations
+            $inputFieldID = $this->addInputField(
+                "Accreditation renewal recommendations",
+                "rich text editor",
+                false,
+                $questionID
+            );
+        }
+    }
     /**
      * @param string $title
      * @param string $heading
