@@ -55,7 +55,8 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'FooterCopyrightText' => 'Text',
         'BusinessOwnerAcknowledgementText' => 'Text',
         'CertificationAuthorityAcknowledgementText' => 'Text',
-        'AccreditationAuthorityAcknowledgementText' => 'Text'
+        'AccreditationAuthorityAcknowledgementText' => 'Text',
+        'SecurityTeamEmail' => 'Varchar(255)',
     ];
 
     /**
@@ -142,6 +143,16 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     'This setting is used to configure an alternate hostname for use in outgoing email messages. It is'
                     . ' intended to be used in situations where the hostname of the server differs from the URL users'
                     . ' use to log into the website, such as a proxy server or a web application firewall (WAF).'
+                ),
+                LiteralField::create(
+                    'SecurityTeamEmailIntro',
+                    '<p class="message notice">Configure the email displayed for the security team.</p>'
+                ),
+                TextField::create(
+                    'SecurityTeamEmail',
+                    'Security team email'
+                )->setDescription(
+                    'This email is displayed as a link to the contact the security team on the Questionnaire Summary page.'
                 ),
                 ToggleCompositeField::create(
                     'DataExportEmailToggle',
@@ -355,6 +366,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                 'HomePageBackgroundImagePath',
                 'PdfHeaderImageLink',
                 'PdfFooterImageLink',
+                'SecurityTeamEmail',
             ])
             ->operation(SchemaScaffolder::READ)
             ->setName('readSiteConfig')

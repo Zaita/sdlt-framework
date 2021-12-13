@@ -95,6 +95,8 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'ComponentTarget' => "Enum('JIRA Cloud,Local')", // when task type is SRA
         'HideRiskWeightsAndScore' => 'Boolean', // when task type is risk questionnaire
         'PreventMessage' => 'HTMLText', // display message for C&A memo task
+        'TimeToComplete' => 'Varchar(255)',
+        'TimeToReview' => 'Varchar(255)',
     ];
 
     /**
@@ -165,7 +167,8 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'Name',
         'TaskType',
         'LockAnswersWhenComplete.Nice' => 'Lock Answers When Complete',
-        'IsApprovalRequired.Nice' => 'Is Approval Required'
+        'IsApprovalRequired.Nice' => 'Is Approval Required',
+        'DisplayCanTaskCreateNewTasks' => 'Can Task Generate another Task'
     ];
 
     /**
@@ -1095,5 +1098,38 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         $returnobj['task'] = $obj;
 
         return json_encode($returnobj, JSON_PRETTY_PRINT);
+    }
+
+    /**
+     * Determines if a task may create new tasks, used for display purposes
+     *
+     * @return boolean
+     */
+    public function getCanTaskCreateNewTasks() {
+        // only questinnaire and risk questionnaire type task can generate other task
+        if ($this->TaskType === 'risk questionnaire' || $this->TaskType === 'questionnaire') {
+            $questions = $this->Questions();
+
+            foreach ($questions as $question) {
+                // check for tasks that are generated from action field type
+                foreach ($question->AnswerActionFields() as $actionField) {
+                    if ($actionField->Tasks()->count()) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines if a task may create new tasks, used for display purposes
+     *
+     * @return string
+     */
+    public function getDisplayCanTaskCreateNewTasks()
+    {
+        return $this->CanTaskCreateNewTasks ? 'Yes' : 'No';
     }
 }
