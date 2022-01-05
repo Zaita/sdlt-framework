@@ -40,6 +40,7 @@ trait CertificationAndAccreditationTaskQuestions
             $this->questionFour();
             $this->questionFive();
             $this->questionSix();
+            $this->questionSeven();
         }
     }
 
@@ -62,7 +63,8 @@ trait CertificationAndAccreditationTaskQuestions
                 "",
                 "rich text editor",
                 false,
-                $questionID
+                $questionID,
+                'product description'
             );
         }
     }
@@ -86,7 +88,8 @@ trait CertificationAndAccreditationTaskQuestions
                 "",
                 "service register",
                 false,
-                $questionID
+                $questionID,
+                'service name'
             );
         }
     }
@@ -112,7 +115,8 @@ trait CertificationAndAccreditationTaskQuestions
                 "Classification level",
                 "information classification",
                 true,
-                $questionID
+                $questionID,
+                'classification level'
             );
 
             // add dropdown value
@@ -173,6 +177,7 @@ trait CertificationAndAccreditationTaskQuestions
                 "multiple-choice: single selection",
                 false,
                 $questionID,
+                "accreditation level",
                 "Service"
             );
 
@@ -195,7 +200,8 @@ trait CertificationAndAccreditationTaskQuestions
                 "Description",
                 "rich text editor",
                 false,
-                $questionID
+                $questionID,
+                "accreditation description"
             );
         }
     }
@@ -205,7 +211,7 @@ trait CertificationAndAccreditationTaskQuestions
      */
     public function questionSix()
     {
-        //question six
+        // question six
         $questionID = $this->addQuestion(
             "Type of accreditation",
             "Type of accreditation",
@@ -222,7 +228,8 @@ trait CertificationAndAccreditationTaskQuestions
                 "Type",
                 "dropdown",
                 false,
-                $questionID
+                $questionID,
+                "accreditation type"
             );
 
             foreach (['Full accreditation', 'Interim accreditation'] as $type) {
@@ -233,12 +240,13 @@ trait CertificationAndAccreditationTaskQuestions
                 );
             }
 
-          // add period field
+            // add period field
             $inputFieldID = $this->addInputField(
                 "Period",
                 "dropdown",
                 false,
-                $questionID
+                $questionID,
+                "accreditation period"
             );
 
             $periods = [
@@ -259,15 +267,32 @@ trait CertificationAndAccreditationTaskQuestions
                 );
             }
 
-          // add rich text Editor for Accreditation renewal recommendations
+            // add rich text Editor for Accreditation renewal recommendations
             $inputFieldID = $this->addInputField(
                 "Accreditation renewal recommendations",
                 "rich text editor",
                 false,
-                $questionID
+                $questionID,
+                "accreditation renewal recommendations"
             );
         }
     }
+
+    /**
+     * @return void
+     */
+    public function questionSeven()
+    {
+        //question seven
+        $questionID = $this->addQuestion(
+            "Review",
+            "Review",
+            "Please review the accreditation memo below and ensure everything
+            has been completed appropriately.",
+            "display"
+        );
+    }
+
     /**
      * @param string $title
      * @param string $heading
@@ -299,7 +324,7 @@ trait CertificationAndAccreditationTaskQuestions
      *
      * @return integer
      */
-    public function addInputField($label, $inputType, $required, $questionID, $defaultValue='')
+    public function addInputField($label, $inputType, $required, $questionID, $certificationAndAccreditationInputType, $defaultValue='')
     {
         $inputField = AnswerInputField::create();
 
@@ -307,6 +332,7 @@ trait CertificationAndAccreditationTaskQuestions
         $inputField->InputType = $inputType;
         $inputField->Required = $required;
         $inputField->QuestionID = $questionID;
+        $inputField->CertificationAndAccreditationInputType = $certificationAndAccreditationInputType;
 
         if (!empty($defaultValue)) {
             $inputField->MultiChoiceSingleAnswerDefault = $defaultValue;

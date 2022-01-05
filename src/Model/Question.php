@@ -234,6 +234,7 @@ class Question extends DataObject implements ScaffoldingProvider
             $inputFields['IsProductName'] = $answerInputField->IsProductName;
             $inputFields['IsBusinessOwnerName'] = $answerInputField->IsBusinessOwnerName;
             $inputFields['MultiChoiceAnswer'] = $answerInputField->GQLMultiChoiceAnswer;
+            $inputFields['CertificationAndAccreditationInputType'] = $answerInputField->CertificationAndAccreditationInputType;
             $inputFields['MultiChoiceSingleAnswerDefault'] = $answerInputField->MultiChoiceSingleAnswerDefault;
             $inputFields['MultiChoiceMultipleAnswerDefault'] = $answerInputField->MultiChoiceMultipleAnswerDefault;
             $finalInputFields[] = $inputFields;
