@@ -1949,7 +1949,8 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         $scaffolder
             ->mutation('issueAccreditation', QuestionnaireSubmission::class)
             ->addArgs([
-                'ID' => 'ID!'
+                'ID' => 'ID!',
+                'AccreditationPeriod' => 'String'
             ])
             ->setResolver(new class implements ResolverInterface {
                 /**
@@ -1970,6 +1971,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                     $questionnaireSubmission =
                         QuestionnaireSubmission::validate_before_updating_questionnaire_submission($args['ID']);
 
+                    $updatedAccreditationPeriod = isset($args['AccreditationPeriod']) ? Convert::raw2sql($args['AccreditationPeriod']) : '';
                     $member = Security::getCurrentUser();
                     $accessDetail = $questionnaireSubmission->doesCurrentUserHasAccessToApproveDeny($member);
 
@@ -1981,6 +1983,16 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                     if ($accessDetail['group'] == GroupExtension::accreditation_authority_group()->Code) {
                         // update Accreditation Authority member details
                         $questionnaireSubmission->updateAccreditationAuthorityDetail($member, QuestionnaireSubmission::STATUS_APPROVED);
+
+                        // update accreditation period
+                        $caTaskSubmission = $questionnaireSubmission->getCertificationAndAccreditationTaskSubmission();
+                        $memoAnswers = $caTaskSubmission->finalResultForCertificationAndAccreditation();
+                        $initialAccreditationPeriod = $memoAnswers['accreditationPeriod'];
+
+                        if (!empty($accreditationPeriod) || $updatedAccreditationPeriod !== $initialAccreditationPeriod) {
+                            $caTaskSubmission->UpdatedAccreditationPeriod = $updatedAccreditationPeriod;
+                            $caTaskSubmission->write();
+                        }
 
                         // update questionnaire status
                         $questionnaireSubmission->updateQuestionnaireSubmissionStatusForCertificationAndAccreditation();
@@ -2160,7 +2172,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     /**
      * get certification and accreditation issue date (when task is completed)
      *
-     * @param dataObject $caMemoTaskSubmission csa memmo task submission
+     * @param dataObject $caMemoTaskSubmission c&a memo task submission
      *
      * @return string issueDate
      */
@@ -2189,7 +2201,6 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             return '';
         }
 
-        // todo: please add the value like 6 months for fornt-end as a part of
         $period = $updatedAccreditationPeriod ?: $accreditationPeriod;
 
         if (empty($period)) {
@@ -3619,9 +3630,10 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         }
 
         $config = SiteConfig::current_site_config();
+        $acknowledgementText = $config->BusinessOwnerAcknowledgementText;
 
-        if ($config && $config->BusinessOwnerAcknowledgementText) {
-            return $config->BusinessOwnerAcknowledgementText;
+        if ($acknowledgementText) {
+            return $this->replaceAcknowledgementTextVariables($acknowledgementText);
         }
 
         return "";
@@ -3637,9 +3649,10 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         }
 
         $config = SiteConfig::current_site_config();
+        $acknowledgementText = $config->CertificationAuthorityAcknowledgementText;
 
-        if ($config && $config->CertificationAuthorityAcknowledgementText) {
-            return $config->CertificationAuthorityAcknowledgementText;
+        if ($acknowledgementText) {
+            return $this->replaceAcknowledgementTextVariables($acknowledgementText);
         }
 
         return "";
@@ -3655,9 +3668,10 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         }
 
         $config = SiteConfig::current_site_config();
+        $acknowledgementText = $config->AccreditationAuthorityAcknowledgementText;
 
-        if ($config && $config->AccreditationAuthorityAcknowledgementText) {
-            return $config->AccreditationAuthorityAcknowledgementText;
+        if ($acknowledgementText) {
+            return $this->replaceAcknowledgementTextVariables($acknowledgementText);
         }
 
         return "";
@@ -3669,5 +3683,37 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     public function getIsCertificationAndAccreditationTaskExists()
     {
         return $this->isTaskTypeExists('certification and accreditation');
+    }
+
+
+    /**
+     * update variables in the acknowledgement text with data from c&a memo
+     *
+     * @return string
+     */
+    public function replaceAcknowledgementTextVariables($acknowledgementText)
+    {
+        $caTaskSubmission = $this->getCertificationAndAccreditationTaskSubmission();
+
+        if (!$caTaskSubmission) {
+            return $acknowledgementText;
+        }
+
+        $memoAnswers = $caTaskSubmission->finalResultForCertificationAndAccreditation();
+
+        $serviceName = $memoAnswers['serviceName'];
+        $accreditationLevel = $memoAnswers['accreditationLevel'];
+        $accreditationPeriod = $memoAnswers['accreditationPeriod'];
+        $issueDate = $this->getCertificationAndAccreditationIssueDate($caTaskSubmission);
+        $expirationDate = date(
+            'd/m/Y', strtotime($this->getCertificationAndAccreditationExpirationDate($issueDate, $accreditationPeriod))
+        );
+
+        $acknowledgementText = str_replace('{$serviceName}',  '<b>'. $serviceName .'</b>', $acknowledgementText);
+        $acknowledgementText = str_replace('{$accreditationType}', $accreditationLevel, $acknowledgementText);
+        $acknowledgementText = str_replace('{$expirationDate}', '<b>'. $expirationDate .'</b>', $acknowledgementText);
+        $acknowledgementText = str_replace('{$accreditationDuration}', $accreditationPeriod, $acknowledgementText);
+
+        return $acknowledgementText;
     }
 }

@@ -364,7 +364,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     'QuestionnaireAcknowledgementText',
                     '<p class="message notice">You can use the following variable substitutions in the acknowledgement text:<br/><br/>' .
                     '<b>{$serviceName}</b> For service name taken from the Certification and Accreditation Memo task<br/>' .
-                    '<b>{$expirationDate }</b> Expiration date of the Certification and Accreditation taken from the Certification and Accreditation Memo task<br/>' .
+                    '<b>{$expirationDate}</b> Expiration date of the Certification and Accreditation taken from the Certification and Accreditation Memo task<br/>' .
                     '<b>{$accreditationDuration}</b> Taken from Certification and Accreditation task as recommended duration.<br/>' .
                     '<b>{$accreditationType}</b> Service or Change based on the type picked in the Certification and Accreditation Memo Task</p>'
                 )
