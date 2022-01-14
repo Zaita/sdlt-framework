@@ -57,6 +57,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'CertificationAuthorityAcknowledgementText' => 'Text',
         'AccreditationAuthorityAcknowledgementText' => 'Text',
         'SecurityTeamEmail' => 'Varchar(255)',
+        'OrganisationName' => 'Varchar(255)',
     ];
 
     /**
@@ -72,6 +73,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'HomePageBackgroundImage' => Image::class,
         'QuestionnairePdfHeaderImage' => Image::class,
         'QuestionnairePdfFooterImage' => Image::class,
+        'CertificationAndAccreditationReportLogo' => Image::class,
         'FavIcon' => Image::class,
         'SecurityArchitectGroup' => Group::class,
         'CisoGroup' => Group::class,
@@ -93,6 +95,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'QuestionnairePdfHeaderImage',
         'QuestionnairePdfFooterImage',
         'FavIcon',
+        'CertificationAndAccreditationReportLogo'
     ];
 
     /**
@@ -109,13 +112,25 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         $fields->removeByName('Tagline');
 
         // "Main" tab
-        $fields->addFieldToTab(
+        $fields->addFieldsToTab(
             'Root.Main',
-            LiteralField::create(
-                'MainIntro',
-                '<p class="message notice">Configure general SDLT settings.</p>'
-            ),
+            [
+                LiteralField::create(
+                    'MainIntro',
+                    '<p class="message notice">Configure general SDLT settings.</p>'
+                )
+            ],
             'Title'
+        );
+
+        $fields->addFieldsToTab(
+            'Root.Main',
+            [
+                TextField::create(
+                    'OrganisationName',
+                    'Organisation Name'
+                )
+            ]
         );
 
         // "Access" tab
@@ -209,6 +224,12 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     ->setDescription('This is the site favicon shown on front-end browser tabs.
                     Require: .ico format, dimensions of 16x16, 32x32, or 48x48.')
                     ->setAllowedExtensions(['ico']),
+                UploadField::create(
+                    'CertificationAndAccreditationReportLogo',
+                    'Certification And Accreditation Report Logo'
+                )
+                    ->setDescription('This is the logo that appears in the
+                        certification and accreditaion report.')
             ]
         );
 

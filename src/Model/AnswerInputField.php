@@ -66,6 +66,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
         'IsProductName' => 'Boolean',
         'MultiChoiceSingleAnswerDefault' => 'Varchar(255)',
         'MultiChoiceMultipleAnswerDefault' => 'Varchar(255)',
+        'CertificationAndAccreditationInputType' => 'Enum("service name, classification level, risk profile, accreditation level, accreditation description, accreditation type, accreditation period, accreditation renewal recommendations, review, product description")',
     ];
 
     /**
@@ -242,6 +243,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
                 'Required',
                 'MinLength',
                 'MaxLength',
+                'CertificationAndAccreditationInputType',
                 'GQLMultiChoiceAnswer' => 'Contains json-encoded, serialized data, representing multiple-choice answers.',
                 'MultiChoiceSingleAnswerDefault' => 'An integer representing the default, single-selection, multiple-choice option.',
                 'MultiChoiceMultipleAnswerDefault' => 'Contains json-encoded, serialized data, representing default multi-selections.',

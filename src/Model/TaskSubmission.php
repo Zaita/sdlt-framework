@@ -530,7 +530,10 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'TimeToComplete',
                 'CanTaskCreateNewTasks',
                 'InformationClassificationTaskResult',
-                'RiskProfileData'
+                'RiskProfileData',
+                'ResultForCertificationAndAccreditation',
+                'PreventMessage',
+                'IsDisplayPreventMessage'
             ]);
 
         $dataObjectScaffolder
@@ -1493,12 +1496,22 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     $taskSubmission->Status === TaskSubmission::STATUS_DENIED) {
                     return true;
                 }
+
                 if ($taskSubmission->Status === TaskSubmission::STATUS_COMPLETE ||
                     $taskSubmission->Status === TaskSubmission::STATUS_WAITING_FOR_APPROVAL) {
                     if (!$taskSubmission->LockAnswersWhenComplete) {
                         return true;
                     }
                 }
+            }
+
+            // for c&a memo task only CertificationAndAccreditationGroup memeber
+            // can update the task
+            $accessGroup = $taskSubmission->Task()->CertificationAndAccreditationGroup();
+
+            if (Member::currentUser()->inGroup($accessGroup->ID) &&
+                $taskSubmission->Task()->isCertificationAndAccreditationType()) {
+                return true;
             }
 
             $isTaskApprover = $taskSubmission->getIsTaskApprover();
@@ -2576,6 +2589,20 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
+     * @return string
+     */
+    public function getPreventMessage()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->PreventMessage;
+    }
+
+    /**
      * @return boolean
      */
     public function getCanTaskCreateNewTasks()
@@ -2674,5 +2701,185 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
        }
 
        return $result;
-   }
+    }
+
+    /**
+     * get the result of c&a memo task
+     *
+     * @return string
+     */
+    public function getResultForCertificationAndAccreditation()
+    {
+        if (!$this->Task()->isCertificationAndAccreditationType()) {
+            return "[]";
+        }
+
+        // get questions and answers from submission json
+        $questionnaireData = json_decode($this->QuestionnaireData, true);
+        $answerData = json_decode($this->AnswerData, true);
+        $questionnaireSubmission = $this->QuestionnaireSubmission();
+        $member = Security::getCurrentUser();
+        $siteConfig = SiteConfig::current_site_config();
+        $result = [];
+
+        if (empty($questionnaireData) || empty($answerData) || empty($questionnaireSubmission)) {
+            return "[]";
+        }
+
+        $result['organisationName'] = $siteConfig->OrganisationName;
+        $result['reportLogo'] = $siteConfig->CertificationAndAccreditationReportLogo()->Link();
+        $result['productName'] = $questionnaireSubmission->ProductName;
+        $result['businessOwnerName'] = $questionnaireSubmission->getBusinessOwnerApproverName();
+        $result['securityArchitectName'] = implode(' ', [$member->FirstName, $member->Surname]);
+        $result['createdAt'] = date("Y/m/d");
+        $result['riskProfileData'] = $this->RiskProfileData;
+
+        // get all task and exclude current task (C&A memo task)
+        $taskSubmissions = $questionnaireSubmission->TaskSubmissions()->exclude('ID', $this->ID);
+
+        foreach ($taskSubmissions as $taskSubmission) {
+            $taskApprover = $taskSubmission->TaskApprover();
+            $taskApproverName = $taskApprover->exists() ?
+                (implode(' ', [$taskApprover->FirstName, $taskApprover->Surname])) : '';
+
+            $data['taskName'] = $taskSubmission->TaskName;
+            $data['taskApproverName'] = $taskApproverName;
+            $data['taskStatus'] = $taskSubmission->Status;
+            $result['tasks'][] = $data;
+
+            if ($taskApprover->exists() && !empty($taskSubmission->TaskRecommendationData)) {
+                $data['taskRecommendationData'] = $taskSubmission->TaskRecommendationData;
+                $result['taskRecommendations'][] = $data;
+            }
+        }
+
+        if (!isset($result['taskRecommendations'])) {
+            $result['taskRecommendations'] = [];
+        }
+
+        // traverse questions to get result from c&a memo task
+        foreach ($questionnaireData as $question) {
+            $questionID = $question['ID'];
+
+            // get answers for all the input fields of the questions
+            if ($questionID && isset($answerData[$questionID]) && !$answers = $answerData[$questionID]) {
+                continue;
+            }
+
+            // if question type is input
+            if ($question['AnswerFieldType'] === 'input' && !empty($question['AnswerInputFields'])) {
+                foreach ($question['AnswerInputFields'] as $inputField) {
+                    switch ($inputField['CertificationAndAccreditationInputType']) {
+                        case "product description":
+                            $result["productDescription"] = $this->getAnswer($inputField, $answers);
+                            break;
+                        case "service name":
+                            $result["serviceName"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                        case "classification level":
+                            $result["classificationLevel"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation level":
+                            $result["accreditationLevel"] = $this->getAnswer($inputField, $answers);
+                            break;
+                        case "accreditation description":
+                            $result["accreditationDescription"] = $this->getAnswer($inputField, $answers);
+                            break;
+                        case "accreditation type":
+                            $result["accreditationType"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation period":
+                            $result["accreditationPeriod"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation renewal recommendations":
+                            $result["accreditationRenewalRecommendations"] = $this->getAnswer($inputField, $answers);
+                            break;
+                    }
+                }
+            }
+        }
+
+        return json_encode($result);
+    }
+
+    /**
+     * get the answer of input field
+     * @param array input   input field detail array
+     * @param array answers answers of the question
+     *
+     * @return string
+     */
+    public function getAnswer($input, $answers)
+    {
+        $inputFieldID = $input['ID'];
+        $inputFieldAnswer = [];
+
+        if (!$answers || !isset($answers['inputs'])) {
+            return;
+        }
+
+        $inputFieldAnswer = array_filter($answers['inputs'], function ($e) use ($inputFieldID) {
+            return isset($e['id']) && $e['id'] == $inputFieldID;
+        });
+
+        // get answer array from $inputFieldAnswer
+        $answer = array_pop($inputFieldAnswer);
+        $data = $answer['data']; // string for radio
+
+        return $data;
+    }
+
+    /**
+     * return label for multi choice field (radio, dropdown and checkbox)
+     *
+     * @return string
+     */
+    public function getLabel($jsonObj)
+    {
+        $data = json_decode($jsonObj, true);
+        return is_array($data)  && isset($data['label'])? $data['label'] : '';
+    }
+
+    /**
+     * check all condition to display prevent message if task type is C&A memo
+     *
+     * @return boolean
+     */
+    public function getIsDisplayPreventMessage()
+    {
+        $isDisplayPreventMessage = false;
+
+        if (!$this->Task()->isCertificationAndAccreditationType()) {
+            return $isDisplayPreventMessage;
+        }
+
+        if ($this->Status == self::STATUS_COMPLETE) {
+            return $isDisplayPreventMessage;
+        }
+
+        $siblingTasks = $this->getSiblingTaskSubmissions();
+
+        if (!$siblingTasks || !$siblingTasks->Count()) {
+            return $isDisplayPreventMessage;
+        }
+
+        $siblings = $siblingTasks
+            ->exclude(['ID' => $this->ID])
+            ->filter(['Status:not' => self::STATUS_INVALID]);
+
+        foreach ($siblings as $siblingTask) {
+            if ($this->isSiblingTaskCompleted($siblingTask) == false) {
+                $isDisplayPreventMessage = true;
+                return $isDisplayPreventMessage;
+            }
+        }
+
+        $accessGroup = $this->Task()->CertificationAndAccreditationGroup();
+
+        if (!Member::currentUser()->inGroup($accessGroup->ID)) {
+            return $isDisplayPreventMessage = true;
+        }
+
+        return $isDisplayPreventMessage;
+    }
 }
