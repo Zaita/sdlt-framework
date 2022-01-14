@@ -926,12 +926,39 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         $submission->setStatusToWatingforApproval();
                     }
 
+                    // change sibling sra and C&A task status to start and in_progress
+                    $submission->changeSiblingTaskStatus();
+
                     $submission->write();
                     $submission->sendAllTheTasksCompletedEmail();
                     return $submission;
                 }
             })
             ->end();
+    }
+
+    /**
+     * change sibling sra and C&A task status to start and in_progress
+     * @return void
+     */
+    public function changeSiblingTaskStatus()
+    {
+        // change sibling sra task status to start
+        $siblingSRATask = $this->getSiblingTaskSubmissionsByType('security risk assessment');
+
+        if ($siblingSRATask && $siblingSRATask->Status == TaskSubmission::STATUS_COMPLETE) {
+            $siblingSRATask->Status = TaskSubmission::STATUS_START;
+            $siblingSRATask->RiskResultData = '';
+            $siblingSRATask->write();
+        }
+
+        // change sibling c&a memo task status to in progress
+        $siblingCertificationTask = $this->getSiblingTaskSubmissionsByType('certification and accreditation');
+
+        if ($siblingCertificationTask && $siblingCertificationTask->Status == TaskSubmission::STATUS_COMPLETE) {
+            $siblingCertificationTask->Status = TaskSubmission::STATUS_IN_PROGRESS;
+            $siblingCertificationTask->write();
+        }
     }
 
     /**
@@ -1101,14 +1128,19 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     $submission->CompletedAt = null;
                     $submission->Result = null;
 
-                    // if task type is component selection, then delete
-                    // it's sibling CSV task data
+                    // if task type is component selection, then delete it's
+                    // sibling CSV task data and change status to start
                     if ($submission->TaskType === 'selection' &&
                         $siblingCVATask = $submission->getSiblingTaskSubmissionsByType("control validation audit")) {
                         $siblingCVATask->CVATaskData = '';
                         $siblingCVATask->Status = TaskSubmission::STATUS_START;
                         $siblingCVATask->write();
+
+                        // change sibling sra and C&A task status to start and
+                        // in_progress, if task type exists
+                        $submission->changeSiblingTaskStatus();
                     }
+
                     $submission->write();
 
                     return $submission;
