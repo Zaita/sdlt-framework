@@ -348,43 +348,46 @@ class ServiceInventory extends DataObject implements PermissionProvider, Scaffol
         }
 
         $config = GridFieldConfig_Base::create();
+        $config->removeComponentsByType(GridFieldFilterHeader::class);
         $dataColumns = $config->getComponentByType(GridFieldDataColumns::class);
         $sortableHeader = $config->getComponentByType(GridFieldSortableHeader::class);
-        $config->removeComponentsByType(GridFieldFilterHeader::class);
-
-        $accreditationMemos = $this->AccreditationMemos();
-
-        if ($accreditationMemos && $accreditationMemos instanceof HasManyList) {
-            $fields->addFieldsToTab(
-                'Root.Main',
-                [
-                    $accreditationMemosGrid = new GridField(
-                        'IssuedAccreditationMemo',
-                        'Issued Accreditation Memos',
-                        $this->AccreditationMemos(),
-                        $config
-                    )
-                ],
-            );
-        }
 
         $dataColumns->setDisplayFields([
-            'getPrettifyMemoType' => 'Type',
-            'getPrettifyCreated'=> 'Issue Date',
-            'getPrettifyExpirationDate' => 'Expiration Date',
-            'getPrettifyAccreditationStatus' => 'Status',
+            'PrettifyMemoType' => 'Type',
+            'PrettifyIssueDate'=> 'Issue Date',
+            'PrettifyExpirationDate' => 'Expiration Date',
+            'PrettifyAccreditationStatus' => 'Status',
             'IssuedBy' => 'Issued By',
             'CertifiedBy' => 'Certified By',
             'AccreditedBy' => 'Accredited By',
             'SummaryPageLink' => 'Link'
         ]);
 
+        $dataColumns->setFieldFormatting(array(
+            "SummaryPageLink" => function($value, $item) {
+                $link = '<a href="' . $value . '">Link</a>';
+                return $link;
+            },
+        ));
+
         $sortableHeader->setFieldSorting([
-            'getPrettifyMemoType'=> 'MemoType',
-            'getPrettifyCreated'=> 'Created',
-            'getPrettifyExpirationDate' => 'ExpirationDate',
-            'getPrettifyAccreditationStatus' => 'AccreditationStatus',
+            'PrettifyMemoType'=> 'MemoType',
+            'PrettifyIssueDate'=> 'IssueDate',
+            'PrettifyExpirationDate' => 'ExpirationDate',
+            'PrettifyAccreditationStatus' => 'AccreditationStatus',
         ]);
+
+        $fields->addFieldsToTab(
+            'Root.Main',
+            [
+                $accreditationMemosGrid = new GridField(
+                    'IssuedAccreditationMemo',
+                    'Issued Accreditation Memos',
+                    $this->AccreditationMemos(),
+                    $config
+                )
+            ],
+        );
 
         return $fields;
     }
@@ -461,5 +464,4 @@ class ServiceInventory extends DataObject implements PermissionProvider, Scaffol
 
         return $scaffolder;
     }
-
 }

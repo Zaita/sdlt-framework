@@ -2164,6 +2164,9 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                     new SendApprovedNotificationEmailJob($this),
                     date('Y-m-d H:i:s', time() + 30)
                 );
+
+                // create an accreditation memo
+                $this->createAccreditationMemo();
             }
 
             // if any one status is denied then set questionnaire status as denied
@@ -2179,6 +2182,122 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 );
             }
         }
+    }
+
+    /**
+     * create an entry for AccreditationMemo from C&A memo task
+     *
+     * @return void
+     */
+    public function createAccreditationMemo()
+    {
+        $caMemoTaskSubmission = $this->getCertificationAndAccreditationTaskSubmission();
+
+        if (!$caMemoTaskSubmission) {
+            return;
+        }
+
+        $data = $caMemoTaskSubmission->getDataForAccreditationMemo();
+        if (!$data) {
+            return;
+        }
+
+        $period = $this->getCertificationAndAccreditationPeriod(
+            $caMemoTaskSubmission->UpdatedAccreditationPeriod,
+            $data['accreditationPeriod']
+        );
+
+        $issueDate = $this->getCertificationAndAccreditationIssueDate($caMemoTaskSubmission);
+        $expirationDate = $this->getCertificationAndAccreditationExpirationDate($issueDate, $period);
+
+        $accreditationMemo = AccreditationMemo::create();
+        $accreditationMemo->AccreditationStatus = "active";
+        $accreditationMemo->MemoType = $data['accreditationLevelValue'];
+        $accreditationMemo->IssueDate = $issueDate;
+        $accreditationMemo->ExpirationDate = $expirationDate;
+        $accreditationMemo->ServiceID = $data['serviceID'];
+        $accreditationMemo->QuestionnaireSubmissionID = $this->ID;
+        $accreditationMemo->write();
+    }
+
+    /**
+     * get certification and accreditation type task submission
+     *
+     * @return dataObject caMemoTaskSubmission
+     */
+    public function getCertificationAndAccreditationTaskSubmission()
+    {
+        $caMemoTaskSubmission = $this->TaskSubmissions()->filter([
+            'Task.TaskType' => 'certification and accreditation',
+            'Status' => TaskSubmission::STATUS_COMPLETE
+        ])->first();
+
+        if (!$caMemoTaskSubmission) {
+            return;
+        }
+
+        return $caMemoTaskSubmission;
+    }
+
+    /**
+     * get certification and accreditation issue date (when task is completed)
+     *
+     * @param dataObject $caMemoTaskSubmission csa memmo task submission
+     *
+     * @return string issueDate
+     */
+    public function getCertificationAndAccreditationIssueDate($caMemoTaskSubmission)
+    {
+        if (!$caMemoTaskSubmission) {
+            return '';
+        }
+
+        $issueDate = strtotime($caMemoTaskSubmission->CompletedAt);
+
+        return date("Y/m/d", $issueDate);
+    }
+
+    /**
+     * get certification and accreditation period
+     *
+     * @param string $updatedAccreditationPeriod updated period via accreditation authority
+     * @param string $accreditationPeriod        submit in c@a memo task answer data
+     *
+     * @return string period
+     */
+    public function getCertificationAndAccreditationPeriod($updatedAccreditationPeriod, $accreditationPeriod)
+    {
+        if (!$updatedAccreditationPeriod && !$accreditationPeriod) {
+            return '';
+        }
+
+        // todo: please add the value like 6 months for fornt-end as a part of
+        $period = $updatedAccreditationPeriod ?: $accreditationPeriod;
+
+        if (empty($period)) {
+            return '';
+        }
+
+        return $period;
+    }
+
+    /**
+     * get certification and accreditation expiration date
+     *
+     * @param string $issueDate           date when c&a memo task is completed
+     * @param string $accreditationPeriod final calculated period
+     *
+     * @return string expiration date
+     */
+    public function getCertificationAndAccreditationExpirationDate($issueDate, $period)
+    {
+        if (!$issueDate) {
+            return '';
+        }
+
+        $expirationDate = strtotime("+". $period, strtotime($issueDate));
+
+        return date("Y/m/d", $expirationDate);;
     }
 
     /**
