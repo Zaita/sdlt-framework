@@ -123,6 +123,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         'RiskResultData' => 'Text',
         'TaskRecommendationData' => 'Text',
         'CVATaskData' => 'Text',
+        'UpdatedAccreditationPeriod' => 'Varchar(255)',
     ];
 
     /**
@@ -309,11 +310,15 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
             $completedAtField = $fields->dataFieldByName('CompletedAt');
             $completedAtField
                 ->setHTML5(false)
-                // ->setDatetimeFormat('yyyy-MM-dd HH:mm:ss')
                 ->setDatetimeFormat('dd/MM/yyyy hh:mm a')
                 ->setReadonly(true)
                 ->setDescription(null);
         }
+
+        $updatedAccreditationPeriod = $fields->dataFieldByName('UpdatedAccreditationPeriod');
+        $updatedAccreditationPeriod
+            ->setReadonly(true)
+            ->setDescription('Please add updated accreditation period in the format like: "6 months" or "12 months".');
 
         // link tab
         $secureLink = $this->SecureLink();
@@ -2704,11 +2709,11 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
-     * get the result of c&a memo task
+     * calculate the result of c&a memo task
      *
-     * @return string
+     * @return array
      */
-    public function getResultForCertificationAndAccreditation()
+    public function finalResultForCertificationAndAccreditation()
     {
         if (!$this->Task()->isCertificationAndAccreditationType()) {
             return "[]";
@@ -2798,7 +2803,17 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 }
             }
         }
+        return $result;
+    }
 
+    /**
+     * get the result of c&a memo task
+     *
+     * @return string
+     */
+    public function getResultForCertificationAndAccreditation()
+    {
+        $result = $this->finalResultForCertificationAndAccreditation();
         return json_encode($result);
     }
 
@@ -2838,6 +2853,17 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     {
         $data = json_decode($jsonObj, true);
         return is_array($data)  && isset($data['label'])? $data['label'] : '';
+    }
+
+    /**
+     * return label for multi choice field (radio, dropdown and checkbox)
+     *
+     * @return string
+     */
+    public function getValue($jsonObj)
+    {
+        $data = json_decode($jsonObj, true);
+        return is_array($data) && isset($data['value'])? $data['value'] : '';
     }
 
     /**
@@ -2881,5 +2907,49 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         }
 
         return $isDisplayPreventMessage;
+    }
+
+    /**
+     * get data to create AccreditationMemo from the result of c&a memo task
+     *
+     * @return array
+     */
+    public function getDataForAccreditationMemo()
+    {
+        $questionnaireData = json_decode($this->QuestionnaireData, true);
+        $answerData = json_decode($this->AnswerData, true);
+
+        if (empty($questionnaireData) || empty($answerData)) {
+            return;
+        }
+
+        // traverse questions to get result from c&a memo task
+        foreach ($questionnaireData as $question) {
+            $questionID = $question['ID'];
+
+            // get answers for all the input fields of the questions
+            if ($questionID && isset($answerData[$questionID]) && !$answers = $answerData[$questionID]) {
+                continue;
+            }
+
+            // if question type is input
+            if ($question['AnswerFieldType'] === 'input' && !empty($question['AnswerInputFields'])) {
+                foreach ($question['AnswerInputFields'] as $inputField) {
+                    switch ($inputField['CertificationAndAccreditationInputType']) {
+                        case "service name":
+                            $result["serviceID"] = $this->getValue($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation level":
+                            $result["accreditationLevelValue"] = strtolower($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation period":
+                            $result["accreditationPeriod"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 }

@@ -34,6 +34,7 @@ class AccreditationMemo extends DataObject
         'MemoType' => 'Enum(array("service", "change"))',
         'AccreditationStatus' => 'Enum(array("active", "expired"), "expired")',
         'ExpirationDate' => 'Date',
+        'IssueDate' => 'Date',
     ];
 
     /**
@@ -49,20 +50,8 @@ class AccreditationMemo extends DataObject
      */
     private static $has_one = [
         'Service' => ServiceInventory::class,
+        'QuestionnaireSubmission' => QuestionnaireSubmission::class,
     ];
-
-    /**
-     * @var array
-     */
-    private static $summary_fields = [
-        'Service.ServiceName' => 'Service Name',
-        'getPrettifyMemoType' => 'Memo Type',
-        'getPrettifyAccreditationStatus' => 'Accreditation Status',
-        'getPrettifyCreated' => 'Creation Date',
-        'getPrettifyExpirationDate' => 'Expiration Date',
-        'SummaryPageLink' => 'Submission Summary Link',
-    ];
-
     /**
      * @return string
      */
@@ -99,32 +88,112 @@ class AccreditationMemo extends DataObject
     }
 
     /**
-     * TODO: use questionnaire relationship to get summary page link
+     * use questionnaire relationship to get summary page link
+     *
      * @return string
      */
     public function getSummaryPageLink()
     {
-       return "";
+        if ($this->QuestionnaireSubmission()) {
+            return $this->QuestionnaireSubmission()->getSummaryPageLink();
+        }
+
+        return '';
     }
 
     /**
-     * @return mixed
+     * use questionnaire relationship CertificationAuthorityApprover
+     *
+     * @return string
+     */
+    public function getCertifiedBy()
+    {
+        if (!$this->QuestionnaireSubmission()) {
+            return '';
+        }
+
+        $member = $this->QuestionnaireSubmission()->CertificationAuthorityApprover();
+
+        if (!$member) {
+            return '';
+        }
+
+        return trim($member->FirstName . ' ' . $member->Surname);
+    }
+
+    /**
+     * use questionnaire relationship AccreditationAuthorityApprover
+     *
+     * @return string
+     */
+    public function getAccreditedBy()
+    {
+        if (!$this->QuestionnaireSubmission()) {
+            return '';
+        }
+
+        $member = $this->QuestionnaireSubmission()->AccreditationAuthorityApprover();
+
+        if (!$member) {
+            return '';
+        }
+
+        return trim($member->FirstName . ' ' . $member->Surname);
+    }
+
+    /**
+     * get the member who completed the c&a memo task
+     *
+     * @return string
+     */
+    public function getIssuedBy()
+    {
+        if (!$this->QuestionnaireSubmission()) {
+            return '';
+        }
+
+        $caMemoTaskSubmission = $this->QuestionnaireSubmission()->TaskSubmissions()
+            ->filter([
+                'Task.TaskType' => 'certification and accreditation',
+                'Status' => TaskSubmission::STATUS_COMPLETE
+            ])->first();
+
+        if (!$caMemoTaskSubmission) {
+            return '';
+        }
+
+        $member = $caMemoTaskSubmission->completedBy();
+
+        if (!$member) {
+            return '';
+        }
+
+        return trim($member->FirstName . ' ' . $member->Surname);
+    }
+
+    /**
+     * @return string
      */
     public function getPrettifyExpirationDate()
     {
-        return $this->dbObject('ExpirationDate')->format('dd/MM/y');
+        return date("d/m/Y", strtotime($this->ExpirationDate));
     }
 
     /**
-     * @return mixed
+     * @return string
      */
-    public function getPrettifyCreated()
+    public function getPrettifyIssueDate()
     {
-        return $this->dbObject('Created')->format('dd/MM/y');
+        if ($this->IssueDate) {
+            return date("d/m/Y", strtotime($this->IssueDate));
+        }
+
+        return date("d/m/Y", strtotime($this->Created));
     }
 
     /**
      * CMS Fields
+     *
      * @return FieldList
      */
     public function getCMSFields()

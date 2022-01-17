@@ -45,8 +45,7 @@ class ServiceInventoryAdmin extends ModelAdmin
      * @var string[]
      */
     private static $managed_models = [
-        ServiceInventory::class,
-        AccreditationMemo::class
+        ServiceInventory::class
     ];
 
     /**
