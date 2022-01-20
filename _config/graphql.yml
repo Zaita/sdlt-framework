@@ -8,6 +8,9 @@ SilverStripe\Control\Director:
 SilverStripe\GraphQL\Manager:
   schemas:
     default:
+      queries:
+        paginatedReadTaskSubmissions: 'NZTA\SDLT\GraphQL\PaginatedReadTaskSubmissionsQuery'
+        paginatedReadQuestionnaireSubmissions: 'NZTA\SDLT\GraphQL\PaginatedReadQuestionnaireSubmissionsQuery'
       scaffolding_providers:
         - NZTA\SDLT\Model\Questionnaire
         - NZTA\SDLT\Model\Question

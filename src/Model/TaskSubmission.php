@@ -1155,7 +1155,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     $uuid = isset($args['UUID']) ? Convert::raw2sql(trim($args['UUID'])) : null;
                     $userID = isset($args['UserID']) ? (int) $args['UserID'] : null;
                     $secureToken = isset($args['SecureToken']) ? Convert::raw2sql(trim($args['SecureToken'])) : null;
-                    $pageType= isset($args['PageType']) ? Convert::raw2sql(trim($args['PageType'])) : '';
 
                     // Check argument
                     if (!$uuid && !$userID) {
@@ -1206,15 +1205,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                                 $data->CVATaskData = $data->getDataforCVATask($siblingComponentSelectionTask);
                             }
                         }
-                    }
-
-                    if ($userID && $pageType=="awaiting_approval_list") {
-                        $groupIds = $member->groups()->column('ID');
-
-                        $data = TaskSubmission::get()
-                            ->filter(['ApprovalGroupID' => $groupIds])
-                            ->filter('Status', TaskSubmission::STATUS_WAITING_FOR_APPROVAL)
-                            ->exclude('Status', TaskSubmission::STATUS_INVALID);
                     }
 
                     return $data;
