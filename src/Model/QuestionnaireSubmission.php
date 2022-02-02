@@ -1113,7 +1113,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                     $model = QuestionnaireSubmission::create();
 
                     // set submitter details
-                    $model->SubmitterName = $member->FirstName;
+                    $model->SubmitterName = trim($member->FirstName . " " . $member->Surname);
                     $model->SubmitterEmail = $member->Email;
                     $model->UserID = $member->ID;
 
