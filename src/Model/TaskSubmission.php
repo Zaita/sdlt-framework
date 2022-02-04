@@ -207,8 +207,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         return $task->Name;
     }
 
-
-
     public function getCanUpdateTask()
     {
         return $this->CanUpdateTask;
@@ -276,6 +274,34 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     public function getSecurityRiskAssessmentData()
     {
         return $this->securityRiskAssessmentData;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSraTaskHelpText()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->SraTaskHelpText;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSraTaskRecommendedControlHelpText()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->SraTaskRecommendedControlHelpText;
     }
 
     /**
@@ -538,7 +564,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'RiskProfileData',
                 'ResultForCertificationAndAccreditation',
                 'PreventMessage',
-                'IsDisplayPreventMessage'
+                'IsDisplayPreventMessage',
+                'SraTaskHelpText',
+                'SraTaskRecommendedControlHelpText'
             ]);
 
         $dataObjectScaffolder

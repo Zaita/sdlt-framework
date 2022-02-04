@@ -97,6 +97,8 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'PreventMessage' => 'HTMLText', // display message for C&A memo task
         'TimeToComplete' => 'Varchar(255)',
         'TimeToReview' => 'Varchar(255)',
+        'SraTaskHelpText' => 'Text',
+        'SraTaskRecommendedControlHelpText' => 'Text',
     ];
 
     /**
@@ -199,7 +201,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             'DefaultSecurityComponents',
             'Questionnaires',
             'AnswerActionFields',
-            'HideRiskWeightsAndScore',
+            'HideRiskWeightsAndScore'
         ]);
 
         $fields->insertAfter(
@@ -386,6 +388,14 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                 )
             ]);
 
+            $fields->addFieldsToTab(
+                'Root.SecurityRiskAssessment',
+                [
+                    $fields->dataFieldByName('SraTaskHelpText'),
+                    $fields->dataFieldByName('SraTaskRecommendedControlHelpText')
+                ]
+            );
+
             $fields->addFieldToTab(
                 'Root.RiskRatingsMatrix',
                 GridField::create(
@@ -398,6 +408,11 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
 
             $fields->removeByName([
                 'TaskApproval',
+            ]);
+        } else {
+            $fields->removeByName([
+                'SraTaskHelpText',
+                'SraTaskRecommendedControlHelpText'
             ]);
         }
 
