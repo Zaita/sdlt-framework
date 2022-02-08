@@ -3595,6 +3595,10 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             $numberOfDays = $siteConfig->NumberOfDaysForApprovalReminderEmail;
         }
 
+        if ($numberOfDays == 0) {
+            return;
+        }
+
         $queuedJobService = QueuedJobService::create();
         $queuedJobService->queueJob(
             new SendReminderEmailsJob($this, $cisoMembers, $businessOwnerEmail, $numberOfDays),
