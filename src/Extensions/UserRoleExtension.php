@@ -76,6 +76,32 @@ class UserRoleExtension extends DataExtension
     }
 
     /**
+     * Check if the member is Accreditation Authority
+     *
+     * @return boolean
+     */
+    public function getIsAccreditationAuthority()
+    {
+        return $this->owner
+            ->Groups()
+            ->filter('Code', GroupExtension::accreditation_authority_group()->Code)
+            ->exists();
+    }
+
+    /**
+     * Check if the member is Certification Authority
+     *
+     * @return boolean
+     */
+    public function getIsCertificationAuthority()
+    {
+        return $this->owner
+            ->Groups()
+            ->filter('Code', GroupExtension::certification_authority_group()->Code)
+            ->exists();
+    }
+
+    /**
      * Return the role-name for a given user. The returned string is in compound
      * form, but you can use {@link FormField::name_to_label()} to prettify it.
      *
@@ -92,6 +118,8 @@ class UserRoleExtension extends DataExtension
                 return UserGroupConstant::ROLE_CODE_REPORTER;
             case $this->getIsAdmin():
                 return UserGroupConstant::ROLE_CODE_ADMIN;
+            case $this->getIsAccreditationAuthority():
+                return UserGroupConstant::ROLE_CODE_ACCREDITATIONAUTHORITY;
             default:
                 return '';
         }

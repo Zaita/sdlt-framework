@@ -73,7 +73,8 @@ class SendReminderEmailsJob extends AbstractQueuedJob implements QueuedJob
         $this->questionnaireSubmission = QuestionnaireSubmission::get_by_id($this->questionnaireSubmission->ID);
 
         // do not send reminder emails when submission is expired
-        if ($this->questionnaireSubmission->QuestionnaireStatus == "expired") {
+        if ($this->questionnaireSubmission->QuestionnaireStatus == "expired" ||
+            $this->reminderEmailInDays == 0) {
             $this->isComplete = true;
             return;
         }

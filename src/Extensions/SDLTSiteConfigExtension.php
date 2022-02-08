@@ -23,6 +23,7 @@ use SilverStripe\AssetAdmin\Forms\UploadField;
 use SilverStripe\Forms\CheckboxField;
 use SilverStripe\Forms\HTMLEditor\HtmlEditorField;
 use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\TextareaField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ToggleCompositeField;
 use SilverStripe\Forms\FormField;
@@ -52,6 +53,11 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'NumberOfDaysForApprovalReminderEmail' => 'Int',
         // Customisation Config
         'FooterCopyrightText' => 'Text',
+        'BusinessOwnerAcknowledgementText' => 'Text',
+        'CertificationAuthorityAcknowledgementText' => 'Text',
+        'AccreditationAuthorityAcknowledgementText' => 'Text',
+        'SecurityTeamEmail' => 'Varchar(255)',
+        'OrganisationName' => 'Varchar(255)',
     ];
 
     /**
@@ -67,9 +73,13 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'HomePageBackgroundImage' => Image::class,
         'QuestionnairePdfHeaderImage' => Image::class,
         'QuestionnairePdfFooterImage' => Image::class,
+        'CertificationAndAccreditationReportLogo' => Image::class,
         'FavIcon' => Image::class,
         'SecurityArchitectGroup' => Group::class,
-        'CisoGroup' => Group::class
+        'CisoGroup' => Group::class,
+        'AssuranceAdminGroup' => Group::class,
+        'CertificationAuthorityGroup' => Group::class,
+        'AccreditationAuthorityGroup' => Group::class,
     ];
 
     /**
@@ -85,6 +95,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'QuestionnairePdfHeaderImage',
         'QuestionnairePdfFooterImage',
         'FavIcon',
+        'CertificationAndAccreditationReportLogo'
     ];
 
     /**
@@ -101,13 +112,25 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         $fields->removeByName('Tagline');
 
         // "Main" tab
-        $fields->addFieldToTab(
+        $fields->addFieldsToTab(
             'Root.Main',
-            LiteralField::create(
-                'MainIntro',
-                '<p class="message notice">Configure general SDLT settings.</p>'
-            ),
+            [
+                LiteralField::create(
+                    'MainIntro',
+                    '<p class="message notice">Configure general SDLT settings.</p>'
+                )
+            ],
             'Title'
+        );
+
+        $fields->addFieldsToTab(
+            'Root.Main',
+            [
+                TextField::create(
+                    'OrganisationName',
+                    'Organisation Name'
+                )
+            ]
         );
 
         // "Access" tab
@@ -135,6 +158,16 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     'This setting is used to configure an alternate hostname for use in outgoing email messages. It is'
                     . ' intended to be used in situations where the hostname of the server differs from the URL users'
                     . ' use to log into the website, such as a proxy server or a web application firewall (WAF).'
+                ),
+                LiteralField::create(
+                    'SecurityTeamEmailIntro',
+                    '<p class="message notice">Configure the email displayed for the security team.</p>'
+                ),
+                TextField::create(
+                    'SecurityTeamEmail',
+                    'Security team email'
+                )->setDescription(
+                    'This email is displayed as a link to the contact the security team on the Questionnaire Summary page.'
                 ),
                 ToggleCompositeField::create(
                     'DataExportEmailToggle',
@@ -191,6 +224,12 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     ->setDescription('This is the site favicon shown on front-end browser tabs.
                     Require: .ico format, dimensions of 16x16, 32x32, or 48x48.')
                     ->setAllowedExtensions(['ico']),
+                UploadField::create(
+                    'CertificationAndAccreditationReportLogo',
+                    'Certification And Accreditation Report Logo'
+                )
+                    ->setDescription('This is the logo that appears in the
+                        certification and accreditaion report.')
             ]
         );
 
@@ -257,19 +296,36 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     Group::get()->map('ID', 'Title')
                 )
                     ->setDescription(
-                        'These people will receive emails when
-                        a submission is sent for approval once first submitted.'
-                    ),
+                    'These people will receive emails when
+                    a submission is sent for approval once first submitted.'),
+
                 DropdownField::create(
                     'CisoGroupID',
                     'Ciso Group',
                     Group::get()->map('ID', 'Title')
                 )
                     ->setDescription(
-                        'These users in this group will receive
-                        emails when a submission is sent for approval once the above
-                        security architect/analysts group has approved.'
-                    ),
+                    'These users in this group will receive
+                    emails when a submission is sent for approval once the above
+                    security architect/analysts group has approved.'),
+
+                DropdownField::create(
+                    'CertificationAuthorityGroupID',
+                    'Certification Authority Group',
+                    Group::get()->map('ID', 'Title')
+                ),
+
+                DropdownField::create(
+                    'AccreditationAuthorityGroupID',
+                    'Accreditation Authority Group',
+                    Group::get()->map('ID', 'Title')
+                ),
+
+                DropdownField::create(
+                    'AssuranceAdminGroupID',
+                    'Assurance Admin Group',
+                    Group::get()->map('ID', 'Title')
+                ),
 
                 // reminder email
                 LiteralField::create(
@@ -284,6 +340,34 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                         'Set the number of days to resend the approval
                         emails to the Business Owner (if applicable) and CISO groups.'
                     ),
+            ]
+        );
+
+
+        // "Acknowledgement " tab
+        $fields->addFieldsToTab(
+            'Root.Acknowledgements',
+            [
+                TextareaField::create(
+                    'BusinessOwnerAcknowledgementText',
+                    'Business Owner Acknowledgement Text'
+                ),
+                TextareaField::create(
+                    'CertificationAuthorityAcknowledgementText',
+                    'Certification Authority Acknowledgement Text'
+                ),
+                TextareaField::create(
+                    'AccreditationAuthorityAcknowledgementText',
+                    'Accreditation Authority Acknowledgement Text'
+                ),
+                LiteralField::create(
+                    'QuestionnaireAcknowledgementText',
+                    '<p class="message notice">You can use the following variable substitutions in the acknowledgement text:<br/><br/>' .
+                    '<b>{$serviceName}</b> For service name taken from the Certification and Accreditation Memo task<br/>' .
+                    '<b>{$expirationDate}</b> Expiration date of the Certification and Accreditation taken from the Certification and Accreditation Memo task<br/>' .
+                    '<b>{$accreditationDuration}</b> Taken from Certification and Accreditation task as recommended duration.<br/>' .
+                    '<b>{$accreditationType}</b> Service or Change based on the type picked in the Certification and Accreditation Memo Task</p>'
+                )
             ]
         );
     }
@@ -303,6 +387,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                 'HomePageBackgroundImagePath',
                 'PdfHeaderImageLink',
                 'PdfFooterImageLink',
+                'SecurityTeamEmail',
             ])
             ->operation(SchemaScaffolder::READ)
             ->setName('readSiteConfig')

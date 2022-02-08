@@ -56,7 +56,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
      */
     private static $db = [
         'Label' => 'Varchar(255)',
-        'InputType' => 'Enum("text, email, textarea,  product aspects, date, release date, url, multiple-choice: single selection, multiple-choice: multiple selection", "text")',
+        'InputType' => 'Enum("text, email, textarea, rich text editor, service register, information classification, dropdown, product aspects, date, release date, url, multiple-choice: single selection, multiple-choice: multiple selection", "text")',
         'Required' => 'Boolean',
         'MinLength' => 'Int',
         'MaxLength' => 'Int',
@@ -66,6 +66,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
         'IsProductName' => 'Boolean',
         'MultiChoiceSingleAnswerDefault' => 'Varchar(255)',
         'MultiChoiceMultipleAnswerDefault' => 'Varchar(255)',
+        'CertificationAndAccreditationInputType' => 'Enum("service name, classification level, risk profile, accreditation level, accreditation description, accreditation type, accreditation period, accreditation renewal recommendations, review, product description")',
     ];
 
     /**
@@ -147,7 +148,9 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
                 'Root.Main',
                 Wrapper::create($blocksField)
                 ->hideUnless('InputType')
-                ->startsWith('multiple-choice')
+                ->group()
+                    ->orIf("InputType")->contains("multiple-choice")
+                    ->orIf("InputType")->contains("dropdown")
                 ->end()
             );
         }
@@ -240,6 +243,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
                 'Required',
                 'MinLength',
                 'MaxLength',
+                'CertificationAndAccreditationInputType',
                 'GQLMultiChoiceAnswer' => 'Contains json-encoded, serialized data, representing multiple-choice answers.',
                 'MultiChoiceSingleAnswerDefault' => 'An integer representing the default, single-selection, multiple-choice option.',
                 'MultiChoiceMultipleAnswerDefault' => 'Contains json-encoded, serialized data, representing default multi-selections.',

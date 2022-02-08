@@ -1,0 +1,18 @@
+{
+  "service": [
+    {
+      "service_name": "System A",
+      "business_owner": "John Doe",
+      "operational_status": "retired"
+    },
+    {
+      "service_name": "System B",
+      "business_owner": "Jane Doe",
+      "operational_status": "live"
+    },
+    {
+      "service_name": "System C",
+      "business_owner": "Sarah Smith"
+    }
+  ]
+}

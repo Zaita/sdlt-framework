@@ -23,6 +23,7 @@ use NZTA\SDLT\Model\RiskRating;
 use NZTA\SDLT\Model\TaskSubmission;
 use NZTA\SDLT\Traits\SDLTModelPermissions;
 use NZTA\SDLT\Traits\SDLTRiskCalc;
+use NZTA\SDLT\Traits\CertificationAndAccreditationTaskQuestions;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\GridField\GridField;
@@ -68,6 +69,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
 {
     use SDLTModelPermissions;
     use SDLTRiskCalc;
+    use CertificationAndAccreditationTaskQuestions;
 
     /**
      * @var string
@@ -85,13 +87,16 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     private static $db = [
         'Name' => 'Varchar(255)',
         'KeyInformation' => 'HTMLText',
-        'TaskType' => 'Enum(array("questionnaire", "selection", "risk questionnaire", "security risk assessment", "control validation audit"))',
+        'TaskType' => 'Enum(array("questionnaire", "selection", "risk questionnaire", "security risk assessment", "control validation audit", "certification and accreditation"))',
         'LockAnswersWhenComplete' => 'Boolean',
         'IsApprovalRequired' => 'Boolean',
         'IsStakeholdersSelected' => "Enum('No,Yes', 'No')",
         'RiskCalculation' => "Enum('NztaApproxRepresentation,Maximum')",
         'ComponentTarget' => "Enum('JIRA Cloud,Local')", // when task type is SRA
-        'HideRiskWeightsAndScore' => 'Boolean' // when task type is risk questionnaire
+        'HideRiskWeightsAndScore' => 'Boolean', // when task type is risk questionnaire
+        'PreventMessage' => 'HTMLText', // display message for C&A memo task
+        'TimeToComplete' => 'Varchar(255)',
+        'TimeToReview' => 'Varchar(255)',
     ];
 
     /**
@@ -107,10 +112,13 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
      */
     private static $has_one = [
         'ApprovalGroup' => Group::class,
+        'CertificationAndAccreditationGroup' => Group::class, // group to edit/complete C&A memo task
         'StakeholdersGroup' => Group::class,
-        //this is a task of type "risk questionnaire" to grab question data from
-        //it must be filtered to RiskQuestionnaires only, and is required
-        'RiskQuestionnaireDataSource' => Task::class
+        // this is a task of type "risk questionnaire" to grab question data from
+        // it must be filtered to RiskQuestionnaires only, and is required
+        'RiskQuestionnaireDataSource' => Task::class,
+        // in C&A memo task to get the result of task for question 3
+        'InformationClassificationTask' => Task::class
     ];
 
     /**
@@ -159,7 +167,8 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'Name',
         'TaskType',
         'LockAnswersWhenComplete.Nice' => 'Lock Answers When Complete',
-        'IsApprovalRequired.Nice' => 'Is Approval Required'
+        'IsApprovalRequired.Nice' => 'Is Approval Required',
+        'DisplayCanTaskCreateNewTasks' => 'Can Task Generate another Task'
     ];
 
     /**
@@ -190,7 +199,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             'DefaultSecurityComponents',
             'Questionnaires',
             'AnswerActionFields',
-            'HideRiskWeightsAndScore'
+            'HideRiskWeightsAndScore',
         ]);
 
         $fields->insertAfter(
@@ -251,35 +260,67 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             ->end()
         );
 
-        $fields->addFieldsToTab(
-            'Root.TaskApproval',
-            [
-                $fields
-                    ->dataFieldByName('IsApprovalRequired')
-                    ->setTitle('Always require approval'),
-                $fields
-                    ->dataFieldByName('ApprovalGroupID')
-                    ->setDescription('Please select the task approval group.'),
-                OptionsetField::create(
-                    'IsStakeholdersSelected',
-                    'Email Stakeholders when task is ready for review (Complete or Awaiting Approval)?',
-                    $this->dbObject('IsStakeholdersSelected')->enumValues()
-                )->setDescription(
-                    sprintf(
-                        '<p>If this is not set, emails will not'
-                        . ' be sent to the selected stakeholders group.</p>'
-                        . '<p>Please click on the <a href="%s"> Email Format Link </a>'
-                        . 'to add and edit the email format.</p>',
-                        $this->getTaskEmailLink()
-                    )
-                ),
-                $fields
-                    ->dataFieldByName('StakeholdersGroupID')
-                    ->displayIf('IsStakeholdersSelected')
-                    ->isEqualTo('Yes')
-                    ->end()
-            ]
-        );
+        if (!$this->isCertificationAndAccreditationType()) {
+            $fields->removeByName([
+                'CertificationAndAccreditationGroupID',
+                'PreventMessage',
+                'InformationClassificationTaskID'
+            ]);
+
+            $fields->addFieldsToTab(
+                'Root.TaskApproval',
+                [
+                    $fields
+                        ->dataFieldByName('IsApprovalRequired')
+                        ->setTitle('Always require approval'),
+                    $fields
+                        ->dataFieldByName('ApprovalGroupID')
+                        ->setDescription('Please select the task approval group.'),
+                    OptionsetField::create(
+                        'IsStakeholdersSelected',
+                        'Email Stakeholders when task is ready for review (Complete or Awaiting Approval)?',
+                        $this->dbObject('IsStakeholdersSelected')->enumValues()
+                    )->setDescription(
+                        sprintf(
+                            '<p>If this is not set, emails will not'
+                            . ' be sent to the selected stakeholders group.</p>'
+                            . '<p>Please click on the <a href="%s"> Email Format Link </a>'
+                            . 'to add and edit the email format.</p>',
+                            $this->getTaskEmailLink()
+                        )
+                    ),
+                    $fields
+                        ->dataFieldByName('StakeholdersGroupID')
+                        ->displayIf('IsStakeholdersSelected')
+                        ->isEqualTo('Yes')
+                        ->end()
+                ]
+            );
+        } else {
+            $fields->removeByName([
+                'IsApprovalRequired',
+                'ApprovalGroupID',
+                'IsStakeholdersSelected',
+                'StakeholdersGroupID'
+            ]);
+
+            $fields->addFieldsToTab(
+                'Root.CertificationAndAccreditationTaskDetails',
+                [
+                    $fields
+                        ->dataFieldByName('CertificationAndAccreditationGroupID')
+                        ->setDescription('Please select a group to edit/complete certification and accreditation task.'),
+                    $fields->dataFieldByName('InformationClassificationTaskID')
+                        ->setDescription('Please select the information and classification task.
+                            The result of this task will be used to set a default value of "information classification"
+                            field for the "Certification and Accreditation" task.'),
+                    $fields
+                        ->dataFieldByName('PreventMessage')
+                        ->setDescription('A message that will be displayed to submitters/collaborators when they try to start the task.'),
+                ]
+            );
+        }
+
 
         // add used on tab for task
         if ($this->getUsedOnData()->Count()) {
@@ -625,6 +666,14 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     /**
      * @return boolean
      */
+    public function isCertificationAndAccreditationType() : bool
+    {
+        return $this->TaskType === 'certification and accreditation';
+    }
+
+    /**
+     * @return boolean
+     */
     public function isSelectionType() : bool
     {
         return $this->TaskType === 'selection';
@@ -660,6 +709,21 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         parent::onBeforeWrite();
 
         $this->auditService->audit($this);
+    }
+
+    /**
+     * Deal with post-write processes.
+     *
+     * @return void
+     */
+    public function onAfterWrite()
+    {
+        parent::onAfterWrite();
+
+        // write default questions if task type is "certification and accreditation"
+        if ($this->isCertificationAndAccreditationType()) {
+            $this->addQuestionsForCertificationAndAccreditationTask();
+        }
     }
 
     /**
@@ -1034,5 +1098,38 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         $returnobj['task'] = $obj;
 
         return json_encode($returnobj, JSON_PRETTY_PRINT);
+    }
+
+    /**
+     * Determines if a task may create new tasks, used for display purposes
+     *
+     * @return boolean
+     */
+    public function getCanTaskCreateNewTasks() {
+        // only questinnaire and risk questionnaire type task can generate other task
+        if ($this->TaskType === 'risk questionnaire' || $this->TaskType === 'questionnaire') {
+            $questions = $this->Questions();
+
+            foreach ($questions as $question) {
+                // check for tasks that are generated from action field type
+                foreach ($question->AnswerActionFields() as $actionField) {
+                    if ($actionField->Tasks()->count()) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Determines if a task may create new tasks, used for display purposes
+     *
+     * @return string
+     */
+    public function getDisplayCanTaskCreateNewTasks()
+    {
+        return $this->CanTaskCreateNewTasks ? 'Yes' : 'No';
     }
 }

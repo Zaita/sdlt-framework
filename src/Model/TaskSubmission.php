@@ -121,7 +121,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         'IsTaskApprovalLinkSent' => 'Boolean',
         'IsStakeholdersEmailSent' => 'Boolean',
         'RiskResultData' => 'Text',
+        'TaskRecommendationData' => 'Text',
         'CVATaskData' => 'Text',
+        'UpdatedAccreditationPeriod' => 'Varchar(255)',
     ];
 
     /**
@@ -308,11 +310,15 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
             $completedAtField = $fields->dataFieldByName('CompletedAt');
             $completedAtField
                 ->setHTML5(false)
-                // ->setDatetimeFormat('yyyy-MM-dd HH:mm:ss')
                 ->setDatetimeFormat('dd/MM/yyyy hh:mm a')
                 ->setReadonly(true)
                 ->setDescription(null);
         }
+
+        $updatedAccreditationPeriod = $fields->dataFieldByName('UpdatedAccreditationPeriod');
+        $updatedAccreditationPeriod
+            ->setReadonly(true)
+            ->setDescription('Please add updated accreditation period in the format like: "6 months" or "12 months".');
 
         // link tab
         $secureLink = $this->SecureLink();
@@ -336,6 +342,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
         $fields->removeByName([
           'RiskResultData',
+          'TaskRecommendationData',
           'QuestionnaireData',
           'AnswerData',
           'Result',
@@ -369,7 +376,13 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         TextField::create('Result'),
                     ]
                 ),
-
+                ToggleCompositeField::create(
+                    'ToggleTaskRecommendationData',
+                    'Task Recommendation Data',
+                    [
+                        TextareaField::create('TaskRecommendationData')
+                    ]
+                )
             ]
         );
 
@@ -475,6 +488,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         $this->provideGraphQLScaffoldingForReadTaskSubmission($dataObjectScaffolder);
         $this->provideGraphQLScaffoldingForUpdateTaskSubmissionStatusToApproved($scaffolder);
         $this->provideGraphQLScaffoldingForUpdateTaskSubmissionStatusToDenied($scaffolder);
+        $this->provideGraphQLScaffoldingForUpdateTaskRecommendationData($scaffolder);
         $this->provideGraphQLScaffoldingForUpdateControlValidationAuditTaskSubmission($scaffolder);
         $this->provideGraphQLScaffoldingtoReSyncWithJira($scaffolder);
     }
@@ -504,6 +518,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'IsTaskApprovalRequired',
                 'IsCurrentUserAnApprover',
                 'RiskResultData',
+                'TaskRecommendationData',
                 'ComponentTarget',
                 'ProductAspects',
                 //you would be forgiven for thinking this returns a TaskSubmission
@@ -515,7 +530,15 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'Created',
                 'HideWeightsAndScore',
                 'CanUpdateTask',
-                'IsTaskCollborator'
+                'IsTaskCollborator',
+                'TimeToReview',
+                'TimeToComplete',
+                'CanTaskCreateNewTasks',
+                'InformationClassificationTaskResult',
+                'RiskProfileData',
+                'ResultForCertificationAndAccreditation',
+                'PreventMessage',
+                'IsDisplayPreventMessage'
             ]);
 
         $dataObjectScaffolder
@@ -1132,7 +1155,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     $uuid = isset($args['UUID']) ? Convert::raw2sql(trim($args['UUID'])) : null;
                     $userID = isset($args['UserID']) ? (int) $args['UserID'] : null;
                     $secureToken = isset($args['SecureToken']) ? Convert::raw2sql(trim($args['SecureToken'])) : null;
-                    $pageType= isset($args['PageType']) ? Convert::raw2sql(trim($args['PageType'])) : '';
 
                     // Check argument
                     if (!$uuid && !$userID) {
@@ -1183,15 +1205,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                                 $data->CVATaskData = $data->getDataforCVATask($siblingComponentSelectionTask);
                             }
                         }
-                    }
-
-                    if ($userID && $pageType=="awaiting_approval_list") {
-                        $groupIds = $member->groups()->column('ID');
-
-                        $data = TaskSubmission::get()
-                            ->filter(['ApprovalGroupID' => $groupIds])
-                            ->filter('Status', TaskSubmission::STATUS_WAITING_FOR_APPROVAL)
-                            ->exclude('Status', TaskSubmission::STATUS_INVALID);
                     }
 
                     return $data;
@@ -1315,6 +1328,64 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
+     * add/update task recommendation
+     *
+     * @param SchemaScaffolder $scaffolder SchemaScaffolder
+     *
+     * @return void
+     */
+    public function provideGraphQLScaffoldingForUpdateTaskRecommendationData(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('updateTaskRecommendation', TaskSubmission::class)
+            ->addArgs([
+                'UUID' => 'String!',
+                'TaskRecommendationData' => 'String',
+            ])
+            ->setResolver(new class implements ResolverInterface {
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws Exception
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    // Check authentication
+                    QuestionnaireValidation::is_user_logged_in();
+
+                    $member = Security::getCurrentUser();
+                    $uuid = Convert::raw2sql($args['UUID']);
+
+                    if (empty($args['UUID'])) {
+                        throw new Exception('Please enter a valid argument data.');
+                    }
+
+                    $submission = TaskSubmission::get_task_submission_by_uuid($uuid);
+
+                    if (!$submission) {
+                        throw new Exception('No data available for Task Submission.');
+                    }
+
+                    if ($submission->Status != TaskSubmission::STATUS_WAITING_FOR_APPROVAL) {
+                        throw new Exception('Task Submission is not ready for approval.');
+                    }
+
+                    $submission->TaskRecommendationData = json_encode(json_decode(base64_decode($args['TaskRecommendationData'])));
+                    $submission->write();
+
+                    return $submission;
+                }
+            })
+            ->end();
+    }
+
+    /**
      * check does task belong to log in user
      *
      * @throws Exception
@@ -1420,12 +1491,28 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     $taskSubmission->Status === TaskSubmission::STATUS_DENIED) {
                     return true;
                 }
+
                 if ($taskSubmission->Status === TaskSubmission::STATUS_COMPLETE ||
                     $taskSubmission->Status === TaskSubmission::STATUS_WAITING_FOR_APPROVAL) {
                     if (!$taskSubmission->LockAnswersWhenComplete) {
                         return true;
                     }
                 }
+            }
+
+            // for c&a memo task only CertificationAndAccreditationGroup memeber
+            // can update the task
+            $accessGroup = $taskSubmission->Task()->CertificationAndAccreditationGroup();
+
+            if (Member::currentUser()->inGroup($accessGroup->ID) &&
+                $taskSubmission->Task()->isCertificationAndAccreditationType()) {
+                return true;
+            }
+
+            $isTaskApprover = $taskSubmission->getIsTaskApprover();
+            if ($isTaskApprover &&
+                $taskSubmission->Status === TaskSubmission::STATUS_WAITING_FOR_APPROVAL) {
+                return true;
             }
 
             // SA can edit it
@@ -2412,6 +2499,30 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         return false;
     }
 
+    /**
+     * Get is logged in user is approver
+     * @return bool
+     */
+    public function getIsTaskApprover() : bool
+    {
+        $member = Security::getCurrentUser();
+
+        if (!$member || $member == null || !$this->approvalGroupMembers()) {
+            return false;
+        }
+
+        $approverIDs = $this->approvalGroupMembers()->column('ID');
+
+        if (empty($approverIDs)) {
+            return false;
+        }
+
+        if (in_array($member->ID, $approverIDs)) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * If all sibling tasks are completed or approved then send an email to notify submitter
@@ -2442,5 +2553,393 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 date('Y-m-d H:i:s', time() + 30)
             );
         }
+    }
+
+    /**
+     * @return string
+     */
+    public function getTimetoComplete()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->TimeToComplete;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTimetoReview()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->TimeToReview;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPreventMessage()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->PreventMessage;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getCanTaskCreateNewTasks()
+    {
+        return $this->Task()->getCanTaskCreateNewTasks();
+    }
+
+    /**
+     * return risk profile data for question 4 for C&A memo task
+     *
+     * @return string
+     */
+    public function getRiskProfileData()
+    {
+        // check sibling sra tasks
+        $siblingTaskSubmissions = $this->getSiblingTaskSubmissions();
+
+        $finalResult["message"] = "There are no digital security risk assessments to link against this Certification and Accreditation.";
+        $finalResult["isDisplayMessage"] = true;
+
+        if ($this->Task()->isCertificationAndAccreditationType() &&
+            $siblingTaskSubmissions && $siblingTaskSubmissions->Count()) {
+            foreach ($siblingTaskSubmissions as $taskSubmission) {
+
+                if ($taskSubmission->Task()->isSRAType() &&
+                    $taskSubmission->Status == self::STATUS_COMPLETE &&
+                    $taskSubmission->AnswerData)
+                {
+                    $result = json_decode($taskSubmission->AnswerData, true);
+                    $hasProductAspects = $result["hasProductAspects"];
+                    $calculatedSRAData = $result["calculatedSRAData"];
+                    $finalResult['hasProductAspects'] = $hasProductAspects;
+                    $finalResult["isDisplayMessage"] = false;
+
+                    if ($hasProductAspects) {
+                        foreach ($calculatedSRAData as $risk) {
+                            foreach ($risk["productAspects"] as $productAspect) {
+                                $productAspectName = $productAspect["productAspectName"];
+                                $riskresult["riskId"] = $risk["riskId"];
+                                $riskresult["riskName"] = $risk["riskName"];
+                                $riskresult["currentRiskRating"] = $productAspect["currentRiskRating"];
+                                $productAspectriskResult[$productAspectName][] = $riskresult;
+                            }
+                        }
+
+                        $finalResult["result"] = $productAspectriskResult;
+                    } else {
+                        foreach ($calculatedSRAData as $risk) {
+                            $riskresult["riskId"] = $risk["riskId"];
+                            $riskresult["riskName"] = $risk["riskName"];
+                            $riskresult["currentRiskRating"] = $risk["riskDetail"]["currentRiskRating"];
+                            $finalResult["result"][] = $riskresult;
+                        }
+                    }
+                }
+            }
+        }
+
+        return json_encode($finalResult);
+    }
+
+    /**
+     * For C&A memo task return the result for information classification task result
+     *
+     * @return string
+     */
+   public function getInformationClassificationTaskResult()
+   {
+       $result = '';
+       $siblingTasks = $this->getSiblingTaskSubmissions();
+
+       if ($siblingTasks && $siblingTasks->Count()) {
+           foreach ($siblingTasks as $task) {
+               if ($task->Task()->ID === $this->Task()->InformationClassificationTask()->ID &&
+                   ($task->Status == self::STATUS_COMPLETE || $task->Status == self::STATUS_APPROVED) &&
+                   $task->Result) {
+                   $resultArray = explode(":", $task->Result);
+                   $taskResult = isset($resultArray[1]) ?
+                       trim($resultArray[1]): trim($resultArray[0]);
+
+                   $optionArray = [
+                       'unclassified',
+                       'in-confidence',
+                       'sensitive',
+                       'restricted',
+                       'confidential',
+                       'secret',
+                       'top-secret'
+                   ];
+
+                   if ($taskResult && in_array(strtolower($taskResult), $optionArray)) {
+                       $result = json_encode(['value' => strtolower($taskResult), 'label' => $taskResult]);
+                   }
+               }
+           }
+       }
+
+       return $result;
+    }
+
+    /**
+     * calculate the result of c&a memo task
+     *
+     * @return array
+     */
+    public function finalResultForCertificationAndAccreditation()
+    {
+        if (!$this->Task()->isCertificationAndAccreditationType()) {
+            return "[]";
+        }
+
+        // get questions and answers from submission json
+        $questionnaireData = json_decode($this->QuestionnaireData, true);
+        $answerData = json_decode($this->AnswerData, true);
+        $questionnaireSubmission = $this->QuestionnaireSubmission();
+        $member = Security::getCurrentUser();
+        $siteConfig = SiteConfig::current_site_config();
+        $result = [];
+
+        if (empty($questionnaireData) || empty($answerData) || empty($questionnaireSubmission)) {
+            return "[]";
+        }
+
+        $result['organisationName'] = $siteConfig->OrganisationName;
+        $result['reportLogo'] = $siteConfig->CertificationAndAccreditationReportLogo()->Link();
+        $result['productName'] = $questionnaireSubmission->ProductName;
+        $result['businessOwnerName'] = $questionnaireSubmission->getBusinessOwnerApproverName();
+        $result['securityArchitectName'] = implode(' ', [$member->FirstName, $member->Surname]);
+        $result['createdAt'] = date("Y/m/d");
+        $result['riskProfileData'] = $this->RiskProfileData;
+
+        // get all task and exclude current task (C&A memo task)
+        $taskSubmissions = $questionnaireSubmission->TaskSubmissions()->exclude('ID', $this->ID);
+
+        foreach ($taskSubmissions as $taskSubmission) {
+            $taskApprover = $taskSubmission->TaskApprover();
+            $taskApproverName = $taskApprover->exists() ?
+                (implode(' ', [$taskApprover->FirstName, $taskApprover->Surname])) : '';
+
+            $data['taskName'] = $taskSubmission->TaskName;
+            $data['taskApproverName'] = $taskApproverName;
+            $data['taskStatus'] = $taskSubmission->Status;
+            $result['tasks'][] = $data;
+
+            if ($taskApprover->exists() && !empty($taskSubmission->TaskRecommendationData)) {
+                $data['taskRecommendationData'] = $taskSubmission->TaskRecommendationData;
+                $result['taskRecommendations'][] = $data;
+            }
+        }
+
+        if (!isset($result['taskRecommendations'])) {
+            $result['taskRecommendations'] = [];
+        }
+
+        // traverse questions to get result from c&a memo task
+        foreach ($questionnaireData as $question) {
+            $questionID = $question['ID'];
+
+            // get answers for all the input fields of the questions
+            if ($questionID && isset($answerData[$questionID]) && !$answers = $answerData[$questionID]) {
+                continue;
+            }
+
+            // if question type is input
+            if ($question['AnswerFieldType'] === 'input' && !empty($question['AnswerInputFields'])) {
+                foreach ($question['AnswerInputFields'] as $inputField) {
+                    switch ($inputField['CertificationAndAccreditationInputType']) {
+                        case "product description":
+                            $result["productDescription"] = $this->getAnswer($inputField, $answers);
+                            break;
+                        case "service name":
+                            $result["serviceName"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                        case "classification level":
+                            $result["classificationLevel"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation level":
+                            $result["accreditationLevel"] = $this->getAnswer($inputField, $answers);
+                            break;
+                        case "accreditation description":
+                            $result["accreditationDescription"] = $this->getAnswer($inputField, $answers);
+                            break;
+                        case "accreditation type":
+                            $result["accreditationType"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation period":
+                            $result["accreditationPeriod"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation renewal recommendations":
+                            $result["accreditationRenewalRecommendations"] = $this->getAnswer($inputField, $answers);
+                            break;
+                    }
+                }
+            }
+        }
+        return $result;
+    }
+
+    /**
+     * get the result of c&a memo task
+     *
+     * @return string
+     */
+    public function getResultForCertificationAndAccreditation()
+    {
+        $result = $this->finalResultForCertificationAndAccreditation();
+        return json_encode($result);
+    }
+
+    /**
+     * get the answer of input field
+     * @param array input   input field detail array
+     * @param array answers answers of the question
+     *
+     * @return string
+     */
+    public function getAnswer($input, $answers)
+    {
+        $inputFieldID = $input['ID'];
+        $inputFieldAnswer = [];
+
+        if (!$answers || !isset($answers['inputs'])) {
+            return;
+        }
+
+        $inputFieldAnswer = array_filter($answers['inputs'], function ($e) use ($inputFieldID) {
+            return isset($e['id']) && $e['id'] == $inputFieldID;
+        });
+
+        // get answer array from $inputFieldAnswer
+        $answer = array_pop($inputFieldAnswer);
+        $data = $answer['data']; // string for radio
+
+        return $data;
+    }
+
+    /**
+     * return label for multi choice field (radio, dropdown and checkbox)
+     *
+     * @return string
+     */
+    public function getLabel($jsonObj)
+    {
+        $data = json_decode($jsonObj, true);
+        return is_array($data)  && isset($data['label'])? $data['label'] : '';
+    }
+
+    /**
+     * return label for multi choice field (radio, dropdown and checkbox)
+     *
+     * @return string
+     */
+    public function getValue($jsonObj)
+    {
+        $data = json_decode($jsonObj, true);
+        return is_array($data) && isset($data['value'])? $data['value'] : '';
+    }
+
+    /**
+     * check all condition to display prevent message if task type is C&A memo
+     *
+     * @return boolean
+     */
+    public function getIsDisplayPreventMessage()
+    {
+        $isDisplayPreventMessage = false;
+
+        if (!$this->Task()->isCertificationAndAccreditationType()) {
+            return $isDisplayPreventMessage;
+        }
+
+        if ($this->Status == self::STATUS_COMPLETE) {
+            return $isDisplayPreventMessage;
+        }
+
+        $siblingTasks = $this->getSiblingTaskSubmissions();
+
+        if (!$siblingTasks || !$siblingTasks->Count()) {
+            return $isDisplayPreventMessage;
+        }
+
+        $siblings = $siblingTasks
+            ->exclude(['ID' => $this->ID])
+            ->filter(['Status:not' => self::STATUS_INVALID]);
+
+        foreach ($siblings as $siblingTask) {
+            if ($this->isSiblingTaskCompleted($siblingTask) == false) {
+                $isDisplayPreventMessage = true;
+                return $isDisplayPreventMessage;
+            }
+        }
+
+        $accessGroup = $this->Task()->CertificationAndAccreditationGroup();
+
+        if (!Member::currentUser()->inGroup($accessGroup->ID)) {
+            return $isDisplayPreventMessage = true;
+        }
+
+        return $isDisplayPreventMessage;
+    }
+
+    /**
+     * get data to create AccreditationMemo from the result of c&a memo task
+     *
+     * @return array
+     */
+    public function getDataForAccreditationMemo()
+    {
+        $questionnaireData = json_decode($this->QuestionnaireData, true);
+        $answerData = json_decode($this->AnswerData, true);
+
+        if (empty($questionnaireData) || empty($answerData)) {
+            return;
+        }
+
+        // traverse questions to get result from c&a memo task
+        foreach ($questionnaireData as $question) {
+            $questionID = $question['ID'];
+
+            // get answers for all the input fields of the questions
+            if ($questionID && isset($answerData[$questionID]) && !$answers = $answerData[$questionID]) {
+                continue;
+            }
+
+            // if question type is input
+            if ($question['AnswerFieldType'] === 'input' && !empty($question['AnswerInputFields'])) {
+                foreach ($question['AnswerInputFields'] as $inputField) {
+                    switch ($inputField['CertificationAndAccreditationInputType']) {
+                        case "service name":
+                            $result["serviceID"] = $this->getValue($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation level":
+                            $result["accreditationLevelValue"] = strtolower($this->getAnswer($inputField, $answers));
+                            break;
+                        case "accreditation period":
+                            $result["accreditationPeriod"] = $this->getLabel($this->getAnswer($inputField, $answers));
+                            break;
+                    }
+                }
+            }
+        }
+
+        return $result;
     }
 }

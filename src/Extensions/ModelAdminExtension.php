@@ -13,6 +13,7 @@
 namespace NZTA\SDLT\Extension;
 
 use NZTA\SDLT\Model\QuestionnaireSubmission;
+use NZTA\SDLT\Model\ServiceInventory;
 use SilverStripe\Forms\HiddenField;
 use SilverStripe\ORM\DataExtension;
 
@@ -29,8 +30,9 @@ class ModelAdminExtension extends DataExtension
      */
     public function updateSearchContext($context)
     {
-        //store search input from GridFieldFilterHeader search box into a hidden field
-        if($this->owner->modelClass == QuestionnaireSubmission::class) {
+        // store search input from GridFieldFilterHeader search box into a hidden field
+        if ($this->owner->modelClass == QuestionnaireSubmission::class ||
+            $this->owner->modelClass == ServiceInventory::class) {
             $context->getFields()->insertBefore(HiddenField::create('DefaultSearch', 'Default Search'), '');
         }
 
