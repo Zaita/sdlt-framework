@@ -949,7 +949,8 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'BusinessOwnerAcknowledgementText',
                 'CertificationAuthorityAcknowledgementText',
                 'AccreditationAuthorityAcknowledgementText',
-                'ProductAspects'
+                'ProductAspects',
+                'IsBusinessOwner'
             ]);
 
         $submissionScaffolder
