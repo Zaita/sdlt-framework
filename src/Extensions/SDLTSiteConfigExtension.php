@@ -80,6 +80,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'AssuranceAdminGroup' => Group::class,
         'CertificationAuthorityGroup' => Group::class,
         'AccreditationAuthorityGroup' => Group::class,
+        'HomePageSubHeaderImage' => Image::class,
     ];
 
     /**
@@ -95,7 +96,8 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'QuestionnairePdfHeaderImage',
         'QuestionnairePdfFooterImage',
         'FavIcon',
-        'CertificationAndAccreditationReportLogo'
+        'CertificationAndAccreditationReportLogo',
+        'HomePageSubHeaderImage'
     ];
 
     /**
@@ -218,6 +220,8 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     The default dimensions for the logo are 370px x 82px.'),
                 UploadField::create('LoginHeroImage', 'Login screen background image')
                     ->setDescription('This is the background image shown on the login screen.'),
+                UploadField::create('HomePageSubHeaderImage', 'Home Page Sub Header Image')
+                    ->setDescription('This is the image that appears underneath the header on the home-screen.'),
                 UploadField::create('HomePageBackgroundImage', 'Home Page Background Image')
                     ->setDescription('This is the background image shown on the home-screen.'),
                 UploadField::create('FavIcon', 'FavIcon')
@@ -388,6 +392,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                 'PdfHeaderImageLink',
                 'PdfFooterImageLink',
                 'SecurityTeamEmail',
+                'HomePageSubHeaderImagePath'
             ])
             ->operation(SchemaScaffolder::READ)
             ->setName('readSiteConfig')
@@ -456,5 +461,15 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
     public function getPdfFooterImageLink() : string
     {
         return (string) $this->owner->QuestionnairePdfFooterImage()->Link();
+    }
+
+    /**
+     * Called from provideGraphQLScaffolding().
+     *
+     * @return string
+     */
+    public function getHomePageSubHeaderImagePath() : string
+    {
+        return (string) $this->owner->HomePageSubHeaderImage()->Link();
     }
 }
