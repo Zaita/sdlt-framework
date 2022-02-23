@@ -100,6 +100,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'SraTaskHelpText' => 'Text',
         'SraTaskRecommendedControlHelpText' => 'Text',
         'SraTaskRiskRatingHelpText' => 'HTMLText',
+        'SraTaskLikelihoodScoreHelpText' => 'HTMLText',
     ];
 
     /**
@@ -394,7 +395,8 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                 [
                     $fields->dataFieldByName('SraTaskHelpText'),
                     $fields->dataFieldByName('SraTaskRecommendedControlHelpText'),
-                    $fields->dataFieldByName('SraTaskRiskRatingHelpText')
+                    $fields->dataFieldByName('SraTaskRiskRatingHelpText'),
+                    $fields->dataFieldByName('SraTaskLikelihoodScoreHelpText')
                 ]
             );
 
@@ -415,7 +417,8 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             $fields->removeByName([
                 'SraTaskHelpText',
                 'SraTaskRecommendedControlHelpText',
-                'SraTaskRiskRatingHelpText'
+                'SraTaskRiskRatingHelpText',
+                'SraTaskLikelihoodScoreHelpText'
             ]);
         }
 
