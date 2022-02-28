@@ -304,6 +304,21 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         return $task->SraTaskRecommendedControlHelpText;
     }
 
+
+    /**
+     * @return string
+     */
+    public function getSraTaskRiskRatingHelpText()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->SraTaskRiskRatingHelpText;
+    }
+
     /**
      * @return string
      */
@@ -566,7 +581,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'PreventMessage',
                 'IsDisplayPreventMessage',
                 'SraTaskHelpText',
-                'SraTaskRecommendedControlHelpText'
+                'SraTaskRecommendedControlHelpText',
+                'SraTaskRiskRatingHelpText'
             ]);
 
         $dataObjectScaffolder
