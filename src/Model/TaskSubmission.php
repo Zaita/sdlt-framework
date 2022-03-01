@@ -337,6 +337,20 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     /**
      * @return string
      */
+    public function getSraTaskImpactScoreHelpText()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->SraTaskImpactScoreHelpText;
+    }
+
+    /**
+     * @return string
+     */
     public function calculateSecurityRiskAssessmentData()
     {
         if ($this->TaskType === 'security risk assessment') {
@@ -598,7 +612,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'SraTaskHelpText',
                 'SraTaskRecommendedControlHelpText',
                 'SraTaskRiskRatingHelpText',
-                'SraTaskLikelihoodScoreHelpText'
+                'SraTaskLikelihoodScoreHelpText',
+                'SraTaskImpactScoreHelpText'
             ]);
 
         $dataObjectScaffolder
