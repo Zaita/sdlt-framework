@@ -54,6 +54,7 @@ class Risk extends DataObject
         'Name',
         'Created',
         'LastEdited',
+        'Description'
     ];
 
     /**

@@ -97,6 +97,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'PreventMessage' => 'HTMLText', // display message for C&A memo task
         'TimeToComplete' => 'Varchar(255)',
         'TimeToReview' => 'Varchar(255)',
+        'CreateOnceInstancePerComponent' => 'Boolean',
         'SraTaskHelpText' => 'Text',
         'SraTaskRecommendedControlHelpText' => 'Text',
         'SraTaskRiskRatingHelpText' => 'HTMLText',
@@ -192,6 +193,7 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     {
         $fields = parent::getCMSFields();
         $typeField = $fields->dataFieldByName('TaskType');
+        $createOnceInstancePerComponent = $fields->dataFieldByName('CreateOnceInstancePerComponent');
         $riskField = $fields->dataFieldByName('RiskCalculation');
         $hideWeightsAndScore = $fields->dataFieldByName('HideRiskWeightsAndScore');
 
@@ -204,8 +206,21 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             'DefaultSecurityComponents',
             'Questionnaires',
             'AnswerActionFields',
-            'HideRiskWeightsAndScore'
+            'HideRiskWeightsAndScore',
+            'CreateOnceInstancePerComponent'
         ]);
+
+        $fields->insertAfter(
+            'LockAnswersWhenComplete',
+            $createOnceInstancePerComponent
+                ->setTitle('Create once instance per component on the submission')
+        );
+
+        $createOnceInstancePerComponent
+            ->displayIf("TaskType")->isEqualTo("risk questionnaire")
+            ->orIf("TaskType")->isEqualTo("security risk assessment")
+            ->orIf("TaskType")->isEqualTo("control validation audit")
+            ->end();
 
         $fields->insertAfter(
             'Name',
@@ -271,36 +286,6 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                 'PreventMessage',
                 'InformationClassificationTaskID'
             ]);
-
-            $fields->addFieldsToTab(
-                'Root.TaskApproval',
-                [
-                    $fields
-                        ->dataFieldByName('IsApprovalRequired')
-                        ->setTitle('Always require approval'),
-                    $fields
-                        ->dataFieldByName('ApprovalGroupID')
-                        ->setDescription('Please select the task approval group.'),
-                    OptionsetField::create(
-                        'IsStakeholdersSelected',
-                        'Email Stakeholders when task is ready for review (Complete or Awaiting Approval)?',
-                        $this->dbObject('IsStakeholdersSelected')->enumValues()
-                    )->setDescription(
-                        sprintf(
-                            '<p>If this is not set, emails will not'
-                            . ' be sent to the selected stakeholders group.</p>'
-                            . '<p>Please click on the <a href="%s"> Email Format Link </a>'
-                            . 'to add and edit the email format.</p>',
-                            $this->getTaskEmailLink()
-                        )
-                    ),
-                    $fields
-                        ->dataFieldByName('StakeholdersGroupID')
-                        ->displayIf('IsStakeholdersSelected')
-                        ->isEqualTo('Yes')
-                        ->end()
-                ]
-            );
         } else {
             $fields->removeByName([
                 'IsApprovalRequired',
@@ -411,10 +396,6 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                     GridFieldConfig_RecordEditor::create()
                 )
             );
-
-            $fields->removeByName([
-                'TaskApproval',
-            ]);
         } else {
             $fields->removeByName([
                 'SraTaskHelpText',
@@ -427,6 +408,40 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
 
         if ($this->isControlValidationAudit()) {
             $this->getCVA_CMSFields($fields);
+        }
+
+        if ($this->TaskType === "questionnaire") {
+            $fields->addFieldsToTab(
+                'Root.TaskApproval',
+                [
+                    $fields
+                        ->dataFieldByName('IsApprovalRequired')
+                        ->setTitle('Always require approval'),
+                    $fields
+                        ->dataFieldByName('ApprovalGroupID')
+                        ->setDescription('Please select the task approval group.'),
+                    OptionsetField::create(
+                        'IsStakeholdersSelected',
+                        'Email Stakeholders when task is ready for review (Complete or Awaiting Approval)?',
+                        $this->dbObject('IsStakeholdersSelected')->enumValues()
+                    )->setDescription(
+                        sprintf(
+                            '<p>If this is not set, emails will not'
+                            . ' be sent to the selected stakeholders group.</p>'
+                            . '<p>Please click on the <a href="%s"> Email Format Link </a>'
+                            . 'to add and edit the email format.</p>',
+                            $this->getTaskEmailLink()
+                        )
+                    ),
+                    $fields
+                        ->dataFieldByName('StakeholdersGroupID')
+                        ->displayIf('IsStakeholdersSelected')
+                        ->isEqualTo('Yes')
+                        ->end()
+                ]
+            );
+        } else {
+            $fields->removeFieldFromTab('Root', 'TaskApproval');
         }
 
         if ($historyTab = $fields->fieldByName('Root.History')) {

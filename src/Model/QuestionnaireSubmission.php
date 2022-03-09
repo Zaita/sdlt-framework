@@ -1639,7 +1639,6 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'ID' => 'ID!',
             ])
             ->setResolver(new class implements ResolverInterface {
-
                 /**
                  * Invoked by the Executor class to resolve this mutation / query
                  * @see Executor
@@ -3705,6 +3704,10 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         }
 
         $memoAnswers = $caTaskSubmission->finalResultForCertificationAndAccreditation();
+
+        if(!$memoAnswers) {
+            return $acknowledgementText;
+        }
 
         $serviceName = $memoAnswers['serviceName'];
         $accreditationLevel = $memoAnswers['accreditationLevel'];

@@ -113,6 +113,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         'Result' => 'Varchar(255)',
         'SecureToken' => 'Varchar(64)',
         'LockAnswersWhenComplete' => 'Boolean',
+        'CreateOnceInstancePerComponent' => 'Boolean',
         'SubmitterIPAddress' => 'Varchar(255)',
         'CompletedAt' => 'Datetime',
         'EmailRelativeLinkToTask' => 'Varchar(255)',
@@ -207,11 +208,17 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         return $task->Name;
     }
 
+    /**
+     * @return bool
+     */
     public function getCanUpdateTask()
     {
         return $this->CanUpdateTask;
     }
 
+    /**
+     * @return bool
+     */
     public function setCanUpdateTask($canEdit)
     {
         return $this->CanUpdateTask = $canEdit;
@@ -456,25 +463,27 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
             ]
         );
 
-        if ($this->RiskResultData) {
-            $riskResultTable = $this->getRiskResultTable();
-            if ($riskResultTable) {
-                $fields->addFieldsToTab(
-                    'Root.TaskSubmissionData',
-                    [
-                        ToggleCompositeField::create(
-                            'ToggleRiskResultData',
-                            'Risk Result Data',
-                            [
-                                TextareaField::create('RiskResultData')
-                            ]
-                        ),
-                        HeaderField::create('RiskResultDataHeader', 'Risk results', 3),
-                        LiteralField::create('RiskResultDataTable', $riskResultTable),
-                    ]
-                );
-            }
-        }
+        // @TODO: we will work on risk result for multi component in story RM90423
+        // https://redmine.catalyst.net.nz/issues/90423
+        // if ($this->RiskResultData) {
+        //     $riskResultTable = $this->getRiskResultTable();
+        //     if ($riskResultTable) {
+        //         $fields->addFieldsToTab(
+        //             'Root.TaskSubmissionData',
+        //             [
+        //                 ToggleCompositeField::create(
+        //                     'ToggleRiskResultData',
+        //                     'Risk Result Data',
+        //                     [
+        //                         TextareaField::create('RiskResultData')
+        //                     ]
+        //                 ),
+        //                 HeaderField::create('RiskResultDataHeader', 'Risk results', 3),
+        //                 LiteralField::create('RiskResultDataTable', $riskResultTable),
+        //             ]
+        //         );
+        //     }
+        // }
 
         $taskApproverList = [];
 
@@ -613,7 +622,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'SraTaskRecommendedControlHelpText',
                 'SraTaskRiskRatingHelpText',
                 'SraTaskLikelihoodScoreHelpText',
-                'SraTaskImpactScoreHelpText'
+                'SraTaskImpactScoreHelpText',
+                'CreateOnceInstancePerComponent'
             ]);
 
         $dataObjectScaffolder
@@ -766,6 +776,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
         // Structure of task questionnaire
         $taskSubmission->IsApprovalRequired = $task->IsApprovalRequired;
+        $taskSubmission->CreateOnceInstancePerComponent = $task->CreateOnceInstancePerComponent;
         $questionnaireData = $task->getQuestionsData();
         $taskSubmission->QuestionnaireData = json_encode($questionnaireData);
 
@@ -800,6 +811,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'QuestionID' => 'ID!',
                 'AnswerData' => 'String',
                 'SecureToken' => 'String',
+                'Component' => 'String',
             ])
             ->setResolver(new class implements ResolverInterface {
                 /**
@@ -822,6 +834,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     $member = Security::getCurrentUser();
                     $uuid = Convert::raw2sql($args['UUID']);
                     $secureToken = isset($args['SecureToken']) ? Convert::raw2sql(trim($args['SecureToken'])) : null;
+                    $component = isset($args['Component']) ? Convert::raw2sql(trim($args['Component'])) : null;
 
                     $submission = TaskSubmission::get_task_submission_by_uuid($uuid);
 
@@ -882,7 +895,33 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
                     // if everything is ok, then please add/update AnswerData
                     $allAnswerData = json_decode($submission->AnswerData, true);
-                    $allAnswerData[$args['QuestionID']] = $questionAnswerData;
+
+                    if ($submission->checkForMultiComponent($component)) {
+                        $doesComponentExistInAnswerData = 0;
+
+                        if(!empty($allAnswerData)) {
+                            foreach ($allAnswerData as $key => $answerDataForComponent) {
+                                if ($answerDataForComponent['productAspect'] == $component) {
+                                    $doesComponentExistInAnswerData = 1;
+                                    $result = $answerDataForComponent['result'];
+                                    $result[$args['QuestionID']] = $questionAnswerData;
+                                    $answerDataForComponent['result'] = $result;
+                                    $allAnswerData[$key] = $answerDataForComponent;
+                                }
+                            }
+                        }
+
+                        if (!$doesComponentExistInAnswerData ) {
+                            $answerDataForComponent['productAspect'] = $component;
+                            $answerDataForComponent['status'] = TaskSubmission::STATUS_IN_PROGRESS;
+                            $result[$args['QuestionID']] = $questionAnswerData;
+                            $answerDataForComponent['result'] = $result;
+                            $allAnswerData[] = $answerDataForComponent;
+                        }
+                    } else {
+                        $allAnswerData[$args['QuestionID']] = $questionAnswerData;
+                    }
+
                     $submission->AnswerData = json_encode($allAnswerData);
                     $submission->Status = TaskSubmission::STATUS_IN_PROGRESS;
                     $submission->completedByID = (int)(
@@ -1025,7 +1064,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
             ->addArgs([
                 'UUID' => 'String!',
                 'Result' => 'String',
-                'SecureToken' => 'String'
+                'SecureToken' => 'String',
+                'Component' => 'String',
             ])
             ->setResolver(new class implements ResolverInterface {
                 /**
@@ -1043,6 +1083,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 {
                     $member = Security::getCurrentUser();
                     $uuid = Convert::raw2sql($args['UUID']);
+                    $component = isset($args['Component']) ? Convert::raw2sql(trim($args['Component'])) : null;
                     $secureToken = isset($args['SecureToken']) ? Convert::raw2sql(trim($args['SecureToken'])) : null;
 
                     $submission = TaskSubmission::get_task_submission_by_uuid($uuid);
@@ -1057,7 +1098,44 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         throw new GraphQLAuthFailure();
                     }
 
-                    $submission->Status = TaskSubmission::STATUS_COMPLETE;
+                    $allAnswerData = json_decode($submission->AnswerData, true);
+                    $answerDataResultForSelectedComponent = NULL;
+                    $taskStatusforProductAspect = [];
+
+                    // if product aspect and component exist
+                    // and createOnceInstancePerCcomponent is true
+                    if ($submission->checkForMultiComponent($component)) {
+                        $doesSetTaskSubmissionStatusToComplete = true;
+
+                        if(!empty($allAnswerData)) {
+                            foreach ($allAnswerData as $key => $answerDataForComponent) {
+                                if ($answerDataForComponent['productAspect'] == $component) {
+                                    $answerDataForComponent['status'] = TaskSubmission::STATUS_COMPLETE;
+                                    $answerDataResultForSelectedComponent = $answerDataForComponent['result'];
+                                    $allAnswerData[$key] = $answerDataForComponent;
+                                    $submission->AnswerData = json_encode($allAnswerData);
+                                } else if ($answerDataForComponent['status'] !== TaskSubmission::STATUS_COMPLETE) {
+                                    $doesSetTaskSubmissionStatusToComplete = false;
+                                }
+
+                                $taskStatusforProductAspect[$answerDataForComponent['productAspect']] = $answerDataForComponent['status'];
+                            }
+
+                            if ($doesSetTaskSubmissionStatusToComplete) {
+                                $allProductAspectsForSubmission = json_decode($submission->getProductAspects());
+                                $productAspectsExistInAnswerData = array_keys($taskStatusforProductAspect);
+                                $result = array_diff($allProductAspectsForSubmission, $productAspectsExistInAnswerData);
+                                if (empty($result)) {
+                                    $submission->Status = TaskSubmission::STATUS_COMPLETE;
+                                }
+                            }
+                        }
+                    } else {
+                        // if task is without component means save a singletask
+                        // and change the status to complete
+                        $submission->Status = TaskSubmission::STATUS_COMPLETE;
+                    }
+
                     // If it's a vendor task and completed by anonymous user,
                     // mark the userid to be 0.
                     if ($member) {
@@ -1066,7 +1144,10 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         $submission->completedByID = 0;
                     }
                     $submission->sendEmailToStakeholder();
-                    $submission->RiskResultData = $submission->getRiskResultBasedOnAnswer();
+
+                    // @TODO: we will work on risk result for multi component in story RM90423
+                    // https://redmine.catalyst.net.nz/issues/90423
+                    //$submission->RiskResultData = $submission->getRiskResultBasedOnAnswer($component);
 
                     // if task approval requires then set status to waiting for approval
                     if ($submission->IsTaskApprovalRequired) {
@@ -1091,7 +1172,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     // create another tasks form task submission based on task submission's answer
                     Question::create_task_submissions_according_to_answers(
                         $submission->QuestionnaireData,
-                        $submission->AnswerData,
+                        $submission->checkForMultiComponent($component) ? json_encode($answerDataResultForSelectedComponent) : $submission->AnswerData,
                         $submission->QuestionnaireSubmissionID,
                         '',
                         $secureToken,
@@ -1105,6 +1186,21 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 }
             })
             ->end();
+    }
+
+    /**
+     * Check for multi component feature
+     *
+     * @param string $component component exist in the url
+     * @return bool
+     */
+    public function checkForMultiComponent($component) : bool
+    {
+        if ($component && !empty($this->getProductAspects()) && $this->CreateOnceInstancePerComponent) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1145,6 +1241,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
             ->addArgs([
                 'UUID' => 'String!',
                 'SecureToken' => 'String',
+                'Component' => 'String'
             ])
             ->setResolver(new class implements ResolverInterface {
                 /**
@@ -1162,10 +1259,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 {
                     $member = Security::getCurrentUser();
                     $uuid = Convert::raw2sql($args['UUID']);
+                    $component = isset($args['Component']) ? Convert::raw2sql(trim($args['Component'])) : null;
                     $secureToken = isset($args['SecureToken']) ? Convert::raw2sql(trim($args['SecureToken'])) : null;
-
                     $submission = TaskSubmission::get_task_submission_by_uuid($uuid);
-
                     $canEdit = TaskSubmission::can_edit_task_submission(
                         $submission,
                         $member,
@@ -1174,6 +1270,20 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
                     if (!$canEdit) {
                         throw new GraphQLAuthFailure();
+                    }
+
+                    if ($submission->checkForMultiComponent($component)) {
+                        $allAnswerData = json_decode($submission->AnswerData, true);
+
+                        if(!empty($allAnswerData)) {
+                            foreach ($allAnswerData as $key => $answerDataForComponent) {
+                                if ($answerDataForComponent['productAspect'] == $component) {
+                                    $answerDataForComponent['status'] = TaskSubmission::STATUS_IN_PROGRESS;
+                                    $allAnswerData[$key] = $answerDataForComponent;
+                                    $submission->AnswerData = json_encode($allAnswerData);
+                                }
+                            }
+                        }
                     }
 
                     $submission->Status = TaskSubmission::STATUS_IN_PROGRESS;
@@ -2163,9 +2273,10 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
+     * @param string $component selectedProductAspect
      * @return string
      */
-    public function getRiskResultBasedOnAnswer()
+    public function getRiskResultBasedOnAnswer($component)
     {
         // Deal with the related Questionnaire's Task-calcs, and append them
         $allRiskResults = [];
