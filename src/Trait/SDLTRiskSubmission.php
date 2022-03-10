@@ -81,7 +81,7 @@ trait SDLTRiskSubmission
             $risks = [];
 
             // get answers for all the input fields of the questions
-            if (!$answers = $answerData[$questionID]) {
+            if (isset($answerData[$questionID]) && !$answers = $answerData[$questionID]) {
                 continue;
             }
 
@@ -107,6 +107,7 @@ trait SDLTRiskSubmission
         // create array for unique $risk['ID']
         foreach ($selectedRiskData as $risk) {
             $riskData[$risk['ID']]['riskName'] = $risk['Name'];
+            $riskData[$risk['ID']]['description'] = isset($risk['Description']) ? $risk['Description'] : '';
             $riskData[$risk['ID']]['weights'][] = $risk['Weight'];
         }
 
@@ -154,19 +155,21 @@ trait SDLTRiskSubmission
                 <th>Risk Name</th>
                 <th>Weight</th>
                 <th>Score</th>
-                <th>Rating</th>
+                <th>Impact Rating</th>
+                <th>Description</th>
             </thead>
         </tr>';
         $riskResultTableHTML .= '<tbody>';
 
         foreach ($json as $row) {
             $riskResultTableHTML .= sprintf(
-                "<tr><td>%s</td><td>%s</td><td>%2.2f</td><td style=\"color:#%s\">%s</td></tr>",
+                "<tr><td>%s</td><td>%s</td><td>%2.2f</td><td style=\"background-color:#%s\">%s</td><td>%s</td></tr>",
                 $row['riskName'],
                 $row['weights'],
                 $row['score'],
                 $row['colour'],
-                $row['rating']
+                $row['rating'],
+                $row['description'],
             );
         }
 
