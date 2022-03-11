@@ -326,6 +326,61 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         return $task->SraTaskRiskRatingHelpText;
     }
 
+    /**
+     * @return string
+     */
+    public function getSraTaskNotApplicableInformationText()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->SraTaskNotApplicableInformationText;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSraTaskNotImplementedInformationText()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->SraTaskNotImplementedInformationText;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSraTaskPlannedInformationText()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->SraTaskPlannedInformationText;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSraTaskImplementedInformationText()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->SraTaskImplementedInformationText;
+    }
 
     /**
      * @return string
@@ -623,7 +678,11 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'SraTaskRiskRatingHelpText',
                 'SraTaskLikelihoodScoreHelpText',
                 'SraTaskImpactScoreHelpText',
-                'CreateOnceInstancePerComponent'
+                'CreateOnceInstancePerComponent',
+                'SraTaskNotApplicableInformationText',
+                'SraTaskNotImplementedInformationText',
+                'SraTaskPlannedInformationText',
+                'SraTaskImplementedInformationText'
             ]);
 
         $dataObjectScaffolder

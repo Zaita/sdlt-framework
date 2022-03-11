@@ -103,6 +103,10 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'SraTaskRiskRatingHelpText' => 'HTMLText',
         'SraTaskLikelihoodScoreHelpText' => 'HTMLText',
         'SraTaskImpactScoreHelpText' => 'HTMLText',
+        'SraTaskNotApplicableInformationText' => 'Text',
+        'SraTaskNotImplementedInformationText' => 'Text',
+        'SraTaskPlannedInformationText' => 'Text',
+        'SraTaskImplementedInformationText' => 'Text'
     ];
 
     /**
@@ -183,6 +187,26 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     private static $searchable_fields = [
         'Name',
         'TaskType'
+    ];
+
+    /**
+     * @var array
+     */
+    private static $defaults = [
+        'SraTaskNotApplicableInformationText' => 'You can move a control here '.
+            'if it is not applicable for your delivery. Controls marked not '.
+            'applicable do not contribute to the risk rating in any way.',
+        'SraTaskNotImplementedInformationText' => 'Controls here have been '.
+            'assigned to your delivery and will contribute to increased risk. '.
+            'Move controls to planned if you wish to implement them or not '.
+            'applicable if they are not suitable for your delivery.',
+        'SraTaskPlannedInformationText' => 'Controls here are planned to be '.
+            'implemented by your delivery team. The risk table will show a risk rating '.
+            'including planned controls as implemented to allow you to plan ahead.',
+        'SraTaskImplementedInformationText' => 'Controls here have been implemented. '.
+            'If they have evidence added or been validated, then they will have '.
+            'status icons to indicate this. Control efficacy does impact the '.
+            'amount of risk reduced by the controls.'
     ];
 
     /**
@@ -383,7 +407,11 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                     $fields->dataFieldByName('SraTaskRecommendedControlHelpText'),
                     $fields->dataFieldByName('SraTaskRiskRatingHelpText'),
                     $fields->dataFieldByName('SraTaskLikelihoodScoreHelpText'),
-                    $fields->dataFieldByName('SraTaskImpactScoreHelpText')
+                    $fields->dataFieldByName('SraTaskImpactScoreHelpText'),
+                    $fields->dataFieldByName('SraTaskNotApplicableInformationText'),
+                    $fields->dataFieldByName('SraTaskNotImplementedInformationText'),
+                    $fields->dataFieldByName('SraTaskPlannedInformationText'),
+                    $fields->dataFieldByName('SraTaskImplementedInformationText'),
                 ]
             );
 
@@ -402,7 +430,11 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                 'SraTaskRecommendedControlHelpText',
                 'SraTaskRiskRatingHelpText',
                 'SraTaskLikelihoodScoreHelpText',
-                'SraTaskImpactScoreHelpText'
+                'SraTaskImpactScoreHelpText',
+                'SraTaskNotApplicableInformationText',
+                'SraTaskNotImplementedInformationText',
+                'SraTaskPlannedInformationText',
+                'SraTaskImplementedInformationText'
             ]);
         }
 
