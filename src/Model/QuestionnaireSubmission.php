@@ -943,7 +943,6 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'ApprovalOverrideBySecurityArchitect',
                 'RiskResultData',
                 'ReleaseDate',
-                'HideWeightsAndScore',
                 'CollaboratorList',
                 'IsCertificationAndAccreditationTaskExists',
                 'BusinessOwnerAcknowledgementText',
@@ -3519,20 +3518,6 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
             $nextJob = Injector::inst()->create(CheckSubmissionExpiredJob::class);
             singleton(QueuedJobService::class)->queueJob($nextJob, date('Y-m-d H:i:s', strtotime("tomorrow 0:27:30")));
         }
-    }
-
-    /**
-     * hide weights and score for risk questionnaire if check box is ticked
-     * @return bool
-     */
-    public function getHideWeightsAndScore() : bool
-    {
-        if ($this->Questionnaire()->Type == 'RiskQuestionnaire' &&
-            $this->Questionnaire()->HideRiskWeightsAndScore) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

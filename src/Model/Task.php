@@ -93,7 +93,6 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'IsStakeholdersSelected' => "Enum('No,Yes', 'No')",
         'RiskCalculation' => "Enum('NztaApproxRepresentation,Maximum')",
         'ComponentTarget' => "Enum('JIRA Cloud,Local')", // when task type is SRA
-        'HideRiskWeightsAndScore' => 'Boolean', // when task type is risk questionnaire
         'PreventMessage' => 'HTMLText', // display message for C&A memo task
         'TimeToComplete' => 'Varchar(255)',
         'TimeToReview' => 'Varchar(255)',
@@ -219,7 +218,6 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         $typeField = $fields->dataFieldByName('TaskType');
         $createOnceInstancePerComponent = $fields->dataFieldByName('CreateOnceInstancePerComponent');
         $riskField = $fields->dataFieldByName('RiskCalculation');
-        $hideWeightsAndScore = $fields->dataFieldByName('HideRiskWeightsAndScore');
 
         $fields->removeByName([
             'TaskType',
@@ -230,7 +228,6 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             'DefaultSecurityComponents',
             'Questionnaires',
             'AnswerActionFields',
-            'HideRiskWeightsAndScore',
             'CreateOnceInstancePerComponent'
         ]);
 
@@ -280,14 +277,6 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                 . 'Select the most appropriate formula with which to perform'
                 . ' risk calculations.'
             )
-                ->displayIf('TaskType')
-                ->isEqualTo('risk questionnaire')
-                ->end()
-        );
-
-        $fields->insertAfter(
-            'RiskCalculation',
-            $hideWeightsAndScore
                 ->displayIf('TaskType')
                 ->isEqualTo('risk questionnaire')
                 ->end()
