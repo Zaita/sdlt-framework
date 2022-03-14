@@ -45,7 +45,7 @@ trait SDLTRiskSubmission
      * }}
      * </code>
      */
-    public function getRiskResult(string $type) : array
+    public function getRiskResult(string $type, string $component = '') : array
     {
         $riskData = [];
 
@@ -70,6 +70,16 @@ trait SDLTRiskSubmission
 
         if (empty($questionnaireData) || empty($answerData)) {
             return $riskData;
+        }
+
+        if ($component) {
+            $answersArrayForComponent = array_filter($answerData, function($answerforComponent) use($component) {
+                return (isset($answerforComponent['productAspect']) and $answerforComponent['productAspect'] == $component);
+            });
+
+            if(!empty($answersArrayForComponent)) {
+                $answerData = (array_pop($answersArrayForComponent)['result']);
+            }
         }
 
         $selectedRiskData = [];
@@ -138,35 +148,53 @@ trait SDLTRiskSubmission
     {
         if (!$this->RiskResultData) {
             return '';
-        }
+        };
 
-        $type = __CLASS__ === QuestionnaireSubmission::class
-            ? 'q'
-            : 't';
-        $json = $this->getRiskResult($type);
+        $riskResultData = json_decode($this->RiskResultData, true);
 
-        if (!count($json)) {
+        if (!count($riskResultData)) {
             return '';
         }
 
+        $isCreateOnceInstancePerComponent = $this->CreateOnceInstancePerComponent;
+        $hasProductAspects = count(json_decode($this->getProductAspects())) > 0 ?: false ;
+        $riskResultHTML = '';
+
+        if ($isCreateOnceInstancePerComponent && $hasProductAspects) {
+            foreach ($riskResultData as $key => $result) {
+                $riskResultTable = $this->renderRiskResultTable($result['riskResult']);
+                $riskResultHTML .= '<b>' . $result['productAspect'] . '<b>';
+                $riskResultHTML .= $riskResultTable;
+                $riskResultHTML .= '<br/>';
+
+            }
+        } else {
+            $riskResultHTML .= $this->renderRiskResultTable($riskResultData);
+        }
+
+        return $riskResultHTML;
+    }
+
+    public function renderRiskResultTable($riskResult)
+    {
         $riskResultTableHTML = '<table class="table">';
         $riskResultTableHTML .= '<tr>
             <thead>
                 <th>Risk Name</th>
-                <th>Weight</th>
-                <th>Score</th>
                 <th>Impact Rating</th>
                 <th>Description</th>
             </thead>
         </tr>';
         $riskResultTableHTML .= '<tbody>';
 
-        foreach ($json as $row) {
+        foreach ($riskResult as $row) {
             $riskResultTableHTML .= sprintf(
-                "<tr><td>%s</td><td>%s</td><td>%2.2f</td><td style=\"background-color:#%s\">%s</td><td>%s</td></tr>",
+                "<tr>
+                    <td>%s</td>
+                    <td style=\"background-color:#%s\">%s</td>
+                    <td>%s</td>
+                </tr>",
                 $row['riskName'],
-                $row['weights'],
-                $row['score'],
                 $row['colour'],
                 $row['rating'],
                 $row['description'],
@@ -175,7 +203,6 @@ trait SDLTRiskSubmission
 
         $riskResultTableHTML .= '</tbody>';
         $riskResultTableHTML .= '</table>';
-
         return $riskResultTableHTML;
     }
 }

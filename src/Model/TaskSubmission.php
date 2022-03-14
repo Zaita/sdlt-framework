@@ -411,21 +411,22 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
+     * @param string $component selected prodouct aspect
      * @return string
      */
-    public function calculateSecurityRiskAssessmentData()
+    public function calculateSecurityRiskAssessmentData($component = '')
     {
         if ($this->TaskType === 'security risk assessment') {
-           if($this->Status === 'complete' && !empty($this->AnswerData)) {
-               $this->securityRiskAssessmentData = $this->AnswerData;
-           } else {
-               $sraCalculator = SecurityRiskAssessmentCalculator::create(
-                   $this->QuestionnaireSubmission()
-               );
+            if($this->Status === 'complete' && !empty($this->AnswerData)) {
+                $this->securityRiskAssessmentData = $this->AnswerData;
+            } else {
+                $sraCalculator = SecurityRiskAssessmentCalculator::create(
+                    $this->QuestionnaireSubmission()
+                );
 
-               $this->securityRiskAssessmentData = json_encode($sraCalculator->getSRATaskdetails());
-           }
-       }
+                $this->securityRiskAssessmentData = json_encode($sraCalculator->getSRATaskdetails($component));
+            }
+        }
     }
 
     /**
@@ -520,25 +521,25 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
         // @TODO: we will work on risk result for multi component in story RM90423
         // https://redmine.catalyst.net.nz/issues/90423
-        // if ($this->RiskResultData) {
-        //     $riskResultTable = $this->getRiskResultTable();
-        //     if ($riskResultTable) {
-        //         $fields->addFieldsToTab(
-        //             'Root.TaskSubmissionData',
-        //             [
-        //                 ToggleCompositeField::create(
-        //                     'ToggleRiskResultData',
-        //                     'Risk Result Data',
-        //                     [
-        //                         TextareaField::create('RiskResultData')
-        //                     ]
-        //                 ),
-        //                 HeaderField::create('RiskResultDataHeader', 'Risk results', 3),
-        //                 LiteralField::create('RiskResultDataTable', $riskResultTable),
-        //             ]
-        //         );
-        //     }
-        // }
+        if ($this->RiskResultData) {
+            $riskResultTable = $this->getRiskResultTable();
+            if ($riskResultTable) {
+                $fields->addFieldsToTab(
+                    'Root.TaskSubmissionData',
+                    [
+                        ToggleCompositeField::create(
+                            'ToggleRiskResultData',
+                            'Risk Result Data',
+                            [
+                                TextareaField::create('RiskResultData')
+                            ]
+                        ),
+                        LiteralField::create('RiskResultDataHeader', '<h1>Risk results</h3>'),
+                        LiteralField::create('RiskResultDataTable', $riskResultTable),
+                    ]
+                );
+            }
+        }
 
         $taskApproverList = [];
 
@@ -662,7 +663,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'CVATaskDataSource',
                 'SecurityRiskAssessmentData',
                 'Created',
-                'HideWeightsAndScore',
                 'CanUpdateTask',
                 'IsTaskCollborator',
                 'TimeToReview',
@@ -1162,7 +1162,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     $taskStatusforProductAspect = [];
 
                     // if product aspect and component exist
-                    // and createOnceInstancePerCcomponent is true
+                    // and createOnceInstancePerComponent is true
                     if ($submission->checkForMultiComponent($component)) {
                         $doesSetTaskSubmissionStatusToComplete = true;
 
@@ -1173,6 +1173,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                                     $answerDataResultForSelectedComponent = $answerDataForComponent['result'];
                                     $allAnswerData[$key] = $answerDataForComponent;
                                     $submission->AnswerData = json_encode($allAnswerData);
+                                    $submission->RiskResultData = $submission->getRiskResultBasedOnAnswer($component, $answerDataForComponent['status']);
                                 } else if ($answerDataForComponent['status'] !== TaskSubmission::STATUS_COMPLETE) {
                                     $doesSetTaskSubmissionStatusToComplete = false;
                                 }
@@ -1193,6 +1194,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         // if task is without component means save a singletask
                         // and change the status to complete
                         $submission->Status = TaskSubmission::STATUS_COMPLETE;
+                        $submission->RiskResultData = $submission->getRiskResultBasedOnAnswer();
                     }
 
                     // If it's a vendor task and completed by anonymous user,
@@ -1203,10 +1205,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         $submission->completedByID = 0;
                     }
                     $submission->sendEmailToStakeholder();
-
-                    // @TODO: we will work on risk result for multi component in story RM90423
-                    // https://redmine.catalyst.net.nz/issues/90423
-                    //$submission->RiskResultData = $submission->getRiskResultBasedOnAnswer($component);
 
                     // if task approval requires then set status to waiting for approval
                     if ($submission->IsTaskApprovalRequired) {
@@ -1378,6 +1376,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
             ->addArg('UUID', 'String')
             ->addArg('UserID', 'String')
             ->addArg('SecureToken', 'String')
+            ->addArg('Component', 'String')
             ->addArg('PageType', 'String')
             ->setUsePagination(false)
             ->setResolver(new class implements ResolverInterface {
@@ -1399,6 +1398,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     $uuid = isset($args['UUID']) ? Convert::raw2sql(trim($args['UUID'])) : null;
                     $userID = isset($args['UserID']) ? (int) $args['UserID'] : null;
                     $secureToken = isset($args['SecureToken']) ? Convert::raw2sql(trim($args['SecureToken'])) : null;
+                    $component = isset($args['Component']) ? Convert::raw2sql(trim($args['Component'])) : null;
 
                     // Check argument
                     if (!$uuid && !$userID) {
@@ -1433,7 +1433,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                             $data->QuestionnaireSubmission()->getProductAspects(): '{}';
 
                         if ($data->TaskType === 'security risk assessment') {
-                            $data->SecurityRiskAssessmentData = $data->calculateSecurityRiskAssessmentData();
+                            $data->SecurityRiskAssessmentData =
+                                $data->calculateSecurityRiskAssessmentData($component);
                         }
 
                         if ($data->TaskType === 'control validation audit') {
@@ -2333,18 +2334,85 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
     /**
      * @param string $component selectedProductAspect
+     *
      * @return string
      */
-    public function getRiskResultBasedOnAnswer($component)
+    public function getRiskResultBasedOnAnswer($component = '', $statusForComponent = '')
     {
         // Deal with the related Questionnaire's Task-calcs, and append them
-        $allRiskResults = [];
+        $finalRiskResult = [];
+        $newRiskResult = [];
 
-        if (!in_array($this->Status, ["start", "in_progress", "invalid"])) {
-            $allRiskResults = $this->getRiskResult('t');
+        if ($statusForComponent == "complete" ||
+            !in_array($this->Status, ["start", "in_progress", "invalid"])) {
+            $newRiskResult = $this->getRiskResult('t', $component);
         }
 
-        return json_encode($allRiskResults);
+        // if component exist then get and update the risk result for component
+        if ($component) {
+            $finalRiskResult = $this->getRiskResultForComponent($component, $newRiskResult);
+        } else {
+            // if product aspect doesn't exist at all for the submissions
+            // then return the newRiskResult for the FinalRiskResult
+            $finalRiskResult = $newRiskResult;
+        }
+
+        return json_encode($finalRiskResult);
+    }
+
+    /**
+     * Add and update the new risk result data for the component
+     *
+     * @param string $component                 selected Product Aspect(component)
+     * @param array  $newRiskResultForComponent risk result for component
+     *
+     * @return string
+     */
+    public Function getRiskResultForComponent($component, $newRiskResultForComponent)
+    {
+        $finalRiskResult = [];
+        // Add risk result for first Component: if existing RiskResultData
+        // is empty means we are writing risk result first time for the component
+        // so add the risk result for component
+        if(!$this->RiskResultData || $this->RiskResultData == '[]') {
+            $temp['productAspect'] = $component;
+            $temp['riskResult'] = $newRiskResultForComponent;
+            $finalRiskResult[] = $temp;
+        }
+        else {
+            // if existing RiskResultData is not empty then check all the below conditions
+            $allRiskResult = json_decode($this->RiskResultData, true);
+            $allProductAspectsForSubmission = json_decode($this->getProductAspects());
+            $productAspectHasRiskResult = [];
+
+            foreach ($allRiskResult as $key => $riskResultForComponent) {
+                $productAspectHasRiskResult[] = $riskResultForComponent['productAspect'];
+                // Update: if risk result already existst for the component then
+                // update the old risk result with new risk result
+                if($riskResultForComponent['productAspect'] == $component) {
+                    $allRiskResult[$key]['riskResult'] = $newRiskResultForComponent;
+                }
+            }
+
+            // if diff exists, means riskresult doesn't exist for the component
+            $diffProductAspectArray = array_diff(
+                $allProductAspectsForSubmission,
+                $productAspectHasRiskResult
+            );
+
+            // Add in the existing result array: if risk result doesn't exist
+            // for the componet then add the risk result for the component in
+            // the existing RiskResultData
+            if (!empty($diffProductAspectArray)) {
+                $temp['productAspect'] = $component;
+                $temp['riskResult'] = $newRiskResultForComponent;
+                $allRiskResult[] = $temp;
+            }
+
+            $finalRiskResult = $allRiskResult;
+        }
+
+        return $finalRiskResult;
     }
 
     /**
@@ -2704,19 +2772,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
             )
         );
         return $fields;
-    }
-
-    /**
-     * hide weights and score for risk questionnaire if check box is ticked
-     * @return bool
-     */
-    public function getHideWeightsAndScore() : bool
-    {
-        if ($this->Task()->isRiskType() && $this->Task()->HideRiskWeightsAndScore) {
-            return true;
-        }
-
-        return false;
     }
 
     /**

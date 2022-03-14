@@ -138,18 +138,38 @@ class SecurityRiskAssessmentCalculator
 
     /**
     * Get the submitted risk questionnaire task and get the calculated risk Data
+    * @param string $component selected prodouct aspect
     *
     * @return array|null
     */
-    public function getRiskQuestionnaireResultData()
+    public function getRiskQuestionnaireResultData($component = '')
     {
         $riskQuestionnaireSubmission = $this->getRiskQuestionnaireSubmission();
+        $finalRiskResult = null;
 
         if ($riskQuestionnaireSubmission) {
-            return json_decode($riskQuestionnaireSubmission->RiskResultData, true);
+            $riskResultData = json_decode($riskQuestionnaireSubmission->RiskResultData, true);
+
+            if (empty($riskResultData) || !count($riskResultData)) {
+                return $finalRiskResult;
+            }
+
+            if ($riskQuestionnaireSubmission->checkForMultiComponent($component)) {
+                foreach ($riskResultData as $riskResult) {
+                    if ($riskResult['productAspect'] === $component) {
+                        $finalRiskResult = $riskResult['riskResult'];
+                    }
+                }
+            } else if (!$component &&
+                !empty($riskQuestionnaireSubmission->getProductAspects()) &&
+                $riskQuestionnaireSubmission->CreateOnceInstancePerComponent) {
+                    $finalRiskResult = null;
+            } else {
+                $finalRiskResult = $riskResultData;
+            }
         }
 
-        return null;
+        return $finalRiskResult;
     }
 
     /**
@@ -468,15 +488,20 @@ class SecurityRiskAssessmentCalculator
 
     /**
      * calculate the SRATaskdetails from the RiskQuestionnaireResultData and CVATaskResult
+     * @param string $component selected prodouct aspect
      *
      * @return array
      */
-    public function getSRATaskdetails() : array
+    public function getSRATaskdetails($component = '') : array
     {
         $sraTaskDetail = [];
-        $riskData = $this->getRiskQuestionnaireResultData();
+        $riskData = $this->getRiskQuestionnaireResultData($component);
 
         if (!$riskData) {
+            $sraTaskSubmission = $this->getSRATaskSubmission();
+            $sraTask = $sraTaskSubmission->Task();
+            $sraTaskDetail['likelihoodThresholds'] = $this->getLikelihoodRatingsThresholds($sraTask);
+            $sraTaskDetail['riskRatingThresholds'] = $this->getRiskRatingThresholdsMatix($sraTask);
             return $sraTaskDetail;
         }
 
@@ -485,6 +510,30 @@ class SecurityRiskAssessmentCalculator
         $sraTaskDetail = $this->getRisksAndComponentsAndControlsforSra($cvaTaskData, $riskData);
 
         return $sraTaskDetail;
+    }
+
+    /**
+     * @return array LikelihoodRatings
+     */
+    public function getLikelihoodRatingsThresholds($sraTask = '')
+    {
+        if (empty ($sraTask)) {
+            $sraTask = $this->getSRATaskSubmission()->task();
+        }
+
+        return $sraTask->getLikelihoodRatingsData();
+    }
+
+    /**
+     * @return array RiskRatings matrix
+     */
+    public function getRiskRatingThresholdsMatix($sraTask = '')
+    {
+        if (empty ($sraTask)) {
+            $sraTask = $this->getSRATaskSubmission()->task();
+        }
+
+        return $sraTask->getRiskRatingMatix();
     }
 
     /**
@@ -501,12 +550,13 @@ class SecurityRiskAssessmentCalculator
 
         $controlIds = $cvaTaskData ? $this->getSelectedControlIDsFromCVATask() : [];
         $componentIds = $cvaTaskData ? $this->getSelectedComponentIDsFromCVATask() : [];
-        $sraTask = $this->getSRATaskSubmission();
-        $sraTaskID = $sraTask->Task()->ID;
+        $sraTaskSubmission = $this->getSRATaskSubmission();
+        $sraTask = $sraTaskSubmission->Task();
+        $sraTaskID = $sraTask->ID;
         $productAspectList = $this->getProductAspectList();
 
-        $sraTaskDetail['likelihoodThresholds'] = $sraTask->task()->getLikelihoodRatingsData();
-        $sraTaskDetail['riskRatingThresholds'] = $sraTask->task()->getRiskRatingMatix();
+        $sraTaskDetail['likelihoodThresholds'] = $this->getLikelihoodRatingsThresholds($sraTask);
+        $sraTaskDetail['riskRatingThresholds'] = $this->getRiskRatingThresholdsMatix($sraTask);
         $sraTaskDetail['hasProductAspects'] = false;
         if (!empty($productAspectList)) {
             $sraTaskDetail['hasProductAspects'] = true;
