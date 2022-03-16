@@ -411,6 +411,20 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
+     * @return string
+     */
+    public function getControlSetSelectionTaskHelpText()
+    {
+        $task = $this->Task();
+
+        if (!$task->exists()) {
+            return "";
+        }
+
+        return $task->ControlSetSelectionTaskHelpText;
+    }
+
+    /**
      * @param string $component selected prodouct aspect
      * @return string
      */
@@ -682,7 +696,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'SraTaskNotApplicableInformationText',
                 'SraTaskNotImplementedInformationText',
                 'SraTaskPlannedInformationText',
-                'SraTaskImplementedInformationText'
+                'SraTaskImplementedInformationText',
+                'ControlSetSelectionTaskHelpText'
             ]);
 
         $dataObjectScaffolder
