@@ -1226,6 +1226,20 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         $submission->AnswerData = $submission->SecurityRiskAssessmentData;
                     }
 
+                    if ($submission->TaskType === 'selection') {
+                        $siblingCVATask = $submission->getSiblingTaskSubmissionsByType('control validation audit');
+
+                        // when there is no CVA task in the submission,
+                        // save default security components on selection task
+                        if (!$siblingCVATask) {
+                            $submission->setCVATaskDataSource();
+                        }
+
+                        if (empty($submission->CVATaskData)) {
+                            $submission->CVATaskData = $submission->getDataforCVATask($submission);
+                        }
+                    }
+
                     // create another tasks form task submission based on task submission's answer
                     Question::create_task_submissions_according_to_answers(
                         $submission->QuestionnaireData,
@@ -1433,8 +1447,20 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                             $data->QuestionnaireSubmission()->getProductAspects(): '{}';
 
                         if ($data->TaskType === 'security risk assessment') {
-                            $data->SecurityRiskAssessmentData =
-                                $data->calculateSecurityRiskAssessmentData($component);
+                            $data->SecurityRiskAssessmentData = $data->calculateSecurityRiskAssessmentData($component);
+                            $siblingCVATask = $data->getSiblingTaskSubmissionsByType('control validation audit');
+                            $siblingComponentSelectionTask = $data->getSiblingTaskSubmissionsByType('selection');
+
+                            // get CVA task data to display controls for submissions with and without CVA task
+                            if ($siblingCVATask) {
+                                $data->CVATaskData = $siblingCVATask->CVATaskData;
+                            } else {
+                                $data->CVATaskData = $siblingComponentSelectionTask->CVATaskData;
+                            }
+
+                            if ($siblingCVATask && empty($data->CVATaskData)) {
+                                $data->CVATaskData = $data->getDataforCVATask($siblingComponentSelectionTask);
+                            }
                         }
 
                         if ($data->TaskType === 'control validation audit') {
@@ -2586,7 +2612,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'description' => $ctrl->Description,
                 'implementationGuidance' => $ctrl->ImplementationGuidance,
                 'implementationEvidence'  => $ctrl->ImplementationEvidence,
-                'selectedOption' => SecurityControl::CTL_STATUS_2,
+                'selectedOption' => SecurityControl::CTL_STATUS_3,
                 'implementationEvidenceUserInput' => ''
             ];
         }
