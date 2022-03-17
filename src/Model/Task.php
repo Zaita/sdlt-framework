@@ -105,7 +105,8 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'SraTaskNotApplicableInformationText' => 'Text',
         'SraTaskNotImplementedInformationText' => 'Text',
         'SraTaskPlannedInformationText' => 'Text',
-        'SraTaskImplementedInformationText' => 'Text'
+        'SraTaskImplementedInformationText' => 'Text',
+        'ControlSetSelectionTaskHelpText' => 'Text'
     ];
 
     /**
@@ -468,6 +469,17 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         if ($historyTab = $fields->fieldByName('Root.History')) {
             $fields->removeFieldFromTab('Root', 'History');
             $fields->fieldByName('Root')->push($historyTab);
+        }
+
+        if ($this->isSelectionType()) {
+            $fields->addFieldsToTab(
+                'Root.ControlSetSelection',
+                [
+                    $fields->dataFieldByName('ControlSetSelectionTaskHelpText'),
+                ]
+            );
+        } else {
+            $fields->removeByName('ControlSetSelectionTaskHelpText');
         }
 
         return $fields;
