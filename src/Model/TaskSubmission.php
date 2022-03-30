@@ -2667,9 +2667,12 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         $cvaControls = [];
 
         foreach ($controls as $ctrl) {
-            $controlWeightSets = $ctrl->ControlWeightSets()->filter(['SecurityComponentID' => $componentID]);
+            $controlWeightSets = $ctrl->ControlWeightSets()->filter([
+                'SecurityComponentID' => $componentID
+            ]);
 
             $riskCategories = [];
+            $isKeyControl = false;
 
             foreach ($controlWeightSets as $controlWeightSet) {
                 if ($risk = $controlWeightSet->Risk()) {
@@ -2677,6 +2680,11 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         'id' => $risk->ID,
                         'name' => $risk->Name,
                     ];
+
+                    if ($controlWeightSet->LikelihoodPenalty > 0 ||
+                        $controlWeightSet->ImpactPenalty > 0) {
+                        $isKeyControl = true;
+                    }
                 }
             }
 
@@ -2690,6 +2698,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'implementationEvidenceUserInput' => '',
                 'riskCategories' => $riskCategories,
                 'evalutionRating' => SecurityControl::EVALUTION_RATING_1,
+                'isKeyControl' => $isKeyControl
             ];
         }
 
