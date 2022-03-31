@@ -41,6 +41,17 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
     const CTL_STATUS_1 = 'Realised';
     const CTL_STATUS_2 = 'Intended';
     const CTL_STATUS_3 = 'Not Applicable';
+    const CTL_STATUS_4 = 'Planned';
+    const EVALUTION_RATING_1 = 'Not Validated';
+    const EVALUTION_RATING_2 = 'Not Effective';
+    const EVALUTION_RATING_3 = 'Partially Effective';
+    const EVALUTION_RATING_4 = 'Effective';
+    const EVALUTION_RATING_WEIGHTS = [
+        "Not Validated" => 1,
+        "Not Effective" => 0,
+        "Partially Effective" => 0.5,
+        "Effective" => 1
+    ];
 
     /**
      * @var string
