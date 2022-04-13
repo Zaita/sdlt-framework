@@ -160,13 +160,14 @@ class SecurityRiskAssessmentCalculator
                         $finalRiskResult = $riskResult['riskResult'];
                     }
                 }
-            } else if (!$component &&
-                !empty($riskQuestionnaireSubmission->getProductAspects()) &&
-                $riskQuestionnaireSubmission->CreateOnceInstancePerComponent) {
-                    $finalRiskResult = null;
             } else {
                 $finalRiskResult = $riskResultData;
             }
+            // else if (!$component &&
+            //     !empty($riskQuestionnaireSubmission->getProductAspects()) &&
+            //     $riskQuestionnaireSubmission->CreateOnceInstancePerComponent) {
+            //         $finalRiskResult = null;
+            // }
         }
 
         return $finalRiskResult;
@@ -208,14 +209,17 @@ class SecurityRiskAssessmentCalculator
     * Get the selected components and controls from this SRA questionnaire
     * This is what was actually submitted by the user
     *
+    * @param string $component selected component(productAspect)
+    *
     * @return void
     */
-    public function getCVATaskResult()
+    public function getCVATaskResult($component)
     {
         $cvaTaskSubmission = $this->getCVATaskSubmission();
 
         if ($cvaTaskSubmission) {
-            return json_decode($cvaTaskSubmission->CVATaskData, true);
+            $cvaTaskData = $cvaTaskSubmission->filterCVAResultForComponent($cvaTaskSubmission->CVATaskData, $component);
+            return json_decode($cvaTaskData, true);
         }
 
         return null;
@@ -228,9 +232,9 @@ class SecurityRiskAssessmentCalculator
      *
      * @return array
      */
-    public function getSelectedControlIDsFromCVATask()
+    public function getSelectedControlIDsFromCVATask($cvaTaskData)
     {
-        $selectedComponentsAndControls = $this->getCVATaskResult();
+        $selectedComponentsAndControls = $cvaTaskData;
         if (!$selectedComponentsAndControls) {
             return null;
         }
@@ -238,8 +242,7 @@ class SecurityRiskAssessmentCalculator
         $ctrlIds = [];
         foreach ($selectedComponentsAndControls as $component) {
             foreach ($component['controls'] as $ctrl) {
-                if (isset($ctrl['id']) &&
-                    in_array($ctrl['selectedOption'], [SecurityControl::CTL_STATUS_1, SecurityControl::CTL_STATUS_2])) {
+                if (isset($ctrl['id'])) {
                     $ctrlIds[] = $ctrl['id'];
                 }
             }
@@ -255,9 +258,9 @@ class SecurityRiskAssessmentCalculator
      *
      * @return array
      */
-    public function getSelectedComponentIDsFromCVATask()
+    public function getSelectedComponentIDsFromCVATask($cvaTaskData)
     {
-        $selectedComponentsAndControls = $this->getCVATaskResult();
+        $selectedComponentsAndControls = $cvaTaskData;
 
         if (!$selectedComponentsAndControls) {
             return [];
@@ -301,6 +304,31 @@ class SecurityRiskAssessmentCalculator
         );
 
         return ['score' => $score, 'formula' => $formula];
+    }
+
+    /**
+     * @param int $sumOfLikelihoodPenalty sum of likelihood penalties
+     * @return int
+     */
+    public function calculateMaxLikelihoodPenalty($sumOfLikelihoodPenalty)
+    {
+        return $likelihoodPenalty = (
+            100 +
+             $sumOfLikelihoodPenalty
+        );
+    }
+
+    /**
+     * @param int $sumOfImpactPenalty sum of impact penalties
+     * @param int $baseImpactScore    base impact
+     * @return int
+     */
+    public function calculateMaxImpactPenalty($sumOfImpactPenalty, $baseImpactScore)
+    {
+        return $impactWeightPenalty = (
+            $baseImpactScore +
+            $sumOfImpactPenalty
+        );
     }
 
     /**
@@ -367,27 +395,28 @@ class SecurityRiskAssessmentCalculator
         );
     }
 
-
-
     /**
      * Normalise the CMS Likelihood Weight for this control against all of the
      * components implemented and recommended controls. The sum of these
      * normalised weights should add up to 100.
      *
-     * @param int $likelihood      unaltered control weight obtained
-     *                             from the CMS for this particular control
-     * @param int $sumOfLikelihood this is the sum of all likelihoods for this
-     *                             component's recommended and implemented controls
+     * @param int $likelihood         unaltered control weight obtained
+     *                                from the CMS for this particular control
+     * @param int $sumOfLikelihood    this is the sum of all likelihoods for this
+     *                                component's recommended and implemented controls
+     * @param string $evalutionRating evalutionRating
      * @return int/float
      */
-    public function normaliseControlLikelihoodWeight($likelihood, $sumOfLikelihood)
+    public function normaliseControlLikelihoodWeight($likelihood, $sumOfLikelihood, $evalutionRating)
     {
+        $evalutionRatingWeight = SecurityControl::EVALUTION_RATING_WEIGHTS[$evalutionRating];
+
         if ($sumOfLikelihood > 0) {
             $normalisedWeight = $likelihood / $sumOfLikelihood;
-            return number_format(100 * $normalisedWeight, 2);
+            return number_format((100 * $normalisedWeight) * $evalutionRatingWeight, 2);
         }
 
-        $likelihoodWeight = ($likelihood / $sumOfLikelihood) * 100;
+        return $likelihoodWeight = ($likelihood / $sumOfLikelihood) * 100;
     }
 
     /**
@@ -395,19 +424,22 @@ class SecurityRiskAssessmentCalculator
      * component's implemented and recommended controls. The sum of these
      * normalised weights should add up to the base impact score.
      *
-     * @param int $impact      unaltered control weight obtained
-     *                         from the CMS for this particular control
-     * @param int $sumOfImpact this is the sum of all impacts for this component's
-     *                         recommended and implemented controls
-     * @param int $baseImpact  the base impact score calculated for this
-     *                         risk, obtained from the risk questionnaire results
+     * @param int $impact              unaltered control weight obtained
+     *                                from the CMS for this particular control
+     * @param int $sumOfImpact        this is the sum of all impacts for this component's
+     *                                recommended and implemented controls
+     * @param int $baseImpact         the base impact score calculated for this
+     *                                risk, obtained from the risk questionnaire results
+     * @param string $evalutionRating evalutionRating
      * @return int
      */
-    public function normaliseControlImpactWeight($impact, $sumOfImpact, $baseImpact)
+    public function normaliseControlImpactWeight($impact, $sumOfImpact, $baseImpact, $evalutionRating)
     {
+        $evalutionRatingWeight = SecurityControl::EVALUTION_RATING_WEIGHTS[$evalutionRating];
+
         if ($sumOfImpact > 0) {
             $normalisedWeight = $impact / $sumOfImpact;
-            return number_format($baseImpact * $normalisedWeight, 2);
+            return number_format(($baseImpact * $normalisedWeight) * $evalutionRatingWeight , 2);
         }
 
         return 0;
@@ -482,6 +514,14 @@ class SecurityRiskAssessmentCalculator
             $components,
             'sumOfRecommendedControlsImpactPenalty'
         );
+        $sum['sumOfLikelihoodPenalty'] = $this->getComponetsSum(
+            $components,
+            'sumOfControlsLikelihoodPenalty'
+        );
+        $sum['sumOfImpactPenalty'] = $this->getComponetsSum(
+            $components,
+            'sumOfControlsImpactPenalty'
+        );
 
         return $sum;
     }
@@ -505,7 +545,7 @@ class SecurityRiskAssessmentCalculator
             return $sraTaskDetail;
         }
 
-        $cvaTaskData = $this->getCVATaskResult();
+        $cvaTaskData = $this->getCVATaskResult($component);
 
         $sraTaskDetail = $this->getRisksAndComponentsAndControlsforSra($cvaTaskData, $riskData);
 
@@ -548,19 +588,15 @@ class SecurityRiskAssessmentCalculator
         $sraTaskDetail = [];
         $out = [];
 
-        $controlIds = $cvaTaskData ? $this->getSelectedControlIDsFromCVATask() : [];
-        $componentIds = $cvaTaskData ? $this->getSelectedComponentIDsFromCVATask() : [];
+        $controlIds = $cvaTaskData ? $this->getSelectedControlIDsFromCVATask($cvaTaskData) : [];
+        $componentIds = $cvaTaskData ? $this->getSelectedComponentIDsFromCVATask($cvaTaskData) : [];
         $sraTaskSubmission = $this->getSRATaskSubmission();
         $sraTask = $sraTaskSubmission->Task();
         $sraTaskID = $sraTask->ID;
-        $productAspectList = $this->getProductAspectList();
 
         $sraTaskDetail['likelihoodThresholds'] = $this->getLikelihoodRatingsThresholds($sraTask);
         $sraTaskDetail['riskRatingThresholds'] = $this->getRiskRatingThresholdsMatix($sraTask);
         $sraTaskDetail['hasProductAspects'] = false;
-        if (!empty($productAspectList)) {
-            $sraTaskDetail['hasProductAspects'] = true;
-        }
 
         $riskIDs = array_column($riskdata, 'riskID');
         $riskInDB = Risk::get()->byIds($riskIDs)->toNestedArray();
@@ -610,44 +646,12 @@ class SecurityRiskAssessmentCalculator
                 }
             }
 
-            if ($sraTaskDetail['hasProductAspects']) {
-                $riskdetailsforProductAspect = [];
-
-                foreach ($productAspectList as $productAspect) {
-                    $productAspectComponents = [];
-
-                    if (!empty($components)) {
-                        $filteredComponents = array_filter($components, function ($component) use ($productAspect) {
-                            return $component['productAspect'] == $productAspect;
-                        });
-
-                        if (empty($filteredComponents)) {
-                            continue;
-                        }
-
-                        // we need to do this trick to start array index from 0
-                        // so that we will get the array after json decode in the frontend
-                        $productAspectComponents = array_merge([], $filteredComponents);
-                    }
-
-                    $riskComponentdetails = $this->getRiskComponentDetails(
-                        $productAspectComponents,
-                        $out['baseImpactScore'],
-                        $sraTaskID
-                    );
-                    $riskComponentdetails['productAspectName'] = $productAspect;
-                    $riskdetailsforProductAspect[] = $riskComponentdetails;
-                }
-
-                $out['productAspects'] = $riskdetailsforProductAspect;
-            } else {
-                $riskComponentdetails = $this->getRiskComponentDetails(
-                    $components,
-                    $out['baseImpactScore'],
-                    $sraTaskID
-                );
-                $out['riskDetail'] = $riskComponentdetails;
-            }
+            $riskComponentdetails = $this->getRiskComponentDetails(
+                $components,
+                $out['baseImpactScore'],
+                $sraTaskID
+            );
+            $out['riskDetail'] = $riskComponentdetails;
 
             $sraTaskDetail['calculatedSRAData'][] = $out;
         }
@@ -674,9 +678,28 @@ class SecurityRiskAssessmentCalculator
         $implementedControls = [];
         $recommendedControls = [];
 
+        if (isset($controlRiskWeights[$componentId])) {
+            $updatedControls = $this->updateControlsDetailAndAddWeightSet(
+                $cloneComponent['controls'],
+                $controlRiskWeights[$componentId]
+            );
+
+            $cloneComponent['sumOfControlsLikelihoodPenalty'] =
+                $this->getControlsSum($updatedControls, 'likelihoodPenalty');
+
+            $cloneComponent['sumOfControlsImpactPenalty'] =
+                $this->getControlsSum($updatedControls, 'impactPenalty');
+        } else {
+            $cloneComponent['sumOfControlsLikelihoodPenalty'] = 0;
+            $cloneComponent['sumOfControlsImpactPenalty'] = 0;
+        }
+
         // get all Implemented Controls for the component
         $filteredImplementedControls = array_filter($cloneComponent['controls'], function ($ctrl) {
-            return $ctrl['selectedOption'] === SecurityControl::CTL_STATUS_1;
+            return (
+                $ctrl['selectedOption'] === SecurityControl::CTL_STATUS_1 ||
+                $ctrl['selectedOption'] === SecurityControl::CTL_STATUS_4
+            );
         });
 
         if ($filteredImplementedControls && isset($controlRiskWeights[$componentId])) {
@@ -685,7 +708,6 @@ class SecurityRiskAssessmentCalculator
                 $controlRiskWeights[$componentId]
             );
         }
-
 
         // get all recommended Controls for the component
         $filteredRecommendedControls = array_filter($cloneComponent['controls'], function ($ctrl) {
@@ -713,6 +735,7 @@ class SecurityRiskAssessmentCalculator
 
         $cloneComponent['sumOfRecommendedControlsLikelihoodPenalty'] =
             $this->getControlsSum($recommendedControls, 'likelihoodPenalty');
+
         $cloneComponent['sumOfRecommendedControlsImpactPenalty'] =
             $this->getControlsSum($recommendedControls, 'impactPenalty');
 
@@ -743,6 +766,7 @@ class SecurityRiskAssessmentCalculator
 
         foreach ($cloneControls as $control) {
             $controlID = $control['id'];
+
             if (isset($controlRiskWeights[$controlID])) {
                 // set control weights set
                 $control['impact'] = $controlRiskWeights[$controlID]['I'];
@@ -781,6 +805,15 @@ class SecurityRiskAssessmentCalculator
             $baseImapctScore
         );
 
+        $riskComponentdetails['MaxLikelihoodPenalty'] = $this->calculateMaxLikelihoodPenalty (
+            $riskComponentdetails['sums']['sumOfLikelihoodPenalty']
+        );
+
+        $riskComponentdetails['MaxImpactPenalty'] = $this->calculateMaxImpactPenalty (
+            $riskComponentdetails['sums']['sumOfImpactPenalty'],
+            $baseImapctScore
+        );
+
         // calculate current Likelihood
         $riskComponentdetails['currentLikelihood'] = $this->calculateCurrentLikelihoodScore(
             $riskComponentdetails['sums']['sumOfImplementedLikelihoodWeight'],
@@ -790,6 +823,7 @@ class SecurityRiskAssessmentCalculator
             $riskComponentdetails['currentLikelihood']['score'],
             $sraTaskID
         );
+
         $riskComponentdetails['currentLikelihood']['name'] = $currentLikelihoodThreshold ?
             $currentLikelihoodThreshold->Name : '';
         $riskComponentdetails['currentLikelihood']['colour'] = $currentLikelihoodThreshold ?
@@ -846,7 +880,8 @@ class SecurityRiskAssessmentCalculator
                 foreach ($component['implementedControls'] as &$control) {
                     $control['likelihoodWeight'] = $this->normaliseControlLikelihoodWeight(
                         $control['likelihood'],
-                        $sums['sumOfLikelihood']
+                        $sums['sumOfLikelihood'],
+                        $control['evalutionRating']
                     );
 
                     $sumOfLikelihoodWeight += $control['likelihoodWeight'];
@@ -854,7 +889,8 @@ class SecurityRiskAssessmentCalculator
                     $control['impactWeight'] = $this->normaliseControlImpactWeight(
                         $control['impact'],
                         $sums['sumOfImpact'],
-                        $baseImpact
+                        $baseImpact,
+                        $control['evalutionRating']
                     );
 
                     $sumOfImpactWeight += $control['impactWeight'];
@@ -865,13 +901,15 @@ class SecurityRiskAssessmentCalculator
                 foreach ($component['recommendedControls'] as &$control) {
                     $control['likelihoodWeight'] = $this->normaliseControlLikelihoodWeight(
                         $control['likelihood'],
-                        $sums['sumOfLikelihood']
+                        $sums['sumOfLikelihood'],
+                        $control['evalutionRating']
                     );
 
                     $control['impactWeight'] = $this->normaliseControlImpactWeight(
                         $control['impact'],
                         $sums['sumOfImpact'],
-                        $baseImpact
+                        $baseImpact,
+                        $control['evalutionRating']
                     );
                 }
             }
