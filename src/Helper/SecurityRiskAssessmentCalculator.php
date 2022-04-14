@@ -286,24 +286,62 @@ class SecurityRiskAssessmentCalculator
      * With the penalties applied it is possible for the likelihood to exceed
      * 100, which is still acceptable
      *
-     * @param int $sumOfLikelihoodWeights   sum of likelihood weight
-     * @param int $sumOfLikelihoodPenalties sum of likelihood penalties
+     * @param int     $sumOfLikelihoodWeights   sum of likelihood weight
+     * @param int     $sumOfLikelihoodPenalties sum of likelihood penalties
+     * @param boolean $doesRiskHasWeights       does has controlWeightSet
+     *
      * @return int
      */
-    public function calculateCurrentLikelihoodScore($sumOfLikelihoodWeights, $sumOfLikelihoodPenalties)
+    public function calculateCurrentLikelihoodScore($sumOfLikelihoodWeights, $sumOfLikelihoodPenalties, $doesRiskHasWeights)
     {
+        if ($doesRiskHasWeights) {
+            $likelihoodScore = (100 - $sumOfLikelihoodWeights) + $sumOfLikelihoodPenalties;
+            $score = number_format(max(1, $likelihoodScore), 2);
 
-        $likelihoodScore = (100 - $sumOfLikelihoodWeights) + $sumOfLikelihoodPenalties;
-        $score = number_format(max(1, $likelihoodScore), 2);
+            $formula = sprintf(
+                '%s = max (1, (100 - %s) + %s)',
+                $score,
+                $sumOfLikelihoodWeights,
+                $sumOfLikelihoodPenalties
+            );
 
-        $formula = sprintf(
-            '%s = max (1, (100 - %s) + %s)',
-            $score,
-            $sumOfLikelihoodWeights,
-            $sumOfLikelihoodPenalties
-        );
+            return ['score' => $score, 'formula' => $formula];
+        }
 
-        return ['score' => $score, 'formula' => $formula];
+        return ['score' => 0, 'formula' => 0];
+    }
+
+    /**
+     * Calculate the current impact score for this aspect (or risk, if no
+     * aspects) We start with the base impact score, then deduct the implemented
+     * weights. THEN we add the penalties. The result will be the greater of 1
+     * and that number.
+     *
+     * @param int     $sumOfImpactWeights   sum of impact weight
+     * @param int     $sumOfImpactPenalties sum of impact penalties
+     * @param int     $baseImpactScore      base Impact Score
+     * @param boolean $doesRiskHasWeights   does has controlWeightSet
+     *
+     * @return int
+     */
+    public function calculateCurrentImpactScore($sumOfImpactWeights, $sumOfImpactPenalties, $baseImpactScore, $doesRiskHasWeights)
+    {
+        if ($doesRiskHasWeights) {
+            $impactScore = ($baseImpactScore - $sumOfImpactWeights) + $sumOfImpactPenalties;
+            $score =  number_format(max(1, $impactScore), 2);
+
+            $formula = sprintf(
+                '%s = max (1, (%s - %s) + %s)',
+                $score,
+                $baseImpactScore,
+                $sumOfImpactWeights,
+                $sumOfImpactPenalties
+            );
+
+            return ['score' => $score, 'formula' => $formula];
+        }
+
+        return ['score' => 0, 'formula' => 0];
     }
 
     /**
@@ -329,32 +367,6 @@ class SecurityRiskAssessmentCalculator
             $baseImpactScore +
             $sumOfImpactPenalty
         );
-    }
-
-    /**
-     * Calculate the current impact score for this aspect (or risk, if no
-     * aspects) We start with the base impact score, then deduct the implemented
-     * weights. THEN we add the penalties. The result will be the greater of 1
-     * and that number.
-     *
-     * @param int $sumOfImpactWeights   sum of impact weight
-     * @param int $sumOfImpactPenalties sum of impact penalties
-     * @param int $baseImpactScore      base Impact Score
-     * @return int
-     */
-    public function calculateCurrentImpactScore($sumOfImpactWeights, $sumOfImpactPenalties, $baseImpactScore)
-    {
-        $impactScore = ($baseImpactScore - $sumOfImpactWeights) + $sumOfImpactPenalties;
-        $score =  number_format(max(1, $impactScore), 2);
-        $formula = sprintf(
-            '%s = max (1, (%s - %s) + %s)',
-            $score,
-            $baseImpactScore,
-            $sumOfImpactWeights,
-            $sumOfImpactPenalties
-        );
-
-        return ['score' => $score, 'formula' => $formula];
     }
 
     /**
@@ -612,6 +624,7 @@ class SecurityRiskAssessmentCalculator
             $out['riskName'] = $risk['riskName'];
             $out['description'] = isset($riskInDB[$index]['Description']) ? $riskInDB[$index]['Description'] : '';
             $out['baseImpactScore'] = (int) round($risk['score']);
+            $doesRiskHasWeights = false;
 
             $components = [];
 
@@ -625,32 +638,38 @@ class SecurityRiskAssessmentCalculator
                     ]
                 );
 
-                $controlRiskWeights = [];
+                if ($weights->count()) {
+                    $doesRiskHasWeights = true;
 
-                foreach ($weights as $weight) {
-                    // index with selected component and control (create multi multidimensional array)
-                    // add Impact, Likelihood, ImpactPenalty, LikelihoodPenalty
-                    $controlRiskWeights[$weight->SecurityComponentID][$weight->SecurityControlID] = [
-                        'I' => $weight->Impact,
-                        'L' => $weight->Likelihood,
-                        'IP' => $weight->ImpactPenalty,
-                        'LP' => $weight->LikelihoodPenalty
-                    ];
-                }
+                    $controlRiskWeights = [];
 
-                foreach ($cvaTaskData as $component) {
-                    $components[] = $this->updateComponentDetails(
-                        $component,
-                        $controlRiskWeights
-                    );
+                    foreach ($weights as $weight) {
+                        // index with selected component and control (create multi multidimensional array)
+                        // add Impact, Likelihood, ImpactPenalty, LikelihoodPenalty
+                        $controlRiskWeights[$weight->SecurityComponentID][$weight->SecurityControlID] = [
+                            'I' => $weight->Impact,
+                            'L' => $weight->Likelihood,
+                            'IP' => $weight->ImpactPenalty,
+                            'LP' => $weight->LikelihoodPenalty
+                        ];
+                    }
+
+                    foreach ($cvaTaskData as $component) {
+                        $components[] = $this->updateComponentDetails(
+                            $component,
+                            $controlRiskWeights
+                        );
+                    }
                 }
             }
 
             $riskComponentdetails = $this->getRiskComponentDetails(
                 $components,
                 $out['baseImpactScore'],
-                $sraTaskID
+                $sraTaskID,
+                $doesRiskHasWeights
             );
+
             $out['riskDetail'] = $riskComponentdetails;
 
             $sraTaskDetail['calculatedSRAData'][] = $out;
@@ -795,30 +814,47 @@ class SecurityRiskAssessmentCalculator
      *
      * @return array
      */
-    public function getRiskComponentDetails($components, $baseImapctScore, $sraTaskID) : array
+    public function getRiskComponentDetails($components, $baseImapctScore, $sraTaskID, $doesRiskHasWeights) : array
     {
-        $riskComponentdetails['components'] = $components;
-        $riskComponentdetails['sums']= $this->sumForRiskComponents($components);
+        $riskComponentdetails = [
+            'MaxLikelihoodPenalty' => 0,
+            'MaxImpactPenalty' => 0
+        ];
 
-        $riskComponentdetails = $this->normaliseControlsWeight(
-            $riskComponentdetails,
-            $baseImapctScore
-        );
+        if (!empty($components) && $doesRiskHasWeights) {
+            $riskComponentdetails['components'] = $components;
+            $riskComponentdetails['sums']= $this->sumForRiskComponents($components);
 
-        $riskComponentdetails['MaxLikelihoodPenalty'] = $this->calculateMaxLikelihoodPenalty (
-            $riskComponentdetails['sums']['sumOfLikelihoodPenalty']
-        );
+            $riskComponentdetails = $this->normaliseControlsWeight(
+                $riskComponentdetails,
+                $baseImapctScore
+            );
 
-        $riskComponentdetails['MaxImpactPenalty'] = $this->calculateMaxImpactPenalty (
-            $riskComponentdetails['sums']['sumOfImpactPenalty'],
-            $baseImapctScore
-        );
+            $riskComponentdetails['MaxLikelihoodPenalty'] = $this->calculateMaxLikelihoodPenalty (
+                $riskComponentdetails['sums']['sumOfLikelihoodPenalty']
+            );
+
+            $riskComponentdetails['MaxImpactPenalty'] = $this->calculateMaxImpactPenalty (
+                $riskComponentdetails['sums']['sumOfImpactPenalty'],
+                $baseImapctScore
+            );
+        }
 
         // calculate current Likelihood
         $riskComponentdetails['currentLikelihood'] = $this->calculateCurrentLikelihoodScore(
-            $riskComponentdetails['sums']['sumOfImplementedLikelihoodWeight'],
-            $riskComponentdetails['sums']['sumOfRecommendedLikelihoodPenalty']
+            $doesRiskHasWeights ? $riskComponentdetails['sums']['sumOfImplementedLikelihoodWeight'] : 0,
+            $doesRiskHasWeights ? $riskComponentdetails['sums']['sumOfRecommendedLikelihoodPenalty'] : 0,
+            $doesRiskHasWeights
         );
+
+        // calculate current Impact
+        $riskComponentdetails['currentImpact'] = $this->calculateCurrentImpactScore(
+            $doesRiskHasWeights ? $riskComponentdetails['sums']['sumOfImplementedImpactWeight'] : 0,
+            $doesRiskHasWeights ? $riskComponentdetails['sums']['sumOfRecommendedImpactPenalty'] : 0,
+            $baseImapctScore,
+            $doesRiskHasWeights
+        );
+
         $currentLikelihoodThreshold = $this->lookupLikelihoodThresholdFromScore(
             $riskComponentdetails['currentLikelihood']['score'],
             $sraTaskID
@@ -829,12 +865,7 @@ class SecurityRiskAssessmentCalculator
         $riskComponentdetails['currentLikelihood']['colour'] = $currentLikelihoodThreshold ?
             $currentLikelihoodThreshold->getHexColour() : null;
 
-        // calculate current Impact
-        $riskComponentdetails['currentImpact'] = $this->calculateCurrentImpactScore(
-            $riskComponentdetails['sums']['sumOfImplementedImpactWeight'],
-            $riskComponentdetails['sums']['sumOfRecommendedImpactPenalty'],
-            $baseImapctScore
-        );
+
         $currentImpactThreshold = $this->lookupImpactThresholdFromScore(
             $riskComponentdetails['currentImpact']['score']
         );
