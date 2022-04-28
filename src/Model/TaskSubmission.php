@@ -292,6 +292,16 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
+     * Get Security Risk Assessment Data
+     *
+     * @return string
+     */
+    public function setSecurityRiskAssessmentData($sraData)
+    {
+        $this->securityRiskAssessmentData = $sraData;
+    }
+
+    /**
      * @return string
      */
     public function getSraTaskHelpText()
@@ -447,25 +457,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     public function setSelectedControls($selectedControls)
     {
         $this->SelectedControls = $selectedControls;
-    }
-
-    /**
-     * @param string $component selected prodouct aspect
-     * @return string
-     */
-    public function calculateSecurityRiskAssessmentData($component = '')
-    {
-        if ($this->TaskType === 'security risk assessment') {
-            if($this->Status === 'complete' && !empty($this->AnswerData)) {
-                $this->securityRiskAssessmentData = $this->AnswerData;
-            } else {
-                $sraCalculator = SecurityRiskAssessmentCalculator::create(
-                    $this->QuestionnaireSubmission()
-                );
-
-                $this->securityRiskAssessmentData = json_encode($sraCalculator->getSRATaskdetails($component));
-            }
-        }
     }
 
     /**
@@ -1198,45 +1189,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         throw new GraphQLAuthFailure();
                     }
 
-                    $allAnswerData = json_decode($submission->AnswerData, true);
-                    $answerDataResultForSelectedComponent = NULL;
-                    $taskStatusforProductAspect = [];
-
-                    // if product aspect and component exist
-                    // and createOnceInstancePerComponent is true
-                    if ($submission->checkForMultiComponent($component)) {
-                        $doesSetTaskSubmissionStatusToComplete = true;
-
-                        if(!empty($allAnswerData)) {
-                            foreach ($allAnswerData as $key => $answerDataForComponent) {
-                                if ($answerDataForComponent['productAspect'] == $component) {
-                                    $answerDataForComponent['status'] = TaskSubmission::STATUS_COMPLETE;
-                                    $answerDataResultForSelectedComponent = $answerDataForComponent['result'];
-                                    $allAnswerData[$key] = $answerDataForComponent;
-                                    $submission->AnswerData = json_encode($allAnswerData);
-                                    $submission->RiskResultData = $submission->getRiskResultBasedOnAnswer($component, $answerDataForComponent['status']);
-                                } else if ($answerDataForComponent['status'] !== TaskSubmission::STATUS_COMPLETE) {
-                                    $doesSetTaskSubmissionStatusToComplete = false;
-                                }
-
-                                $taskStatusforProductAspect[$answerDataForComponent['productAspect']] = $answerDataForComponent['status'];
-                            }
-
-                            if ($doesSetTaskSubmissionStatusToComplete) {
-                                $allProductAspectsForSubmission = json_decode($submission->getProductAspects());
-                                $productAspectsExistInAnswerData = array_keys($taskStatusforProductAspect);
-                                $result = array_diff($allProductAspectsForSubmission, $productAspectsExistInAnswerData);
-                                if (empty($result)) {
-                                    $submission->Status = TaskSubmission::STATUS_COMPLETE;
-                                }
-                            }
-                        }
-                    } else {
-                        // if task is without component means save a singletask
-                        // and change the status to complete
-                        $submission->Status = TaskSubmission::STATUS_COMPLETE;
-                        $submission->RiskResultData = $submission->getRiskResultBasedOnAnswer();
-                    }
+                    // this answer data of seletced component will be used
+                    // to create another task for multicomponent
+                    $answerDataResultForSelectedComponent = $submission->completeTaskSubmission($component);
 
                     // If it's a vendor task and completed by anonymous user,
                     // mark the userid to be 0.
@@ -1255,6 +1210,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     if ($_SERVER['REMOTE_ADDR']) {
                         $submission->SubmitterIPAddress = Convert::raw2sql($_SERVER['REMOTE_ADDR']);
                     }
+
                     $submission->CompletedAt = date('Y-m-d H:i:s');
 
                     // TODO: validate based on answer
@@ -1262,10 +1218,11 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         $submission->Result = trim($args['Result']);
                     }
 
-                    if ($submission->TaskType === 'security risk assessment') {
-                        $submission->SecurityRiskAssessmentData = $submission->calculateSecurityRiskAssessmentData();
-                        $submission->AnswerData = $submission->SecurityRiskAssessmentData;
-                    }
+                    // TODO: remove below commented code afer testing
+                    // if ($submission->TaskType === 'security risk assessment') {
+                    //     $submission->SecurityRiskAssessmentData = $submission->calculateSecurityRiskAssessmentData($component);
+                    //     $submission->AnswerData = $submission->saveSecurityRiskAssessmentData($submission->SecurityRiskAssessmentData, $component);
+                    // }
 
                     if ($submission->TaskType === 'selection') {
                         $siblingCVATask = $submission->getSiblingTaskSubmissionsByType('control validation audit');
@@ -1274,14 +1231,16 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     }
 
                     // create another tasks form task submission based on task submission's answer
-                    Question::create_task_submissions_according_to_answers(
-                        $submission->QuestionnaireData,
-                        $submission->checkForMultiComponent($component) ? json_encode($answerDataResultForSelectedComponent) : $submission->AnswerData,
-                        $submission->QuestionnaireSubmissionID,
-                        '',
-                        $secureToken,
-                        'ts'
-                    );
+                    if ($submission->TaskType === 'questionnaire' || $submission->TaskType === 'risk questionnaire') {
+                        Question::create_task_submissions_according_to_answers(
+                            $submission->QuestionnaireData,
+                            $submission->checkForMultiComponent($component) ? json_encode($answerDataResultForSelectedComponent) : $submission->AnswerData,
+                            $submission->QuestionnaireSubmissionID,
+                            '',
+                            $secureToken,
+                            'ts'
+                        );
+                    }
 
                     $submission->write();
                     $submission->sendAllTheTasksCompletedEmail();
@@ -1480,8 +1439,10 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                             $data->QuestionnaireSubmission()->getProductAspects(): '{}';
 
                         if ($data->TaskType === 'security risk assessment') {
-                            $data->SecurityRiskAssessmentData = $data->calculateSecurityRiskAssessmentData($component);
-                            // @TODO need to update code heere
+                            $sraData = $data->getSraResult($component);
+                            // this data is used to display sra table
+                            $data->setSecurityRiskAssessmentData($sraData);
+
                             $siblingCVATask = $data->getSiblingTaskSubmissionsByType('control validation audit');
                             $cvaTaskData = '';
 
@@ -1496,21 +1457,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                                 $selectedControls = $data->filterCVAResultForComponent($cvaTaskData, $component);
                             }
 
+                            // this data is used to display cards on the sra task screen
                             $data->setSelectedControls($selectedControls);
-                        }
-
-                        if ($data->TaskType === 'control validation audit') {
-                            $siblingComponentSelectionTask = $data->getSiblingTaskSubmissionsByType('selection');
-
-                            if ($siblingComponentSelectionTask) {
-                                $data->setCVATaskDataSource($siblingComponentSelectionTask->ComponentTarget);
-                            } else {
-                                $data->setCVATaskDataSource();
-                            }
-
-                            if (empty($data->CVATaskData)) {
-                                $data->CVATaskData = $data->getDataforCVATask($siblingComponentSelectionTask);
-                            }
                         }
                     }
 
@@ -1531,6 +1479,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
      */
     public function filterCVAResultForComponent($cvaTaskData, $component) : string
     {
+        if (empty($cvaTaskData)) {
+            return '';
+        }
         $cvaDataArray = json_decode($cvaTaskData, true);
         $finalFilterCVAResult = [];
 
@@ -3352,5 +3303,141 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         }
 
         return $result;
+    }
+
+    /**
+     * @param string $productAspect selected prodouct aspect
+     * @param string $status        status
+     * @return string
+     */
+    public function updateSecurityRiskAssessmentData($productAspect = '', $status = '') : string
+    {
+        $answerDataArray = json_decode($this->AnswerData, true);
+        $sraResult = $this->calculateSecurityRiskAssessmentData($productAspect);
+
+        $doesSraResultExist = false;
+        if (!empty($answerDataArray) && !empty($this->findSraResult($productAspect))) {
+            foreach ($answerDataArray as $key =>$riskDetails) {
+                if ($riskDetails['productAspect'] == $productAspect) {
+                    $answerDataArray[$key]['status'] = $status ? $status : self::STATUS_IN_PROGRESS;
+                    $answerDataArray[$key]['result'] = $sraResult;
+                    $doesSraResultExist = true;
+                }
+            }
+        }
+
+        if (empty($answerDataArray) || !$doesSraResultExist) {
+            $data['productAspect'] = $productAspect;
+            $data['status'] = $status ? $status : self::STATUS_IN_PROGRESS;
+            $data['result'] = $sraResult;
+            $answerDataArray[] = $data;
+        }
+
+        // below two lines are just for testing purpose
+        $this->AnswerData = json_encode($answerDataArray);
+        $this->write();
+
+        return json_encode($answerDataArray);
+    }
+
+    /**
+     * @param string $productAspect selected prodouct aspect
+     * @return string
+     */
+    public function completeTaskSubmission($component)
+    {
+        $allAnswerData = json_decode($this->AnswerData, true);
+        $answerDataResultForSelectedComponent = Null;
+        $taskStatusforProductAspect = [];
+
+        if ($this->checkForMultiComponent($component)) {
+            $doesSetTaskSubmissionStatusToComplete = true;
+
+            if(!empty($allAnswerData)) {
+                foreach ($allAnswerData as $key => $answerDataForComponent) {
+                    if ($answerDataForComponent['productAspect'] == $component) {
+                        $answerDataForComponent['status'] = TaskSubmission::STATUS_COMPLETE;
+                        $allAnswerData[$key] = $answerDataForComponent;
+                        $answerDataResultForSelectedComponent = $answerDataForComponent['result'];
+                        $this->AnswerData = json_encode($allAnswerData);
+                        $this->RiskResultData = $this->getRiskResultBasedOnAnswer($component, $answerDataForComponent['status']);
+                    } else if ($answerDataForComponent['status'] !== TaskSubmission::STATUS_COMPLETE) {
+                        $doesSetTaskSubmissionStatusToComplete = false;
+                    }
+
+                    $taskStatusforProductAspect[$answerDataForComponent['productAspect']] = $answerDataForComponent['status'];
+                }
+
+                if ($doesSetTaskSubmissionStatusToComplete) {
+                    $allProductAspectsForSubmission = json_decode($this->getProductAspects());
+                    $productAspectsExistInAnswerData = array_keys($taskStatusforProductAspect);
+                    $result = array_diff($allProductAspectsForSubmission, $productAspectsExistInAnswerData);
+                    if (empty($result)) {
+                        $this->Status = TaskSubmission::STATUS_COMPLETE;
+                    }
+                }
+            }
+        } else {
+            // if task is without component means save a singletask
+            // and change the status to complete
+            $this->Status = TaskSubmission::STATUS_COMPLETE;
+            $this->RiskResultData = $this->getRiskResultBasedOnAnswer();
+        }
+
+        return $answerDataResultForSelectedComponent;
+    }
+
+    /**
+     * @param string $productAspect selected prodouct aspect
+     * @return string
+     */
+    public function getSraResult($productAspect) : string
+    {
+        $sraResult = $this->findSraResult($productAspect);
+
+        // save the sra result frist time and keep the status as start
+        if (empty($sraResult)) {
+            $this->updateSecurityRiskAssessmentData($productAspect, self::STATUS_START);
+            $sraResult = $this->findSraResult($productAspect);
+        }
+
+        return $sraResult;
+    }
+
+    /**
+     * @param string $productAspect selected prodouct aspect
+     * @return string
+     */
+    public function findSraResult($productAspect) : string
+    {
+        $answerDataArray = json_decode($this->AnswerData, true);
+
+        if (!empty($answerDataArray)) {
+            foreach ($answerDataArray as $key => $riskDetails) {
+                if ($riskDetails['productAspect'] == $productAspect) {
+                    return $riskDetails['result'];
+                }
+            }
+        }
+
+        return '';
+    }
+
+    /**
+     * @param string $component selected prodouct aspect
+     * @return string
+     */
+    public function calculateSecurityRiskAssessmentData($component = '') : string
+    {
+        if ($this->TaskType === 'security risk assessment') {
+            $sraCalculator = SecurityRiskAssessmentCalculator::create(
+                $this->QuestionnaireSubmission(),
+                $component
+            );
+
+            return json_encode($sraCalculator->getSRATaskdetails($component));
+        }
+
+        return '';
     }
 }
