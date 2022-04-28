@@ -428,7 +428,7 @@ class SecurityRiskAssessmentCalculator
             return number_format((100 * $normalisedWeight) * $evalutionRatingWeight, 2);
         }
 
-        return $likelihoodWeight = ($likelihood / $sumOfLikelihood) * 100;
+        return 0;
     }
 
     /**
@@ -606,9 +606,9 @@ class SecurityRiskAssessmentCalculator
         $sraTask = $sraTaskSubmission->Task();
         $sraTaskID = $sraTask->ID;
 
-        $sraTaskDetail['likelihoodThresholds'] = $this->getLikelihoodRatingsThresholds($sraTask);
-        $sraTaskDetail['riskRatingThresholds'] = $this->getRiskRatingThresholdsMatix($sraTask);
-        $sraTaskDetail['hasProductAspects'] = false;
+        //$sraTaskDetail['likelihoodThresholds'] = $this->getLikelihoodRatingsThresholds($sraTask);
+        //$sraTaskDetail['riskRatingThresholds'] = $this->getRiskRatingThresholdsMatix($sraTask);
+        // $sraTaskDetail['hasProductAspects'] = false;
 
         $riskIDs = array_column($riskdata, 'riskID');
         $riskInDB = Risk::get()->byIds($riskIDs)->toNestedArray();
@@ -622,7 +622,7 @@ class SecurityRiskAssessmentCalculator
 
             $out['riskId'] = $risk['riskID'];
             $out['riskName'] = $risk['riskName'];
-            $out['description'] = isset($riskInDB[$index]['Description']) ? $riskInDB[$index]['Description'] : '';
+            //$out['description'] = isset($riskInDB[$index]['Description']) ? $riskInDB[$index]['Description'] : '';
             $out['baseImpactScore'] = (int) round($risk['score']);
             $doesRiskHasWeights = false;
 
@@ -670,9 +670,13 @@ class SecurityRiskAssessmentCalculator
                 $doesRiskHasWeights
             );
 
-            $out['riskDetail'] = $riskComponentdetails;
+            $out['riskDetail']['MaxLikelihoodPenalty'] = $riskComponentdetails['MaxLikelihoodPenalty'];
+            $out['riskDetail']['MaxImpactPenalty'] = $riskComponentdetails['MaxImpactPenalty'];
+            $out['riskDetail']['currentLikelihood'] = $riskComponentdetails['currentLikelihood'];
+            $out['riskDetail']['currentImpact'] = $riskComponentdetails['currentImpact'];
+            $out['riskDetail']['currentRiskRating'] = $riskComponentdetails['currentRiskRating'];
 
-            $sraTaskDetail['calculatedSRAData'][] = $out;
+            $sraTaskDetail[] = $out;
         }
 
         return $sraTaskDetail;
