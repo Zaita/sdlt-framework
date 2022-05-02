@@ -656,6 +656,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         $this->provideGraphQLScaffoldingForUpdateTaskRecommendationData($scaffolder);
         $this->provideGraphQLScaffoldingForUpdateControlValidationAuditTaskSubmission($scaffolder);
         $this->provideGraphQLScaffoldingtoReSyncWithJira($scaffolder);
+        $this->provideGraphQLScaffoldingForUpdateControlValidationAuditControlStatus($scaffolder);
     }
 
     /**
@@ -1148,6 +1149,101 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
      * @param SchemaScaffolder $scaffolder The scaffolder of the schema
      * @return void
      */
+    private function provideGraphQLScaffoldingForUpdateControlValidationAuditControlStatus(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('updateControlValidationAuditControlStatus', TaskSubmission::class)
+            ->addArgs([
+                'UUID' => 'String!',
+                'ComponentID' => 'String',
+                'ControlID' => 'String',
+                'ProductAspect' => 'String',
+                'SelectedOption' => 'String'
+            ])
+
+            ->setResolver(new class implements ResolverInterface {
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws GraphQLAuthFailure
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    $member = Security::getCurrentUser();
+                    $uuid = Convert::raw2sql($args['UUID']);
+                    $submission = TaskSubmission::get_task_submission_by_uuid($uuid);
+                    $canEdit = TaskSubmission::can_edit_task_submission(
+                        $submission,
+                        $member,
+                        ''
+                    );
+
+                    if (!$canEdit) {
+                        throw new GraphQLAuthFailure();
+                    }
+
+                    $componentID = isset($args['ComponentID']) ? Convert::raw2sql(trim($args['ComponentID'])) : null;
+                    $controlID = isset($args['ControlID']) ? Convert::raw2sql(trim($args['ControlID'])) : null;
+                    $productAspect = isset($args['ProductAspect']) ? Convert::raw2sql(trim($args['ProductAspect'])) : null;
+                    $controlStatus = isset($args['SelectedOption']) ? Convert::raw2sql(trim($args['SelectedOption'])) : null;
+
+                    $cvaData = json_decode($submission->CVATaskData, true);
+
+                    if (!empty($cvaData)) {
+                        foreach ($cvaData as $componentKey => $data) {
+                            if ($productAspect == $data['productAspect'] && $componentID == $data['id']) {
+                                if (!empty($data['controls'])) {
+                                    foreach ($data['controls'] as $controlKey => $control) {
+                                        if ($control['id'] == $controlID) {
+                                            $control['selectedOption'] = $controlStatus;
+                                            $data['controls'][$controlKey] = $control;
+                                        }
+                                    }
+                                }
+                            }
+                            $cvaData[$componentKey] = $data;
+                        }
+                    }
+
+                    $cvaTaskData = json_encode($cvaData);
+
+                    $selectedControls = $cvaTaskData;
+
+                    if (!empty($cvaTaskData) && $submission->checkForMultiComponent($productAspect)) {
+                        $selectedControls = $submission->filterCVAResultForComponent($cvaTaskData, $productAspect);
+                    }
+
+                    // this data is used to display cards on the sra task screen
+                    $submission->setSelectedControls($selectedControls);
+                    $submission->CVATaskData = json_encode($cvaData);
+                    $submission->write();
+
+                    // first save data into cva task submissions
+                    // then only set the updated sra result
+                    $siblingSraTask = $submission->getSiblingTaskSubmissionsByType('security risk assessment');
+                    $sraData = $submission->updateSecurityRiskAssessmentData(
+                        $productAspect,
+                        $submission::STATUS_IN_PROGRESS,
+                        $siblingSraTask
+                    );
+                    $submission->setSecurityRiskAssessmentData($sraData);
+
+                    return $submission;
+                }
+            })
+            ->end();
+    }
+
+    /**
+     * @param SchemaScaffolder $scaffolder The scaffolder of the schema
+     * @return void
+     */
     private function provideGraphQLScaffoldingForCompleteTaskSubmission(SchemaScaffolder $scaffolder)
     {
         $scaffolder
@@ -1217,12 +1313,6 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     if (isset($args['Result'])) {
                         $submission->Result = trim($args['Result']);
                     }
-
-                    // TODO: remove below commented code afer testing
-                    // if ($submission->TaskType === 'security risk assessment') {
-                    //     $submission->SecurityRiskAssessmentData = $submission->calculateSecurityRiskAssessmentData($component);
-                    //     $submission->AnswerData = $submission->saveSecurityRiskAssessmentData($submission->SecurityRiskAssessmentData, $component);
-                    // }
 
                     if ($submission->TaskType === 'selection') {
                         $siblingCVATask = $submission->getSiblingTaskSubmissionsByType('control validation audit');
@@ -3308,18 +3398,23 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     /**
      * @param string $productAspect selected prodouct aspect
      * @param string $status        status
+     * @param string $sraTask       sra task data
      * @return string
      */
-    public function updateSecurityRiskAssessmentData($productAspect = '', $status = '') : string
+    public function updateSecurityRiskAssessmentData($productAspect = '', $status = '', $sraTask = '') : string
     {
-        $answerDataArray = json_decode($this->AnswerData, true);
-        $sraResult = $this->calculateSecurityRiskAssessmentData($productAspect);
+        if (empty($sraTask)) {
+            return '';
+        }
+
+        $answerDataArray = json_decode($sraTask->AnswerData, true);
+        $sraResult = $sraTask->calculateSecurityRiskAssessmentData($productAspect);
 
         $doesSraResultExist = false;
-        if (!empty($answerDataArray) && !empty($this->findSraResult($productAspect))) {
+        if (!empty($answerDataArray) && !empty($sraTask->findSraResult($productAspect))) {
             foreach ($answerDataArray as $key =>$riskDetails) {
                 if ($riskDetails['productAspect'] == $productAspect) {
-                    $answerDataArray[$key]['status'] = $status ? $status : self::STATUS_IN_PROGRESS;
+                    $answerDataArray[$key]['status'] = $status;
                     $answerDataArray[$key]['result'] = $sraResult;
                     $doesSraResultExist = true;
                 }
@@ -3328,16 +3423,17 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
         if (empty($answerDataArray) || !$doesSraResultExist) {
             $data['productAspect'] = $productAspect;
-            $data['status'] = $status ? $status : self::STATUS_IN_PROGRESS;
+            $data['status'] = $status;
             $data['result'] = $sraResult;
             $answerDataArray[] = $data;
         }
 
         // below two lines are just for testing purpose
-        $this->AnswerData = json_encode($answerDataArray);
-        $this->write();
+        $sraTask->AnswerData = json_encode($answerDataArray);
+        $sraTask->Status = $status;
+        $sraTask->write();
 
-        return json_encode($answerDataArray);
+        return $sraResult;
     }
 
     /**
@@ -3395,10 +3491,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     {
         $sraResult = $this->findSraResult($productAspect);
 
-        // save the sra result frist time and keep the status as start
+        // save the sra result first time and keep the status as start
         if (empty($sraResult)) {
-            $this->updateSecurityRiskAssessmentData($productAspect, self::STATUS_START);
-            $sraResult = $this->findSraResult($productAspect);
+            $sraResult = $this->updateSecurityRiskAssessmentData($productAspect, self::STATUS_START, $this);
         }
 
         return $sraResult;
