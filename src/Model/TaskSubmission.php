@@ -1215,7 +1215,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
                     $selectedControls = $cvaTaskData;
 
-                    if (!empty($cvaTaskData) && $submission->checkForMultiComponent($productAspect)) {
+                    if (!empty($cvaTaskData) && $productAspect) {
                         $selectedControls = $submission->filterCVAResultForComponent($cvaTaskData, $productAspect);
                     }
 
