@@ -1580,10 +1580,12 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         });
 
         if (!empty($filteredCVAResult)) {
-            $finalFilterCVAResult = array_pop($filteredCVAResult);
+            foreach ($filteredCVAResult as $key => $value) {
+                $finalFilterCVAResult[]= $value;
+            }
         }
 
-        return json_encode([$finalFilterCVAResult]);
+        return json_encode($finalFilterCVAResult);
     }
 
     /**
