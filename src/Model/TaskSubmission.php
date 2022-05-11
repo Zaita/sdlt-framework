@@ -3070,44 +3070,42 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     {
         // check sibling sra tasks
         $siblingTaskSubmissions = $this->getSiblingTaskSubmissions();
-
         $finalResult["message"] = "There are no digital security risk assessments to link against this Certification and Accreditation.";
         $finalResult["isDisplayMessage"] = true;
+        $finalResult['hasProductAspects'] = false;
 
         if ($this->Task()->isCertificationAndAccreditationType() &&
             $siblingTaskSubmissions && $siblingTaskSubmissions->Count()) {
+
             foreach ($siblingTaskSubmissions as $taskSubmission) {
 
                 if ($taskSubmission->Task()->isSRAType() &&
                     $taskSubmission->Status == self::STATUS_COMPLETE &&
                     $taskSubmission->AnswerData)
                 {
-                    $result = json_decode($taskSubmission->AnswerData, true);
-                    $hasProductAspects = $result["hasProductAspects"];
-                    $calculatedSRAData = $result["calculatedSRAData"];
-                    $finalResult['hasProductAspects'] = $hasProductAspects;
+                    $answerData = json_decode($taskSubmission->AnswerData, true);
                     $finalResult["isDisplayMessage"] = false;
+                    $riskresultDetails = [];
 
-                    if ($hasProductAspects) {
-                        foreach ($calculatedSRAData as $risk) {
-                            foreach ($risk["productAspects"] as $productAspect) {
-                                $productAspectName = $productAspect["productAspectName"];
-                                $riskresult["riskId"] = $risk["riskId"];
-                                $riskresult["riskName"] = $risk["riskName"];
-                                $riskresult["currentRiskRating"] = $productAspect["currentRiskRating"];
-                                $productAspectriskResult[$productAspectName][] = $riskresult;
+                    foreach ($answerData as $data) {
+                        $productAspectName = $data["productAspect"];
+                        $result = json_decode($data['result'], true);
+
+                        foreach ($result as $riskDetails) {
+                            $riskresult["riskId"] = $riskDetails["riskId"];
+                            $riskresult["riskName"] = $riskDetails["riskName"];
+                            $riskresult["currentRiskRating"] = $riskDetails["riskDetail"]["currentRiskRating"];
+
+                            if (!empty($productAspectName)) {
+                                $finalResult['hasProductAspects'] = true;
+                                $riskresultDetails[$productAspectName][] = $riskresult;
+                            } else {
+                                $riskresultDetails[] = $riskresult;
                             }
                         }
-
-                        $finalResult["result"] = $productAspectriskResult;
-                    } else {
-                        foreach ($calculatedSRAData as $risk) {
-                            $riskresult["riskId"] = $risk["riskId"];
-                            $riskresult["riskName"] = $risk["riskName"];
-                            $riskresult["currentRiskRating"] = $risk["riskDetail"]["currentRiskRating"];
-                            $finalResult["result"][] = $riskresult;
-                        }
                     }
+
+                    $finalResult["result"] = $riskresultDetails;
                 }
             }
         }
@@ -3284,6 +3282,10 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         });
 
         // get answer array from $inputFieldAnswer
+        if (empty($inputFieldAnswer)) {
+            return;
+        }
+
         $answer = array_pop($inputFieldAnswer);
         $data = $answer['data']; // string for radio
 
