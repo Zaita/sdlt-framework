@@ -715,7 +715,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'SraTaskPlannedInformationText',
                 'SraTaskImplementedInformationText',
                 'ControlSetSelectionTaskHelpText',
-                'SelectedControls'
+                'SelectedControls',
+                'LikelihoodRatingsThresholds',
+                'RiskRatingThresholdsMatix'
             ]);
 
         $dataObjectScaffolder
@@ -3536,5 +3538,33 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         }
 
         return '';
+    }
+
+    /**
+     * @param DataObject sraTask sra task submission
+     *
+     * @return array LikelihoodRatings
+     */
+    public function getLikelihoodRatingsThresholds($sraTask = '')
+    {
+        if (empty($sraTask)) {
+            $sraTask = $this->task();
+        }
+
+        return json_encode($sraTask->getLikelihoodRatingsData());
+    }
+
+    /**
+     * @param DataObject sraTask sra task submission
+     *
+     * @return array RiskRatings matrix
+     */
+    public function getRiskRatingThresholdsMatix($sraTask = '')
+    {
+        if (empty($sraTask)) {
+            $sraTask = $this->task();
+        }
+
+        return json_encode($sraTask->getRiskRatingMatix());
     }
 }
