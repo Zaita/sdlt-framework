@@ -552,8 +552,6 @@ class SecurityRiskAssessmentCalculator
         if (!$riskData) {
             $sraTaskSubmission = $this->getSRATaskSubmission();
             $sraTask = $sraTaskSubmission->Task();
-            $sraTaskDetail['likelihoodThresholds'] = $this->getLikelihoodRatingsThresholds($sraTask);
-            $sraTaskDetail['riskRatingThresholds'] = $this->getRiskRatingThresholdsMatix($sraTask);
             return $sraTaskDetail;
         }
 
@@ -562,30 +560,6 @@ class SecurityRiskAssessmentCalculator
         $sraTaskDetail = $this->getRisksAndComponentsAndControlsforSra($cvaTaskData, $riskData);
 
         return $sraTaskDetail;
-    }
-
-    /**
-     * @return array LikelihoodRatings
-     */
-    public function getLikelihoodRatingsThresholds($sraTask = '')
-    {
-        if (empty ($sraTask)) {
-            $sraTask = $this->getSRATaskSubmission()->task();
-        }
-
-        return $sraTask->getLikelihoodRatingsData();
-    }
-
-    /**
-     * @return array RiskRatings matrix
-     */
-    public function getRiskRatingThresholdsMatix($sraTask = '')
-    {
-        if (empty ($sraTask)) {
-            $sraTask = $this->getSRATaskSubmission()->task();
-        }
-
-        return $sraTask->getRiskRatingMatix();
     }
 
     /**
@@ -605,11 +579,6 @@ class SecurityRiskAssessmentCalculator
         $sraTaskSubmission = $this->getSRATaskSubmission();
         $sraTask = $sraTaskSubmission->Task();
         $sraTaskID = $sraTask->ID;
-
-        //$sraTaskDetail['likelihoodThresholds'] = $this->getLikelihoodRatingsThresholds($sraTask);
-        //$sraTaskDetail['riskRatingThresholds'] = $this->getRiskRatingThresholdsMatix($sraTask);
-        // $sraTaskDetail['hasProductAspects'] = false;
-
         $riskIDs = array_column($riskdata, 'riskID');
         $riskInDB = Risk::get()->byIds($riskIDs)->toNestedArray();
 
