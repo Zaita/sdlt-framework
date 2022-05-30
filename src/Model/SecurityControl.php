@@ -65,7 +65,10 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
         'Name' => 'Varchar(255)',
         'Description' => 'HTMLText',
         'ImplementationGuidance' => 'HTMLText',
-        'ImplementationEvidence' => 'HTMLText'
+        'ImplementationEvidence' => 'HTMLText',
+        'ControlOwnerName' => 'Varchar(255)',
+        'ControlOwnerEmailAddress' => 'Varchar(255)',
+        'ControlOwnerTeam' => 'Varchar(255)'
     ];
 
     /**
@@ -119,7 +122,10 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
                 'Name',
                 'Description',
                 'ImplementationGuidance',
-                'ImplementationEvidence'
+                'ImplementationEvidence',
+                'ControlOwnerName',
+                'ControlOwnerEmailAddress',
+                'ControlOwnerTeam'
             ]);
 
         return $typeScaffolder;
@@ -148,6 +154,16 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
             ->setRows(3);
 
         $fields->addFieldsToTab('Root.Main', [$name, $desc, $implementationGuidance, $implementationEvidence]);
+
+        $fields->addFieldsToTab(
+            'Root.ControlOwnerDetails',
+            [
+                $fields->dataFieldByName('ControlOwnerName'),
+                $fields->dataFieldByName('ControlOwnerEmailAddress'),
+                $fields->dataFieldByName('ControlOwnerTeam')
+            ]
+        );
+
         $fields->removeByName(['SecurityComponent', 'ControlWeightSets']);
 
         if ($this->ID) {

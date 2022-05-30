@@ -2716,6 +2716,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'SecurityComponentID' => $componentID
             ]);
 
+            $controlOwnerDetails = [];
             $riskCategories = [];
             $isKeyControl = false;
 
@@ -2733,6 +2734,12 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 }
             }
 
+            $controlOwnerDetails[] = [
+                'name' => $ctrl->ControlOwnerName,
+                'email' => $ctrl->ControlOwnerEmailAddress,
+                'team' => $ctrl->ControlOwnerTeam
+            ];
+
             $cvaControls[] = [
                 'id' => $ctrl->ID,
                 'name' => $ctrl->Name,
@@ -2743,7 +2750,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'implementationEvidenceUserInput' => '',
                 'riskCategories' => $riskCategories,
                 'evalutionRating' => SecurityControl::EVALUTION_RATING_1,
-                'isKeyControl' => $isKeyControl
+                'isKeyControl' => $isKeyControl,
+                'controlOwnerDetails' => $controlOwnerDetails
             ];
         }
 
