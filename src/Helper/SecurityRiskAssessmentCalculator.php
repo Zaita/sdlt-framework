@@ -416,16 +416,16 @@ class SecurityRiskAssessmentCalculator
      *                                from the CMS for this particular control
      * @param int $sumOfLikelihood    this is the sum of all likelihoods for this
      *                                component's recommended and implemented controls
-     * @param string $evalutionRating evalutionRating
+     * @param string $evaluationRating evaluationRating
      * @return int/float
      */
-    public function normaliseControlLikelihoodWeight($likelihood, $sumOfLikelihood, $evalutionRating)
+    public function normaliseControlLikelihoodWeight($likelihood, $sumOfLikelihood, $evaluationRating)
     {
-        $evalutionRatingWeight = SecurityControl::EVALUTION_RATING_WEIGHTS[$evalutionRating];
+        $evaluationRatingWeight = SecurityControl::EVALUATION_RATING_WEIGHTS[$evaluationRating];
 
         if ($sumOfLikelihood > 0) {
             $normalisedWeight = $likelihood / $sumOfLikelihood;
-            return number_format((100 * $normalisedWeight) * $evalutionRatingWeight, 2);
+            return number_format((100 * $normalisedWeight) * $evaluationRatingWeight, 2);
         }
 
         return 0;
@@ -442,16 +442,16 @@ class SecurityRiskAssessmentCalculator
      *                                recommended and implemented controls
      * @param int $baseImpact         the base impact score calculated for this
      *                                risk, obtained from the risk questionnaire results
-     * @param string $evalutionRating evalutionRating
+     * @param string $evaluationRating evaluationRating
      * @return int
      */
-    public function normaliseControlImpactWeight($impact, $sumOfImpact, $baseImpact, $evalutionRating)
+    public function normaliseControlImpactWeight($impact, $sumOfImpact, $baseImpact, $evaluationRating)
     {
-        $evalutionRatingWeight = SecurityControl::EVALUTION_RATING_WEIGHTS[$evalutionRating];
+        $evaluationRatingWeight = SecurityControl::EVALUATION_RATING_WEIGHTS[$evaluationRating];
 
         if ($sumOfImpact > 0) {
             $normalisedWeight = $impact / $sumOfImpact;
-            return number_format(($baseImpact * $normalisedWeight) * $evalutionRatingWeight , 2);
+            return number_format(($baseImpact * $normalisedWeight) * $evaluationRatingWeight , 2);
         }
 
         return 0;
@@ -885,7 +885,7 @@ class SecurityRiskAssessmentCalculator
                     $control['likelihoodWeight'] = $this->normaliseControlLikelihoodWeight(
                         $control['likelihood'],
                         $sums['sumOfLikelihood'],
-                        $control['evalutionRating']
+                        $control['evaluationRating']
                     );
 
                     $sumOfLikelihoodWeight += $control['likelihoodWeight'];
@@ -894,7 +894,7 @@ class SecurityRiskAssessmentCalculator
                         $control['impact'],
                         $sums['sumOfImpact'],
                         $baseImpact,
-                        $control['evalutionRating']
+                        $control['evaluationRating']
                     );
 
                     $sumOfImpactWeight += $control['impactWeight'];
@@ -906,14 +906,14 @@ class SecurityRiskAssessmentCalculator
                     $control['likelihoodWeight'] = $this->normaliseControlLikelihoodWeight(
                         $control['likelihood'],
                         $sums['sumOfLikelihood'],
-                        $control['evalutionRating']
+                        $control['evaluationRating']
                     );
 
                     $control['impactWeight'] = $this->normaliseControlImpactWeight(
                         $control['impact'],
                         $sums['sumOfImpact'],
                         $baseImpact,
-                        $control['evalutionRating']
+                        $control['evaluationRating']
                     );
                 }
             }

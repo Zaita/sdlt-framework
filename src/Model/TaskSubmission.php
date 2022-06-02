@@ -2749,7 +2749,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'selectedOption' => SecurityControl::CTL_STATUS_2,
                 'implementationEvidenceUserInput' => '',
                 'riskCategories' => $riskCategories,
-                'evalutionRating' => SecurityControl::EVALUTION_RATING_1,
+                'evaluationRating' => SecurityControl::EVALUATION_RATING_1,
                 'isKeyControl' => $isKeyControl,
                 'controlOwnerDetails' => $controlOwnerDetails,
                 'implementationEvidenceHelpText' => $ctrl->ImplementationEvidenceHelpText
