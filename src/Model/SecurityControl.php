@@ -68,7 +68,8 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
         'ImplementationEvidence' => 'HTMLText',
         'ControlOwnerName' => 'Varchar(255)',
         'ControlOwnerEmailAddress' => 'Varchar(255)',
-        'ControlOwnerTeam' => 'Varchar(255)'
+        'ControlOwnerTeam' => 'Varchar(255)',
+        'ImplementationEvidenceHelpText' => 'Text'
     ];
 
     /**
@@ -125,7 +126,8 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
                 'ImplementationEvidence',
                 'ControlOwnerName',
                 'ControlOwnerEmailAddress',
-                'ControlOwnerTeam'
+                'ControlOwnerTeam',
+                'ImplementationEvidenceHelpText'
             ]);
 
         return $typeScaffolder;
@@ -153,7 +155,17 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
         $implementationEvidence = HtmlEditorField::create('ImplementationEvidence')
             ->setRows(3);
 
+        $implementationEvidenceHelpText = $fields->dataFieldByName('ImplementationEvidenceHelpText');
+        $implementationEvidenceHelpText
+            ->setDescription('This is the text that appears above the implementation'
+            .' evidence input field on the control detail page.');
+
         $fields->addFieldsToTab('Root.Main', [$name, $desc, $implementationGuidance, $implementationEvidence]);
+
+        $fields->insertBefore(
+            $implementationEvidenceHelpText,
+            'ImplementationEvidence'
+        );
 
         $fields->addFieldsToTab(
             'Root.ControlOwnerDetails',
