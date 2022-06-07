@@ -69,7 +69,8 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
         'ControlOwnerName' => 'Varchar(255)',
         'ControlOwnerEmailAddress' => 'Varchar(255)',
         'ControlOwnerTeam' => 'Varchar(255)',
-        'ImplementationEvidenceHelpText' => 'Text'
+        'ImplementationEvidenceHelpText' => 'Text',
+        'ImplementationAuditHelpText' => 'Text'
     ];
 
     /**
@@ -127,7 +128,8 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
                 'ControlOwnerName',
                 'ControlOwnerEmailAddress',
                 'ControlOwnerTeam',
-                'ImplementationEvidenceHelpText'
+                'ImplementationEvidenceHelpText',
+                'ImplementationAuditHelpText'
             ]);
 
         return $typeScaffolder;
@@ -173,6 +175,13 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
                 $fields->dataFieldByName('ControlOwnerName'),
                 $fields->dataFieldByName('ControlOwnerEmailAddress'),
                 $fields->dataFieldByName('ControlOwnerTeam')
+            ]
+        );
+
+        $fields->addFieldsToTab(
+            'Root.ControlAuditDetails',
+            [
+                $fields->dataFieldByName('ImplementationAuditHelpText')
             ]
         );
 
