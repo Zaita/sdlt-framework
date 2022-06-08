@@ -2752,7 +2752,8 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                 'evalutionRating' => SecurityControl::EVALUTION_RATING_1,
                 'isKeyControl' => $isKeyControl,
                 'controlOwnerDetails' => $controlOwnerDetails,
-                'implementationEvidenceHelpText' => $ctrl->ImplementationEvidenceHelpText
+                'implementationEvidenceHelpText' => $ctrl->ImplementationEvidenceHelpText,
+                'implementationAuditHelpText' => $ctrl->ImplementationAuditHelpText
             ];
         }
 
