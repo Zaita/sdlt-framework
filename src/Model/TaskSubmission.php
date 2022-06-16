@@ -657,6 +657,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         $this->provideGraphQLScaffoldingForUpdateControlValidationAuditTaskSubmission($scaffolder);
         $this->provideGraphQLScaffoldingtoReSyncWithJira($scaffolder);
         $this->provideGraphQLScaffoldingForUpdateControlValidationAuditControlStatus($scaffolder);
+        $this->provideGraphQLScaffoldingForUpdateControlValidationAuditControlDetails($scaffolder);
     }
 
     /**
@@ -1235,6 +1236,81 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                         $siblingSraTask
                     );
                     $submission->setSecurityRiskAssessmentData($sraData);
+
+                    return $submission;
+                }
+            })
+            ->end();
+    }
+
+    /**
+     * @param SchemaScaffolder $scaffolder The scaffolder of the schema
+     * @return void
+     */
+    private function provideGraphQLScaffoldingForUpdateControlValidationAuditControlDetails(SchemaScaffolder $scaffolder)
+    {
+        $scaffolder
+            ->mutation('updateControlValidationAuditControlDetails', TaskSubmission::class)
+            ->addArgs([
+                'UUID' => 'String!',
+                'ComponentID' => 'String',
+                'ControlID' => 'String',
+                'ProductAspect' => 'String',
+                'UpdatedControl' => 'String'
+            ])
+
+            ->setResolver(new class implements ResolverInterface {
+                /**
+                 * Invoked by the Executor class to resolve this mutation / query
+                 * @see Executor
+                 *
+                 * @param mixed       $object  object
+                 * @param array       $args    args
+                 * @param mixed       $context context
+                 * @param ResolveInfo $info    info
+                 * @throws GraphQLAuthFailure
+                 * @return mixed
+                 */
+                public function resolve($object, array $args, $context, ResolveInfo $info)
+                {
+                    $member = Security::getCurrentUser();
+                    $uuid = Convert::raw2sql($args['UUID']);
+                    $submission = TaskSubmission::get_task_submission_by_uuid($uuid);
+                    $canEdit = TaskSubmission::can_edit_task_submission(
+                        $submission,
+                        $member,
+                        ''
+                    );
+
+                    if (!$canEdit) {
+                        throw new GraphQLAuthFailure();
+                    }
+
+                    $componentID = isset($args['ComponentID']) ? Convert::raw2sql(trim($args['ComponentID'])) : null;
+                    $controlID = isset($args['ControlID']) ? Convert::raw2sql(trim($args['ControlID'])) : null;
+                    $productAspect = isset($args['ProductAspect']) ? Convert::raw2sql(trim($args['ProductAspect'])) : null;
+                    $updatedControl = isset($args['UpdatedControl']) ? Convert::raw2sql(trim($args['UpdatedControl'])) : null;
+                    $updatedControlArray = json_decode(base64_decode($updatedControl), true);
+                    $cvaData = json_decode($submission->CVATaskData, true);
+
+                    if (!empty($cvaData)) {
+                        foreach ($cvaData as $componentKey => $data) {
+                            if ($productAspect == $data['productAspect'] && $componentID == $data['id']) {
+                                if (!empty($data['controls'])) {
+                                    foreach ($data['controls'] as $controlKey => $control) {
+                                        if (isset($control["id"]) && $control["id"] == $controlID) {
+                                            $data['controls'][$controlKey] = $updatedControlArray;
+                                        }
+                                    }
+                                }
+                            }
+                            $cvaData[$componentKey] = $data;
+                        }
+                    }
+
+                    // this data is used to display cards on the sra task screen
+                    $submission->CVATaskData = json_encode($cvaData);
+                    $submission->write();
 
                     return $submission;
                 }
