@@ -163,11 +163,6 @@ class SecurityRiskAssessmentCalculator
             } else {
                 $finalRiskResult = $riskResultData;
             }
-            // else if (!$component &&
-            //     !empty($riskQuestionnaireSubmission->getProductAspects()) &&
-            //     $riskQuestionnaireSubmission->CreateOnceInstancePerComponent) {
-            //         $finalRiskResult = null;
-            // }
         }
 
         return $finalRiskResult;
@@ -638,13 +633,7 @@ class SecurityRiskAssessmentCalculator
                 $sraTaskID,
                 $doesRiskHasWeights
             );
-
-            $out['riskDetail']['MaxLikelihoodPenalty'] = $riskComponentdetails['MaxLikelihoodPenalty'];
-            $out['riskDetail']['MaxImpactPenalty'] = $riskComponentdetails['MaxImpactPenalty'];
-            $out['riskDetail']['currentLikelihood'] = $riskComponentdetails['currentLikelihood'];
-            $out['riskDetail']['currentImpact'] = $riskComponentdetails['currentImpact'];
-            $out['riskDetail']['currentRiskRating'] = $riskComponentdetails['currentRiskRating'];
-
+            $out['riskDetail'] = $riskComponentdetails;
             $sraTaskDetail[] = $out;
         }
 
