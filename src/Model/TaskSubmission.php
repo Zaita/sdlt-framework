@@ -1312,6 +1312,16 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     $submission->CVATaskData = json_encode($cvaData);
                     $submission->write();
 
+                    // first save data into cva task submissions
+                    // then only set the updated sra result
+                    $siblingSraTask = $submission->getSiblingTaskSubmissionsByType('security risk assessment');
+                    $sraData = $submission->updateSecurityRiskAssessmentData(
+                        $productAspect,
+                        $submission::STATUS_IN_PROGRESS,
+                        $siblingSraTask
+                    );
+                    $submission->setSecurityRiskAssessmentData($sraData);
+
                     return $submission;
                 }
             })
