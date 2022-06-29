@@ -486,20 +486,40 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         // link tab
         $secureLink = $this->SecureLink();
         $anonLink = $this->AnonymousAccessLink();
+        $textFieldsforSecureLink = [];
+        $textFieldsforAnonymousLink = [];
+
+        foreach ($secureLink as $key => $link) {
+            $textFieldsforSecureLink[] = TextField::create('SecureLink_' . $key, 'Link for '.$key)
+                ->setValue($link)
+                ->setReadonly(true)
+                ->setDescription('This is the link emailed to authenticated'
+                    .' users of the application');
+
+        }
+
+        foreach ($anonLink as $key => $link) {
+            $textFieldsforAnonymousLink[] = TextField::create('AnonymousLink_' . $key, 'Link for '.$key)
+                ->setValue($link)
+                ->setReadonly(true)
+                ->setDescription('This is the link emailed to anonymous users of the application.'
+                    .' Anyone possessing the link can view the submission');
+
+        }
+
         $fields->addFieldsToTab(
             'Root.Links',
             [
-              TextField::create(microtime(), 'Secure link')
-                  ->setValue($secureLink)
-                  ->setReadonly(true)
-                  ->setDescription('This is the link emailed to authenticated'
-                      .' users of the application'),
-              TextField::create(microtime(), 'Anonymous access link')
-                  ->setValue($anonLink)
-                  ->setReadonly(true)
-                  ->setDescription('This is the link emailed to anonymous users'
-                      .' of the application. Anyone possessing the link can view'
-                      .' the submission')
+                ToggleCompositeField::create(
+                    'SecureLinkToggle',
+                    'Secure link',
+                    $textFieldsforSecureLink
+                ),
+                ToggleCompositeField::create(
+                    'AnonymousLinkToggle',
+                    'Anonymous link',
+                    $textFieldsforAnonymousLink
+                ),
             ]
         );
 
@@ -2118,15 +2138,28 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     /**
      * Check login status first before viewing the task submission
      *
-     * @return void
+     * @return array
      */
     public function SecureLink()
     {
-        $route = $this->Link();
-        $secureLink = 'Security/login/?BackURL='.rawurlencode($route);
-
         $hostname = $this->getHostname();
-        return $hostname . $secureLink;
+        $route = $this->Link();
+        $links = [];
+        $productAspects = json_decode($this->getProductAspects());
+
+        if (!empty($productAspects) && $this->CreateOnceInstancePerComponent) {
+            foreach ($productAspects as $component) {
+                $routeWithComponent = $route . "?component=" . $component;
+                $secureLink = 'Security/login/?BackURL='.rawurlencode($routeWithComponent);
+                $links[$component] = $hostname . $secureLink;
+            }
+        } else {
+            $secureLink = 'Security/login/?BackURL='.rawurlencode($route);
+            $links["secure user"] = $hostname . $secureLink;
+
+        }
+
+        return $links;
     }
 
     /**
@@ -2135,21 +2168,37 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
      *
      * @param string $prefix controller route to follow that grants user access
      *                       for GCIO105, this is 'vendorApp'
-     * @return void
+     * @return array
      */
     public function AnonymousAccessLink($prefix = 'vendorApp')
     {
-        if (strlen($prefix) > 0) {
+        $hostname = $this->getHostname();
+        $route = $this->Link();
+        $links = [];
+        $productAspects = json_decode($this->getProductAspects());
+
+        if (!empty($productAspects) && $this->CreateOnceInstancePerComponent) {
+            foreach ($productAspects as $component) {
+                $anonLink = sprintf(
+                    "%s/%s?token=%s&component=%s",
+                    $prefix,
+                    $route,
+                    $this->SecureToken,
+                    $component
+                );
+                $links[$component] = $hostname . $anonLink;
+            }
+        } else {
             $anonLink = sprintf(
                 "%s/%s?token=%s",
                 $prefix,
-                $this->Link(),
+                $route,
                 $this->SecureToken
             );
-
-            $hostname = $this->getHostname();
-            return $hostname . $anonLink;
+            $links["anonymous user"] = $hostname . $anonLink;
         }
+
+        return $links;
     }
 
     /**
@@ -2534,15 +2583,22 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         $SubmitterName = $this->Submitter()->Name;
         $SubmitterEmail = $this->Submitter()->Email;
         $productName = $this->QuestionnaireSubmission()->ProductName;
+        $finalLink = '';
 
         if ($linkPrefix) {
-            $link = $this->AnonymousAccessLink($linkPrefix);
+            $links = $this->AnonymousAccessLink($linkPrefix);
         } else {
-            $link = $this->SecureLink();
+            $links = $this->SecureLink();
         }
 
+        foreach ($links as $key => $link) {
+            $finalLink .= '<br> Link for ' . $key . ': ' . $link;
+        }
+
+        $finalLink .=  '<br>';
+
         $string = str_replace('{$taskName}', $taskName, $string);
-        $string = str_replace('{$taskLink}', $link, $string);
+        $string = str_replace('{$taskLink}', $finalLink, $string);
         $string = str_replace('{$submitterName}', $SubmitterName, $string);
         $string = str_replace('{$submitterEmail}', $SubmitterEmail, $string);
         $string = str_replace('{$productName}', $productName, $string);
@@ -2642,6 +2698,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
     public function getSiblingTaskSubmissions()
     {
         $qs = $this->QuestionnaireSubmission();
+
         if ($qs && $qs->exists()) {
             return $qs->TaskSubmissions();
         }
