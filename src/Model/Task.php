@@ -93,10 +93,20 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         'IsStakeholdersSelected' => "Enum('No,Yes', 'No')",
         'RiskCalculation' => "Enum('NztaApproxRepresentation,Maximum')",
         'ComponentTarget' => "Enum('JIRA Cloud,Local')", // when task type is SRA
-        'HideRiskWeightsAndScore' => 'Boolean', // when task type is risk questionnaire
         'PreventMessage' => 'HTMLText', // display message for C&A memo task
         'TimeToComplete' => 'Varchar(255)',
         'TimeToReview' => 'Varchar(255)',
+        'CreateOnceInstancePerComponent' => 'Boolean',
+        'SraTaskHelpText' => 'Text',
+        'SraTaskRecommendedControlHelpText' => 'Text',
+        'SraTaskRiskRatingHelpText' => 'HTMLText',
+        'SraTaskLikelihoodScoreHelpText' => 'HTMLText',
+        'SraTaskImpactScoreHelpText' => 'HTMLText',
+        'SraTaskNotApplicableInformationText' => 'Text',
+        'SraTaskNotImplementedInformationText' => 'Text',
+        'SraTaskPlannedInformationText' => 'Text',
+        'SraTaskImplementedInformationText' => 'Text',
+        'ControlSetSelectionTaskHelpText' => 'Text'
     ];
 
     /**
@@ -180,6 +190,26 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     ];
 
     /**
+     * @var array
+     */
+    private static $defaults = [
+        'SraTaskNotApplicableInformationText' => 'You can move a control here '.
+            'if it is not applicable for your delivery. Controls marked not '.
+            'applicable do not contribute to the risk rating in any way.',
+        'SraTaskNotImplementedInformationText' => 'Controls here have been '.
+            'assigned to your delivery and will contribute to increased risk. '.
+            'Move controls to planned if you wish to implement them or not '.
+            'applicable if they are not suitable for your delivery.',
+        'SraTaskPlannedInformationText' => 'Controls here are planned to be '.
+            'implemented by your delivery team. The risk table will show a risk rating '.
+            'including planned controls as implemented to allow you to plan ahead.',
+        'SraTaskImplementedInformationText' => 'Controls here have been implemented. '.
+            'If they have evidence added or been validated, then they will have '.
+            'status icons to indicate this. Control efficacy does impact the '.
+            'amount of risk reduced by the controls.'
+    ];
+
+    /**
      * CMS Fields
      * @return FieldList
      */
@@ -187,8 +217,8 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     {
         $fields = parent::getCMSFields();
         $typeField = $fields->dataFieldByName('TaskType');
+        $createOnceInstancePerComponent = $fields->dataFieldByName('CreateOnceInstancePerComponent');
         $riskField = $fields->dataFieldByName('RiskCalculation');
-        $hideWeightsAndScore = $fields->dataFieldByName('HideRiskWeightsAndScore');
 
         $fields->removeByName([
             'TaskType',
@@ -199,8 +229,20 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             'DefaultSecurityComponents',
             'Questionnaires',
             'AnswerActionFields',
-            'HideRiskWeightsAndScore',
+            'CreateOnceInstancePerComponent'
         ]);
+
+        $fields->insertAfter(
+            'LockAnswersWhenComplete',
+            $createOnceInstancePerComponent
+                ->setTitle('Create once instance per component on the submission')
+        );
+
+        $createOnceInstancePerComponent
+            ->displayIf("TaskType")->isEqualTo("risk questionnaire")
+            ->orIf("TaskType")->isEqualTo("security risk assessment")
+            ->orIf("TaskType")->isEqualTo("control validation audit")
+            ->end();
 
         $fields->insertAfter(
             'Name',
@@ -242,14 +284,6 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         );
 
         $fields->insertAfter(
-            'RiskCalculation',
-            $hideWeightsAndScore
-                ->displayIf('TaskType')
-                ->isEqualTo('risk questionnaire')
-                ->end()
-        );
-
-        $fields->insertAfter(
             'TaskType',
             DropdownField::create('ComponentTarget', 'Target')
             ->setEmptyString('-- Select One --')
@@ -266,36 +300,6 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                 'PreventMessage',
                 'InformationClassificationTaskID'
             ]);
-
-            $fields->addFieldsToTab(
-                'Root.TaskApproval',
-                [
-                    $fields
-                        ->dataFieldByName('IsApprovalRequired')
-                        ->setTitle('Always require approval'),
-                    $fields
-                        ->dataFieldByName('ApprovalGroupID')
-                        ->setDescription('Please select the task approval group.'),
-                    OptionsetField::create(
-                        'IsStakeholdersSelected',
-                        'Email Stakeholders when task is ready for review (Complete or Awaiting Approval)?',
-                        $this->dbObject('IsStakeholdersSelected')->enumValues()
-                    )->setDescription(
-                        sprintf(
-                            '<p>If this is not set, emails will not'
-                            . ' be sent to the selected stakeholders group.</p>'
-                            . '<p>Please click on the <a href="%s"> Email Format Link </a>'
-                            . 'to add and edit the email format.</p>',
-                            $this->getTaskEmailLink()
-                        )
-                    ),
-                    $fields
-                        ->dataFieldByName('StakeholdersGroupID')
-                        ->displayIf('IsStakeholdersSelected')
-                        ->isEqualTo('Yes')
-                        ->end()
-                ]
-            );
         } else {
             $fields->removeByName([
                 'IsApprovalRequired',
@@ -386,6 +390,21 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                 )
             ]);
 
+            $fields->addFieldsToTab(
+                'Root.SecurityRiskAssessment',
+                [
+                    $fields->dataFieldByName('SraTaskHelpText'),
+                    $fields->dataFieldByName('SraTaskRecommendedControlHelpText'),
+                    $fields->dataFieldByName('SraTaskRiskRatingHelpText'),
+                    $fields->dataFieldByName('SraTaskLikelihoodScoreHelpText'),
+                    $fields->dataFieldByName('SraTaskImpactScoreHelpText'),
+                    $fields->dataFieldByName('SraTaskNotApplicableInformationText'),
+                    $fields->dataFieldByName('SraTaskNotImplementedInformationText'),
+                    $fields->dataFieldByName('SraTaskPlannedInformationText'),
+                    $fields->dataFieldByName('SraTaskImplementedInformationText'),
+                ]
+            );
+
             $fields->addFieldToTab(
                 'Root.RiskRatingsMatrix',
                 GridField::create(
@@ -395,9 +414,17 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
                     GridFieldConfig_RecordEditor::create()
                 )
             );
-
+        } else {
             $fields->removeByName([
-                'TaskApproval',
+                'SraTaskHelpText',
+                'SraTaskRecommendedControlHelpText',
+                'SraTaskRiskRatingHelpText',
+                'SraTaskLikelihoodScoreHelpText',
+                'SraTaskImpactScoreHelpText',
+                'SraTaskNotApplicableInformationText',
+                'SraTaskNotImplementedInformationText',
+                'SraTaskPlannedInformationText',
+                'SraTaskImplementedInformationText'
             ]);
         }
 
@@ -405,9 +432,54 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
             $this->getCVA_CMSFields($fields);
         }
 
+        if ($this->TaskType === "questionnaire") {
+            $fields->addFieldsToTab(
+                'Root.TaskApproval',
+                [
+                    $fields
+                        ->dataFieldByName('IsApprovalRequired')
+                        ->setTitle('Always require approval'),
+                    $fields
+                        ->dataFieldByName('ApprovalGroupID')
+                        ->setDescription('Please select the task approval group.'),
+                    OptionsetField::create(
+                        'IsStakeholdersSelected',
+                        'Email Stakeholders when task is ready for review (Complete or Awaiting Approval)?',
+                        $this->dbObject('IsStakeholdersSelected')->enumValues()
+                    )->setDescription(
+                        sprintf(
+                            '<p>If this is not set, emails will not'
+                            . ' be sent to the selected stakeholders group.</p>'
+                            . '<p>Please click on the <a href="%s"> Email Format Link </a>'
+                            . 'to add and edit the email format.</p>',
+                            $this->getTaskEmailLink()
+                        )
+                    ),
+                    $fields
+                        ->dataFieldByName('StakeholdersGroupID')
+                        ->displayIf('IsStakeholdersSelected')
+                        ->isEqualTo('Yes')
+                        ->end()
+                ]
+            );
+        } else {
+            $fields->removeFieldFromTab('Root', 'TaskApproval');
+        }
+
         if ($historyTab = $fields->fieldByName('Root.History')) {
             $fields->removeFieldFromTab('Root', 'History');
             $fields->fieldByName('Root')->push($historyTab);
+        }
+
+        if ($this->isSelectionType()) {
+            $fields->addFieldsToTab(
+                'Root.ControlSetSelection',
+                [
+                    $fields->dataFieldByName('ControlSetSelectionTaskHelpText'),
+                ]
+            );
+        } else {
+            $fields->removeByName('ControlSetSelectionTaskHelpText');
         }
 
         return $fields;

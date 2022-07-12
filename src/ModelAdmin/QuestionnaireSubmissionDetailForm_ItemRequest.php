@@ -16,6 +16,7 @@ namespace NZTA\SDLT\ModelAdmin;
 use Exception;
 use NZTA\SDLT\Email\SendApprovalLinkEmail;
 use SilverStripe\Forms\GridField\GridFieldDetailForm_ItemRequest;
+use NZTA\SDLT\Extension\GroupExtension;
 
 /**
  * Class QuestionnaireSubmissionDetailForm_ItemRequest

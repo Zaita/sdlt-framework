@@ -174,7 +174,10 @@ class AnswerActionField extends DataObject implements ScaffoldingProvider
         /** @noinspection PhpUndefinedMethodInspection */
         $fields->dataFieldByName('Result')->displayIf('ActionType')->isEqualTo('finish');
 
-        if ($this->Question()->Questionnaire()->exists()) {
+        // remove for the questionnaire (questionnaire also has action field and
+        // we need only for task's action) or if "tasktype" is not equal to "questionnaire"
+        if ($this->Question()->Questionnaire()->exists() ||
+            $this->Question()->Task()->TaskType !== 'questionnaire') {
             $fields->removeByName('IsApprovalForTaskRequired');
         }
 

@@ -45,7 +45,7 @@ trait SDLTRiskSubmission
      * }}
      * </code>
      */
-    public function getRiskResult(string $type) : array
+    public function getRiskResult(string $type, string $component = '') : array
     {
         $riskData = [];
 
@@ -72,6 +72,16 @@ trait SDLTRiskSubmission
             return $riskData;
         }
 
+        if ($component) {
+            $answersArrayForComponent = array_filter($answerData, function($answerforComponent) use($component) {
+                return (isset($answerforComponent['productAspect']) and $answerforComponent['productAspect'] == $component);
+            });
+
+            if(!empty($answersArrayForComponent)) {
+                $answerData = (array_pop($answersArrayForComponent)['result']);
+            }
+        }
+
         $selectedRiskData = [];
 
         // traverse questions
@@ -81,7 +91,7 @@ trait SDLTRiskSubmission
             $risks = [];
 
             // get answers for all the input fields of the questions
-            if (!$answers = $answerData[$questionID]) {
+            if (isset($answerData[$questionID]) && !$answers = $answerData[$questionID]) {
                 continue;
             }
 
@@ -107,6 +117,7 @@ trait SDLTRiskSubmission
         // create array for unique $risk['ID']
         foreach ($selectedRiskData as $risk) {
             $riskData[$risk['ID']]['riskName'] = $risk['Name'];
+            $riskData[$risk['ID']]['description'] = isset($risk['Description']) ? $risk['Description'] : '';
             $riskData[$risk['ID']]['weights'][] = $risk['Weight'];
         }
 
@@ -137,42 +148,61 @@ trait SDLTRiskSubmission
     {
         if (!$this->RiskResultData) {
             return '';
-        }
+        };
 
-        $type = __CLASS__ === QuestionnaireSubmission::class
-            ? 'q'
-            : 't';
-        $json = $this->getRiskResult($type);
+        $riskResultData = json_decode($this->RiskResultData, true);
 
-        if (!count($json)) {
+        if (!count($riskResultData)) {
             return '';
         }
 
+        $isCreateOnceInstancePerComponent = $this->CreateOnceInstancePerComponent;
+        $hasProductAspects = count(json_decode($this->getProductAspects())) > 0 ?: false ;
+        $riskResultHTML = '';
+
+        if ($isCreateOnceInstancePerComponent && $hasProductAspects) {
+            foreach ($riskResultData as $key => $result) {
+                $riskResultTable = $this->renderRiskResultTable($result['riskResult']);
+                $riskResultHTML .= '<b>' . $result['productAspect'] . '<b>';
+                $riskResultHTML .= $riskResultTable;
+                $riskResultHTML .= '<br/>';
+
+            }
+        } else {
+            $riskResultHTML .= $this->renderRiskResultTable($riskResultData);
+        }
+
+        return $riskResultHTML;
+    }
+
+    public function renderRiskResultTable($riskResult)
+    {
         $riskResultTableHTML = '<table class="table">';
         $riskResultTableHTML .= '<tr>
             <thead>
                 <th>Risk Name</th>
-                <th>Weight</th>
-                <th>Score</th>
-                <th>Rating</th>
+                <th>Impact Rating</th>
+                <th>Description</th>
             </thead>
         </tr>';
         $riskResultTableHTML .= '<tbody>';
 
-        foreach ($json as $row) {
+        foreach ($riskResult as $row) {
             $riskResultTableHTML .= sprintf(
-                "<tr><td>%s</td><td>%s</td><td>%2.2f</td><td style=\"color:#%s\">%s</td></tr>",
+                "<tr>
+                    <td>%s</td>
+                    <td style=\"background-color:#%s\">%s</td>
+                    <td>%s</td>
+                </tr>",
                 $row['riskName'],
-                $row['weights'],
-                $row['score'],
                 $row['colour'],
-                $row['rating']
+                $row['rating'],
+                $row['description'],
             );
         }
 
         $riskResultTableHTML .= '</tbody>';
         $riskResultTableHTML .= '</table>';
-
         return $riskResultTableHTML;
     }
 }

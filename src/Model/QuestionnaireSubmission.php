@@ -943,13 +943,13 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'ApprovalOverrideBySecurityArchitect',
                 'RiskResultData',
                 'ReleaseDate',
-                'HideWeightsAndScore',
                 'CollaboratorList',
                 'IsCertificationAndAccreditationTaskExists',
                 'BusinessOwnerAcknowledgementText',
                 'CertificationAuthorityAcknowledgementText',
                 'AccreditationAuthorityAcknowledgementText',
-                'ProductAspects'
+                'ProductAspects',
+                'IsBusinessOwner'
             ]);
 
         $submissionScaffolder
@@ -1638,7 +1638,6 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'ID' => 'ID!',
             ])
             ->setResolver(new class implements ResolverInterface {
-
                 /**
                  * Invoked by the Executor class to resolve this mutation / query
                  * @see Executor
@@ -3522,20 +3521,6 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
     }
 
     /**
-     * hide weights and score for risk questionnaire if check box is ticked
-     * @return bool
-     */
-    public function getHideWeightsAndScore() : bool
-    {
-        if ($this->Questionnaire()->Type == 'RiskQuestionnaire' &&
-            $this->Questionnaire()->HideRiskWeightsAndScore) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * @param string  $string          string
      * @return string
      */
@@ -3704,6 +3689,10 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         }
 
         $memoAnswers = $caTaskSubmission->finalResultForCertificationAndAccreditation();
+
+        if(!$memoAnswers) {
+            return $acknowledgementText;
+        }
 
         $serviceName = $memoAnswers['serviceName'];
         $accreditationLevel = $memoAnswers['accreditationLevel'];

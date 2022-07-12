@@ -157,6 +157,13 @@ class TaskSubmissionEmail extends DataObject
             ]
         );
 
+        if ($this->Owner()->TaskType !== "questionnaire") {
+            $fields->removeByName([
+                'approvalEmail',
+                'stakeholdersEmail',
+            ]);
+        }
+
         return $fields;
     }
 }

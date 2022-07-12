@@ -41,6 +41,17 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
     const CTL_STATUS_1 = 'Realised';
     const CTL_STATUS_2 = 'Intended';
     const CTL_STATUS_3 = 'Not Applicable';
+    const CTL_STATUS_4 = 'Planned';
+    const EVALUTION_RATING_1 = 'Not Validated';
+    const EVALUTION_RATING_2 = 'Not Effective';
+    const EVALUTION_RATING_3 = 'Partially Effective';
+    const EVALUTION_RATING_4 = 'Effective';
+    const EVALUTION_RATING_WEIGHTS = [
+        "Not Validated" => 1,
+        "Not Effective" => 0,
+        "Partially Effective" => 0.5,
+        "Effective" => 1
+    ];
 
     /**
      * @var string
@@ -54,7 +65,12 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
         'Name' => 'Varchar(255)',
         'Description' => 'HTMLText',
         'ImplementationGuidance' => 'HTMLText',
-        'ImplementationEvidence' => 'HTMLText'
+        'ImplementationEvidence' => 'HTMLText',
+        'ControlOwnerName' => 'Varchar(255)',
+        'ControlOwnerEmailAddress' => 'Varchar(255)',
+        'ControlOwnerTeam' => 'Varchar(255)',
+        'ImplementationEvidenceHelpText' => 'Text',
+        'ImplementationAuditHelpText' => 'Text'
     ];
 
     /**
@@ -108,7 +124,12 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
                 'Name',
                 'Description',
                 'ImplementationGuidance',
-                'ImplementationEvidence'
+                'ImplementationEvidence',
+                'ControlOwnerName',
+                'ControlOwnerEmailAddress',
+                'ControlOwnerTeam',
+                'ImplementationEvidenceHelpText',
+                'ImplementationAuditHelpText'
             ]);
 
         return $typeScaffolder;
@@ -136,7 +157,34 @@ class SecurityControl extends DataObject implements ScaffoldingProvider
         $implementationEvidence = HtmlEditorField::create('ImplementationEvidence')
             ->setRows(3);
 
+        $implementationEvidenceHelpText = $fields->dataFieldByName('ImplementationEvidenceHelpText');
+        $implementationEvidenceHelpText
+            ->setDescription('This is the text that appears above the implementation'
+            .' evidence input field on the control detail page.');
+
         $fields->addFieldsToTab('Root.Main', [$name, $desc, $implementationGuidance, $implementationEvidence]);
+
+        $fields->insertBefore(
+            $implementationEvidenceHelpText,
+            'ImplementationEvidence'
+        );
+
+        $fields->addFieldsToTab(
+            'Root.ControlOwnerDetails',
+            [
+                $fields->dataFieldByName('ControlOwnerName'),
+                $fields->dataFieldByName('ControlOwnerEmailAddress'),
+                $fields->dataFieldByName('ControlOwnerTeam')
+            ]
+        );
+
+        $fields->addFieldsToTab(
+            'Root.ControlAuditDetails',
+            [
+                $fields->dataFieldByName('ImplementationAuditHelpText')
+            ]
+        );
+
         $fields->removeByName(['SecurityComponent', 'ControlWeightSets']);
 
         if ($this->ID) {
