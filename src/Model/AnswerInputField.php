@@ -64,6 +64,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
         'SortOrder' => 'Int',
         'IsBusinessOwner' => 'Boolean',
         'IsProductName' => 'Boolean',
+        'IsTicketLink' => 'Boolean',
         'MultiChoiceSingleAnswerDefault' => 'Varchar(255)',
         'MultiChoiceMultipleAnswerDefault' => 'Varchar(255)',
         'CertificationAndAccreditationInputType' => 'Enum("service name, classification level, risk profile, accreditation level, accreditation description, accreditation type, accreditation period, accreditation renewal recommendations, review, product description")',
@@ -212,6 +213,10 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
             ->isEqualTo('email');
         $fields->dataFieldByName('IsProductName')
             ->setTitle('Does this field contain a product name?')
+            ->displayIf('InputType')
+            ->isEqualTo('text');
+        $fields->dataFieldByName('IsTicketLink')
+            ->setTitle('Does this field contain a ticket (e.g., Jira) link?')
             ->displayIf('InputType')
             ->isEqualTo('text');
         $fields->dataFieldByName('MinLength')
@@ -447,6 +452,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
         $obj->PlaceHolder = $inputFieldJson->placeHolder ?? '';
         $obj->IsBusinessOwner = $inputFieldJson->isBusinessOwner ?? false;
         $obj->IsProductName = $inputFieldJson->isProductName ?? false;
+        $obj->IsTicketLink = $inputFieldJson->isTicketLink ?? false;
         $obj->MultiChoiceSingleAnswerDefault = $inputFieldJson->multiChoiceSingleAnswerDefault ?? '';
         $obj->MultiChoiceMultipleAnswerDefault = $inputFieldJson->multiChoiceMultipleAnswerDefault ?? '';
 
@@ -480,6 +486,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
         $obj['placeHolder'] = $inputField->PlaceHolder?? '';
         $obj['isBusinessOwner'] = (boolean) $inputField->IsBusinessOwner;
         $obj['isProductName'] = (boolean) $inputField->IsProductName;
+        $obj['isTicketLink'] = (boolean) $inputField->IsTicketLink;
 
         if ($inputField->isMultipleChoice()) {
             $obj['multiChoiceSingleAnswerDefault'] = $inputField->MultiChoiceSingleAnswerDefault ?? '';

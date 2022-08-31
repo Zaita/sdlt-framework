@@ -2585,6 +2585,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         $SubmitterName = $this->Submitter()->Name;
         $SubmitterEmail = $this->Submitter()->Email;
         $productName = $this->QuestionnaireSubmission()->ProductName;
+        $ticketLink = $this->QuestionnaireSubmission()->TicketLink;
         $finalLink = '';
 
         if ($linkPrefix) {
@@ -2604,6 +2605,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
         $string = str_replace('{$submitterName}', $SubmitterName, $string);
         $string = str_replace('{$submitterEmail}', $SubmitterEmail, $string);
         $string = str_replace('{$productName}', $productName, $string);
+        $string = str_replace('{$ticketLink}', $ticketLink, $string);
 
         return $string;
     }

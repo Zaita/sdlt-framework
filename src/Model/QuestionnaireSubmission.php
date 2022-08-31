@@ -135,6 +135,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         'QuestionnaireLevelTaskIDs' => 'Varchar(255)',
         'RiskResultData' => 'Text',
         'IsAllTheTasksCompletedEmailSent' => 'Boolean',
+        'TicketLink' => 'Varchar(255)',
     ];
     // @codingStandardsIgnoreEnd
 
@@ -175,6 +176,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         'SubmitterName',
         'SubmitterEmail',
         'getPrettifyQuestionnaireStatus' => 'Questionnaire Status',
+        'TicketLink',
         'CisoApprovalStatus',
         'BusinessOwnerApprovalStatus',
         'SecurityArchitectApprovalStatus',
@@ -936,7 +938,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'IsCurrentUserABusinessOwnerApprover',
                 'IsEmailSentToSecurityArchitect',
                 'IsSubmitLinkEmailSent',
-                'ProductName',
+                'ProductName',                
                 'QuestionnaireName',
                 'Created',
                 'BusinessOwnerApproverName',
@@ -949,7 +951,8 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                 'CertificationAuthorityAcknowledgementText',
                 'AccreditationAuthorityAcknowledgementText',
                 'ProductAspects',
-                'IsBusinessOwner'
+                'IsBusinessOwner',
+                'TicketLink',
             ]);
 
         $submissionScaffolder
@@ -1027,7 +1030,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                     if (!empty($secureToken) && !hash_equals($data->ApprovalLinkToken, $secureToken)) {
                         throw new Exception('Sorry, wrong security token.');
                     }
-
+                                
                     return $data;
                 }
             })
@@ -1206,8 +1209,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
 
                     if (is_null($jsonDecodeAnswerData)) {
                         throw new Exception('data is not a vaild json object.');
-                    }
-
+                    }                    
                     // Validate answer data
                     do {
                         // If there is no answer or not applicable, don't validate it
@@ -1271,6 +1273,19 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                         if (is_string($isProductName)) {
                             $questionnaireSubmission->ProductName = $isProductName;
                         }
+                                                
+                        $isTicketLink = QuestionnaireSubmission::is_field_type_exist(
+                          $jsonAnswerDataArr,
+                          $questionnaireSubmission->QuestionnaireData,
+                          $args['QuestionID'],
+                          'text',
+                          'IsTicketLink'
+                        );
+
+                        // if it is product name text field, then add product name
+                        if (is_string($isTicketLink)) {
+                          $questionnaireSubmission->TicketLink = $isTicketLink;
+                        }                        
 
                         // check for relese date
                         $isReleaseDate = QuestionnaireSubmission::is_field_type_exist(
@@ -3510,6 +3525,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         $SubmitterName = $this->SubmitterName;
         $SubmitterEmail = $this->SubmitterEmail;
         $productName = $this->ProductName;
+        $ticketLink = $this->TicketLink;
         $summaryLinkString = $this->getSummaryPageLink();
         $summaryLink = '<a href="' . $summaryLinkString . '">this link</a>';
         $startLinkString = $this->getStartLink();
@@ -3521,6 +3537,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         $string = str_replace('{$submitterName}', $SubmitterName, $string);
         $string = str_replace('{$submitterEmail}', $SubmitterEmail, $string);
         $string = str_replace('{$productName}', $productName, $string);
+        $string = str_replace('{$ticketLink}', $ticketLink, $string);
 
         return $string;
     }
