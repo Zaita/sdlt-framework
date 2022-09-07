@@ -17,11 +17,11 @@ use GraphQL\Type\Definition\ResolveInfo;
 use NZTA\SDLT\Form\GridField\GridFieldCustomEditAction;
 use NZTA\SDLT\GraphQL\GraphQLAuthFailure;
 use NZTA\SDLT\Helper\Utils;
+use NZTA\SDLT\Traits\SDLTModelPermissions;
 use NZTA\SDLT\ModelAdmin\QuestionnaireAdmin;
 use NZTA\SDLT\Model\LikelihoodThreshold;
 use NZTA\SDLT\Model\RiskRating;
 use NZTA\SDLT\Model\TaskSubmission;
-use NZTA\SDLT\Traits\SDLTModelPermissions;
 use NZTA\SDLT\Traits\SDLTRiskCalc;
 use NZTA\SDLT\Traits\CertificationAndAccreditationTaskQuestions;
 use SilverStripe\Forms\DropdownField;
@@ -35,6 +35,9 @@ use SilverStripe\Forms\GridField\GridFieldPaginator;
 use SilverStripe\Forms\GridField\GridField_ActionMenu;
 use SilverStripe\Forms\ListboxField;
 use SilverStripe\Forms\LiteralField;
+use SilverStripe\Forms\TextField;
+use SilverStripe\Forms\FieldGroup;
+use SilverStripe\Forms\HTMLReadonlyField;
 use SilverStripe\Forms\OptionsetField;
 use SilverStripe\GraphQL\OperationResolver;
 use SilverStripe\GraphQL\Scaffolding\Interfaces\ScaffoldingProvider;
@@ -327,10 +330,10 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
 
 
         // add used on tab for task
-        if ($this->getUsedOnData()->Count()) {
-            $fields->addFieldToTab(
+        if ($this->getUsedOnDataCount()) {
+            $fields->addFieldsToTab(
                 'Root.UsedOn',
-                $this->getUsedOnGridField()
+                $this->getUsedOnFields()
             );
         } else {
             $fields->addFieldToTab(
@@ -486,39 +489,31 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     }
 
     /**
-     * Get used on grid field
+     * Return a FieldList containing all of the places
+     * where the current task has been referenced
+     * across the SDLT.
      *
-     * @return GridField
+     * @return FieldList
      */
-    public function getUsedOnGridField()
+    public function getUsedOnFields()
     {
-        // used on grid field
-        $config = GridFieldConfig_Base::create();
+        $result = [];
+        $count = 0;
+        $data = $this->getUsedOnDataForQuestionnaires();
+        foreach ($data as $element) {
+          $tf = HTMLReadonlyField::create($count++, "Questionnaire", 
+            '<a href="'.$element->Link.'">'.$element->Name.'</a>');
+          array_push($result, $tf);
+        }
+        $data = $this->getUsedOnDataForQuestions();
 
-        // add custom edit button
-        $config
-            ->addComponent(new GridField_ActionMenu())
-            ->addComponent(new GridFieldCustomEditAction());
+        foreach ($data as $element) {
+          $tf = HTMLReadonlyField::create($count++, 'Question in a '.$element->Type, 
+          '<a href="'.$element->Link.'">'.$element->Question.'</a> in '.$element->Type.': "'.$element->Name.'"');
+          array_push($result, $tf);
+        }
 
-        // here we are using ArrayList to display the grid data
-        // that's why we have to set DisplayFields otherwise we will get error
-        // error :- the method 'summaryFields' does not exist on 'SilverStripe\View\ArrayData'
-        $dataColumns = $config->getComponentByType(GridFieldDataColumns::class);
-
-        $dataColumns->setDisplayFields(array(
-          'Name' => 'Questionnaire / Task Name',
-          'Question' => 'Question Title',
-          'UsedOn'=> 'Used On'
-        ));
-
-        $usedOnGridfield = GridField::create(
-            "UsedOn",
-            "Used On",
-            $this->getUsedOnData(),
-            $config
-        );
-
-        return $usedOnGridfield;
+        return $result;
     }
 
     /**
@@ -849,11 +844,20 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
     }
 
     /**
-     * return Array List
+     * Return number of times current task has been used
+     * by questionnaires, tasks or questions.
      *
-     * @return ValidationResult
+     * @return Int
      */
-    public function getUsedOnData()
+    public function getUsedOnDataCount() {
+      return count($this->Questionnaires()) + count($this->AnswerActionFields());
+    }
+
+    /**
+     * Return an ArrayList of the Questionnaires where
+     * the current tasks has been linked to.
+     */
+    public function getUsedOnDataForQuestionnaires()
     {
         $finaldata = ArrayList::create();
 
@@ -862,27 +866,38 @@ class Task extends DataObject implements ScaffoldingProvider, PermissionProvider
         foreach ($questionnaires as $questionnaire) {
             $data['Name'] = $questionnaire->Name;
             $data['Link'] = $questionnaire->getLink();
-            $data['Question'] = '';
-            $data['UsedOn'] = 'Questionnaire Level';
-
             $finaldata->push(ArrayData::create($data));
         }
+
+        return $finaldata;
+    }
+
+    /**
+     * Return an ArrayList of the Questionnaires where
+     * the current tasks has been linked to a question.
+     */
+    public function getUsedOnDataForQuestions()
+    {
+        $finaldata = ArrayList::create();
 
         // get question list
         $actions = $this->AnswerActionFields();
         foreach ($actions as $action) {
-            $question = $action->Question();
+          $question = $action->Question();
 
-            $name = $question->QuestionnaireID ?
-                $question->Questionnaire()->Name : $question->Task()->Name;
+          $name = $question->QuestionnaireID ?
+              $question->Questionnaire()->Name : $question->Task()->Name;
 
-            $usedOn = $question->QuestionnaireID ?
-                "Questionnaire's Question" : "Task's Question";
+          $usedOn = $question->QuestionnaireID ?
+            "Questionnaire" : "Task";
 
-            $data['Name'] = $name;
-            $data['Link'] = $question->getLink();
-            $data['Question'] = $usedOn;
-            $data['UsedOn'] = 'Questionnaire Level';
+          $data['Name'] = $name;
+          $data['Link'] = $question->getLink();
+          $data['Question'] = $question->Title;
+          $data['Type'] = $usedOn;
+          
+          if ($question->getLink() == '')
+            continue;
 
             $finaldata->push(ArrayData::create($data));
         }
