@@ -171,25 +171,24 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
      */
     private static $summary_fields = [
         'QuestionnaireName' => 'Questionnaire Name',
-        'QuestionnaireType' => 'Questionnaire Type',
+        // 'QuestionnaireType' => 'Questionnaire Type',
         'ProductName',
-        'SubmitterName',
-        'SubmitterEmail',
+        'getPrettySubmitterDetails' => 'Submitter',
         'getPrettifyQuestionnaireStatus' => 'Questionnaire Status',
         'TicketLink',
-        'CisoApprovalStatus',
-        'BusinessOwnerApprovalStatus',
-        'SecurityArchitectApprovalStatus',
+        'SecurityArchitectApprovalStatus' => 'Security Approval',
+        'CisoApprovalStatus' => 'CISO Approval',
+        'BusinessOwnerApprovalStatus' => 'Business Owner Approval',        
         'UUID',
-        'IsStartLinkEmailSent',
+        // 'IsStartLinkEmailSent',
         'Created' => 'Created date',
         'SubmittedDate',
         'SubmittedForApprovalDate',
         // If the approver groups are configurable in the future, i.e. change their group name,
         // then these columns require to be changed accordingly.
-        'getSaApprovalDateToDisplay' => 'Date approved/denied by Security Architect',
-        'CisoApprovalStatusUpdateDate' => 'Date approved/denied by Chief Information Security Officer',
-        'BusinessOwnerStatusUpdateDate' => 'Date approved/denied by Business Owner'
+        // 'getSaApprovalDateToDisplay' => 'Date approved/denied by Security Architect',
+        // 'CisoApprovalStatusUpdateDate' => 'Date approved/denied by Chief Information Security Officer',
+        // 'BusinessOwnerStatusUpdateDate' => 'Date approved/denied by Business Owner'
     ];
 
     /**
@@ -872,6 +871,14 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         }
 
         return $actions;
+    }
+
+    /**
+     * @return string
+     */
+    public function getPrettySubmitterDetails() 
+    {
+      return $this->SubmitterName."\n".$this->SubmitterEmail;      
     }
 
     /**
