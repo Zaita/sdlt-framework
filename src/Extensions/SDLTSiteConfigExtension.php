@@ -32,6 +32,8 @@ use SilverStripe\SiteConfig\SiteConfig;
 use SilverStripe\Security\Group;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\NumericField;
+use TractorCow\Colorpicker\Color;
+use TractorCow\Colorpicker\Forms\ColorField;
 
 /**
  * Site Config Extension for SDLT Tool
@@ -58,6 +60,11 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'AccreditationAuthorityAcknowledgementText' => 'Text',
         'SecurityTeamEmail' => 'Varchar(255)',
         'OrganisationName' => 'Varchar(255)',
+        'ThemeBGColour' => 'Color',
+        'ThemeHeaderColour' => 'Color',
+        'ThemeSubHeaderColour' => 'Color',
+        'ThemeLinkColour' => 'Color',
+        'ThemeHomePageTextColour' => 'Color'
     ];
 
     /**
@@ -133,6 +140,18 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                     'Organisation Name'
                 )
             ]
+        );
+
+        // Theme Tab
+        $fields->addFieldsToTab(
+          'Root.Theme',
+          [
+            ColorField::create('ThemeBGColour', 'Background color'),
+            ColorField::create('ThemeHeaderColour', 'Header color'),
+            ColorField::create('ThemeSubHeaderColour', 'Sub-Header color'),
+            ColorField::create('ThemeLinkColour', 'Hyperlink color'),
+            ColorField::create('ThemeHomePageTextColour', 'Home Page Text color'),
+          ]
         );
 
         // "Access" tab
@@ -392,7 +411,12 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                 'PdfHeaderImageLink',
                 'PdfFooterImageLink',
                 'SecurityTeamEmail',
-                'HomePageSubHeaderImagePath'
+                'HomePageSubHeaderImagePath',
+                'ThemeBGColour',
+                'ThemeHeaderColour',
+                'ThemeSubHeaderColour',
+                'ThemeLinkColour',
+                'ThemeHomePageTextColour'
             ])
             ->operation(SchemaScaffolder::READ)
             ->setName('readSiteConfig')
