@@ -53,6 +53,7 @@ class Pillar extends DataObject implements ScaffoldingProvider
         // related questionnaire(s)' approval status, can be overridden by members
         // of the "NZTA-SDLT-SecurityArchitect" group.
         'ApprovalOverrideBySecurityArchitect' => 'Boolean',
+        'Caption' => 'Text',
     ];
 
     /**
@@ -73,7 +74,8 @@ class Pillar extends DataObject implements ScaffoldingProvider
      * @var array
      */
     private static $summary_fields = [
-        'Label'
+        'Label',
+        'Caption'
     ];
 
     /**
@@ -135,6 +137,7 @@ class Pillar extends DataObject implements ScaffoldingProvider
             ->addFields([
               'ID',
               'Label',
+              'Caption',
               'Disabled',
               'Type'
             ]);
