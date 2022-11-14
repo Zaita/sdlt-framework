@@ -87,11 +87,11 @@ class Pillar extends DataObject implements ScaffoldingProvider
      * @var array
      */
     private static $pillar_type = [
-        'proof_of_concept' => 'PROOF OF CONCEPT OR SOFTWARE TRIAL',
-        'software_as_service' => 'SOFTWARE AS A SERVICE (SAAS)',
-        'product_project_or_solution' => 'PRODUCT, PROJECT OR SOLUTION',
-        'feature_or_bug_fix' => 'FEATURE OR BUG FIX',
-        'risk_questionnaire' => 'RISK QUESTIONNAIRE',
+        "question_answer" => "Message Icon",
+        "lightbulb" => "Lightbulb Icon",
+        "cloud_download" => "Cloud Download Icon",
+        "shield" => "Shield Icon",
+        "bug" => "Bug Icon"
     ];
 
     /**
