@@ -46,7 +46,9 @@ class Dashboard extends DataObject implements ScaffoldingProvider
      */
     private static $db = [
         'Title' => 'Varchar(255)',
-        'Subtitle' => 'Varchar(255)'
+        'Subtitle' => 'Varchar(255)',
+        'TitleText' => 'Text',
+        'SubtitleText' => 'Text',  
     ];
 
     /**
@@ -67,8 +69,10 @@ class Dashboard extends DataObject implements ScaffoldingProvider
      * @var array
      */
     private static $summary_fields = [
-        'Title',
-        'Subtitle'
+        'Title',        
+        'Subtitle',
+        'TitleText',
+        'SubtitleText',        
     ];
 
     /**
@@ -105,8 +109,10 @@ class Dashboard extends DataObject implements ScaffoldingProvider
             ->type(Dashboard::class)
             ->addFields([
                 'ID',
-                'Title',
-                'Subtitle'
+                'Title',                
+                'Subtitle',                
+                'TitleText',
+                'SubtitleText',
             ]);
 
         // Provide relations
