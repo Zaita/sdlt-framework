@@ -218,7 +218,7 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
         $fields->dataFieldByName('IsTicketLink')
             ->setTitle('Does this field contain a ticket (e.g., Jira) link?')
             ->displayIf('InputType')
-            ->isEqualTo('text');
+            ->isEqualTo('url');
         $fields->dataFieldByName('MinLength')
             ->displayUnless('InputType')
             ->startsWith('multiple-choice');

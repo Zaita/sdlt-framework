@@ -1285,7 +1285,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
                           $jsonAnswerDataArr,
                           $questionnaireSubmission->QuestionnaireData,
                           $args['QuestionID'],
-                          'text',
+                          'url',
                           'IsTicketLink'
                         );
 
