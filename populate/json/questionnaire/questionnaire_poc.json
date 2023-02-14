@@ -1,9 +1,8 @@
 {
   "questionnaire": {
-    "name": "Proof of Concept or Product Trial Request Form",
+    "name": "Proof of Concept",
     "type": "Questionnaire",
-    "keyInformation": "<ol><li>This form will ask you a series of questions about the product you wish to concept\/trial. Please ensure you have key information about the product and people using it before you start<\/li>\n<li>Completion of this form should take 15-30 minutes<\/li>\n<li>By clicking 'Start', you will be emailed a link to this questionnaire. This can be used to review your answers, or finish the questionnaire at a later date if you cannot complete it in one sitting.&nbsp;<\/li>\n<li>If you have not completed the questionnaire within 14 days it will expire and you will need to start again.<\/li>\n<\/ol>",
-    "riskCalculation": "NztaApproxRepresentation",
+    "keyInformation": "<p>This questionnaire will ask you contextual questions about a proof of concept you would like to undertake. This is used to create a record of the experiment. A documentation trail must be created to ensure any potential risks associated with this experiment are appropriately documented and accepted.<\/p><p>A proof of concept generally must not include the user of any data that is classified, or contains personal information. If your proof of concept requires this to function, you will be required to get a security exemption as part of the SDLT process.<\/p><p>While it is unlikely that this submission will create any SDLT tasks, this will depend on the potential risk profile of your experiment. All tasks will need to be completed and\/or approved prior to starting your experiment.<\/p><p>If you do not complete this questionnaire within 14 days, it will automatically expire.<\/p>",
     "bypassApproval": false,
     "doesSubmissionExpire": "Yes",
     "expireAfterDays ": 14,
@@ -22,7 +21,8 @@
             "maxLength": 0,
             "placeHolder": "Product Name",
             "isBusinessOwner": false,
-            "isProductName": true
+            "isProductName": true,
+            "isTicketLink": false
           },
           {
             "label": "Product URL",
@@ -32,7 +32,8 @@
             "maxLength": 0,
             "placeHolder": "https:\/\/www.product.com",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           },
           {
             "label": "Contact Email",
@@ -42,14 +43,15 @@
             "maxLength": 0,
             "placeHolder": "person@product.com",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Business Owner",
-        "questionHeading": "Please enter details of the business owner for this POC\/Trial",
-        "description": "The business owner is the person who can formally accept risk to the data used in this Proof of Concept\/Trial. This is a business line manager, not security. As part of this submission, the business owner will be used to approve the Proof of Concept\/Trial. ",
+        "questionHeading": "Please enter details of the business owner for this proof of concept",
+        "description": "<p>When doing a new proof of concept it is important to ensure appropriate risk assessment on behalf of the organisation. The business owner is responsible for accepting the risks. The business owner is the person is who accountable for protecting any data that will be used during the experiment.<\/p><p>If all data used during the experiment will be development or test data, and does not contain any actual production\/classified\/personal information, then the business owner is likely going to be the development manager.<\/p><p>The business owner will be required to approve this submission before the experiment can begin.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -60,17 +62,8 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
-          },
-          {
-            "label": "Role at Agency",
-            "inputType": "text",
-            "required": true,
-            "minLength": 0,
-            "maxLength": 0,
-            "placeHolder": "",
-            "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           },
           {
             "label": "Email",
@@ -80,66 +73,15 @@
             "maxLength": 0,
             "placeHolder": "person@example.co.nz",
             "isBusinessOwner": true,
-            "isProductName": false
-          }
-        ]
-      },
-      {
-        "title": " Existing POC\/Trial",
-        "questionHeading": "Is this an existing Proof of Concept or Trial?",
-        "description": "Has this product already gone through a proof of concept or trial?\nOR:\nIs this product currently in a proof of concept or trial and you want an extension?",
-        "answerFieldType": "action",
-        "answerActionFields": [
-          {
-            "label": "Yes",
-            "actionType": "message",
-            "message": "<p>If this product has already gone through a proof of concept or trial, please contact the security architects (security.architects@example.co.nz) for next steps. They will be able to provide information on why this product was never adopted after the previous POC\/Trial.<\/p><p>&nbsp;<\/p><p>If this product is currently in a POC\/Trial and you wish to get an extension. Please email the security architects (security.architects@example.co.nz) to discuss this. Please ensure there is clear justification for the extension to this POC\/Trial. If there is not, it is recommended that you start through the SaaS questionnaire to get the product officially certified.<\/p>"
-          },
-          {
-            "label": "No",
-            "actionType": "goto",
-            "gotoQuestionTitle": "Product Used Before"
-          }
-        ]
-      },
-      {
-        "title": "Product Used Before",
-        "questionHeading": "Is this product currently, or previously in use at the Transport Agency?",
-        "description": "Is another part of the Transport Agency already using this product? Was it used previously?",
-        "answerFieldType": "action",
-        "answerActionFields": [
-          {
-            "label": "Yes",
-            "actionType": "message",
-            "message": "<p>This product may have already gone through the required security assurance processes. Please contact the security architects (security.architects@example.co.nz) to check.<\/p><p>&nbsp;<\/p><p>If you know for certain that this product has been previously cleared, or used within the transport agency. Then, this product would have been previously certified for use by the security team. No further security assurance processes are required. Please engage the Change Advisory Board (CAB) to use this product.<\/p>"
-          },
-          {
-            "label": "No",
-            "actionType": "continue"
-          }
-        ]
-      },
-      {
-        "title": "Funded By Transport Agency",
-        "questionHeading": "Has the Transport Agency paid for the development of this product?",
-        "description": "<p>Has this product been developed by the Transport Agency? OR: Has it been developed by a partner at the expense of the Transport Agency?<\/p><p>If the Transport Agency is paying for customisations to a platform, this is not considered development of the product so please select 'No'.<\/p>",
-        "answerFieldType": "action",
-        "answerActionFields": [
-          {
-            "label": "Yes",
-            "actionType": "message",
-            "message": "<p>Products developed by\/for the Transport Agency are not candidates for a proof of concept or trial.&nbsp;<\/p><p>&nbsp;<\/p><p>If the Transport Agency will consume this product as a hosted service by one of our vendors (e.g. Unisys), then please complete the Software as a Service questionnaire.<\/p><p>&nbsp;<\/p><p>If the Transport Agency is going to deploy this product within our own on-prem or cloud infrastructure, then please complete the Solution Delivery questionnaire.<\/p>"
-          },
-          {
-            "label": "No",
-            "actionType": "continue"
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Proof of Concept or Trial",
         "questionHeading": "Is this a proof of concept, or are you performing a product trial?",
-        "description": "Proof of Concept (POC) is utilisation of a product to prove a logical concept. After the POC ends, all installation and configuration information will be destroyed. A product trial will be used to test the validity of a specific product. A successful product trial may lead to the continued use after completing relevant adoption assurance processes.",
+        "description": "<p>A Proof of Concept (POC) is testing product to prove a concept. After the experiment ends, all installation\/configuration information and data will be destroyed.<\/p><p>A product trial will be used to test the validity of a specific product. A successful product trial may lead to continued use after completing the appropriate risk and security onboarding processes.<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -155,7 +97,7 @@
       {
         "title": "Product Description",
         "questionHeading": "Please describe what the product does in plain English",
-        "description": "Include description of the product's features, the ones the Transport Agency wants to use and how we intend to use them.",
+        "description": "<p>Include description of the product's features, the ones you wish to use and how it will be implemented if accepted as a product to bring onboard.<\/p><p>Please try to describe this in a way that makes sense to the security staff reviewing this submission, and the business owner accepting any potential risks.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -166,32 +108,15 @@
             "maxLength": 0,
             "placeHolder": "Ensure you describe what the product does and what features we want to trial",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
-        "title": "Product Purpose",
-        "questionHeading": "Please describe why the Transport Agency needs this product",
-        "description": "Include description of why this is important, why the Transport Agency needs this and what would happen if we don't fill this gap",
-        "answerFieldType": "input",
-        "answerInputFields": [
-          {
-            "label": "Description",
-            "inputType": "textarea",
-            "required": true,
-            "minLength": 0,
-            "maxLength": 0,
-            "placeHolder": "",
-            "isBusinessOwner": false,
-            "isProductName": false
-          }
-        ]
-      },
-      {
-        "title": "SaaS or Agency Controlled",
-        "questionHeading": "Is this Software as a Service or a Agency Controlled Deployment",
-        "description": "SaaS means that we do not have any control over the installation or configuration of the installation.\nAgency Controlled means that we have control over how and where the product is deployed.",
+        "title": "SaaS or On-Premises",
+        "questionHeading": "Is this Software as a Service, or an On-Prem installation?",
+        "description": "<p>SaaS means that we do not have any control over the installation or configuration of the installation.<\/p><p>On-Premises means that we have control over how and where the product is deployed.<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -199,7 +124,7 @@
             "actionType": "continue"
           },
           {
-            "label": "Agency Controlled",
+            "label": "On-Premises",
             "actionType": "continue"
           }
         ]
@@ -207,7 +132,7 @@
       {
         "title": "Key Stakeholders",
         "questionHeading": "Please list names and roles of key stakeholders",
-        "description": "Key stakeholders are people who\n- Will use the product\n- Will pay for the product\n- Will have data\/information stored by the product\n- Will have deliverables tied to the use of this product",
+        "description": "<p>Key stakeholders are people who<\/p><ul>\n<li>Will use the product<\/li>\n<li>Will pay for the product<\/li>\n<li>Will have data\/information stored by the product<\/li>\n<li>Will have deliverables tied to the use of this product<\/li>\n<\/ul>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -218,46 +143,15 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
-          }
-        ]
-      },
-      {
-        "title": "Credit Card Payments",
-        "questionHeading": "Will this product accept credit cards from NZ Transport Agency customers?",
-        "description": "Will this product accept credit card payments from the NZ Public on behalf of the Transport Agency?",
-        "answerFieldType": "action",
-        "answerActionFields": [
-          {
-            "label": "Yes",
-            "actionType": "continue"
-          },
-          {
-            "label": "No",
-            "actionType": "continue"
-          }
-        ]
-      },
-      {
-        "title": "Credit Card Connection",
-        "questionHeading": "Will this product directly talk to the Transport Agency Payment Micro-site or Common Payment Services (CPS) system?",
-        "description": "To use this product, will there need to be some integration with Transport Agency systems that handle payments? This includes the Payment Micro-site and Common Payment Services (CPS). ",
-        "answerFieldType": "action",
-        "answerActionFields": [
-          {
-            "label": "Yes",
-            "actionType": "continue"
-          },
-          {
-            "label": "No",
-            "actionType": "continue"
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Firewall Changes",
         "questionHeading": "Will you require firewall changes to be made to use this product?",
-        "description": "If this product requires connections to\/from Transport Agency systems that are not Web (e.g. Chrome\/Edge\/Firefox) the answer is probably Yes",
+        "description": "<p>Will this product require a direct connection to any of our systems that are not accessible via start HTTP\/S pathways?<\/p><p>If the product is going to be installed on-premises, then it will most likely need some form of firewall rule changes.<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -268,13 +162,18 @@
             "label": "No",
             "actionType": "goto",
             "gotoQuestionTitle": "Description of Information"
+          },
+          {
+            "label": "I Don't Know",
+            "actionType": "goto",
+            "gotoQuestionTitle": "Description of Information"
           }
         ]
       },
       {
         "title": " Firewall Information",
         "questionHeading": "Please describe what firewall changes you might need",
-        "description": "Please name the systems that need to talk and how. This doesn't have to be technically accurate, but an indication of what systems need to talk and how would be a good start for Infrastructure.",
+        "description": "<p>Please name the systems that need to talk and how. This doesn't have to be technically accurate, but an indication of what systems need to talk and how would be a good start for Infrastructure.<\/p><p>You will need to have a chat with the Infrastructure team after your submission has been approved to work through the required firewall rule changes.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -285,14 +184,15 @@
             "maxLength": 0,
             "placeHolder": "System A -> HTTP -> System B",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Description of Information",
-        "questionHeading": "Describe what Transport Agency information will be received, transmitted and stored by this product",
-        "description": "Transport Agency Information is any and all data or information that the Transport Agency receives, stores or transmits.\n\nPlease ensure as much information as possible about information stored, transmitted or received by this product is documented.",
+        "questionHeading": "Describe what information will be received, transmitted and stored by this product",
+        "description": "<p>Information is any and all data or information that the we receive, store or transmit.<\/p><p>Please ensure as much information as possible about information stored, transmitted or received by this product is documented.<\/p><p>Examples of this might be things like:<\/p><ul>\n<li>First names<\/li>\n<li>Addresses<\/li>\n<li>Login information<\/li>\n<li>Audit trail of actions<\/li>\n<\/ul>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -303,14 +203,15 @@
             "maxLength": 0,
             "placeHolder": "Description of Data",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Data Safety",
-        "questionHeading": "Please describe how Transport Agency data is protected\/anonymised",
-        "description": "Please describe any changes you will make to Transport Agency data before it is used by the product. Include how Personally Identifiable Information etc will be anonymised or cleansed before being used. If the data is being used in it's original state please note this.",
+        "questionHeading": "Please describe how Information is protected or anonymised",
+        "description": "<p>Please describe any changes you will make to data before it is used by the product. Include how Personally Identifiable Information etc will be anonymised or cleansed before being used. If the data is being used in it's original state please note this.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -321,14 +222,15 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
-        "title": "POC\/Trial Users",
-        "questionHeading": "Please list the names and roles of Transport Agency staff who will use this product",
-        "description": "Users are the people who will be using the product during POC\/Trial phase. You do not need to list the users who would use this product in a full deployment, unless they are part of the trial. Please list individual users, not groups\/departments.",
+        "title": "Experiment Users",
+        "questionHeading": "Please list the names and roles of staff who will use this product during the experiment",
+        "description": "<p>Users are the people who will be using the product during experiment phase.<\/p><p>You do not need to list the users who would use this product in a full deployment, unless they are part of the experiment.<\/p><p>Please list individual users, not groups\/departments.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -339,14 +241,15 @@
             "maxLength": 0,
             "placeHolder": "Person A - Business Analyst",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Expected Outcomes",
         "questionHeading": "Please describe the expected outcomes",
-        "description": "Please list outcomes that will be used as success criteria for this POC\/Trial. The result of this trial should be measured against these outcomes to determine if the product will be formerly adopted. This will be key functionality working that the Transport Agency will benefit from.",
+        "description": "<p>Please list outcomes that will be used as success criteria for this experiment. The result of this experiment should be measured against these outcomes to determine if the product will be formerly adopted. <\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -357,14 +260,15 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Evaluation Method",
         "questionHeading": "Please describe how the outcomes of this trial will be evaluated?",
-        "description": "Please describe the methodology that will be used to evaluate the outcomes of this trial. Will each of the expected outcomes be scored against known criteria? Or will it be based on gut feeling about the product? ",
+        "description": "<p>Please describe the methodology that will be used to evaluate the outcomes of this trial. Will each of the expected outcomes be scored against known criteria? Or will it be based on gut feeling about the product?<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -375,7 +279,8 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
@@ -393,7 +298,8 @@
             "maxLength": 0,
             "placeHolder": "2 weeks",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
@@ -411,14 +317,15 @@
             "maxLength": 0,
             "placeHolder": "DD-MM-YYYY",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Other",
-        "questionHeading": "Is there any other information you'd like to submit with your application?",
-        "description": "Please include information that might be relevant to the Security Architects, Chief Information Security Officer or Business Owner.",
+        "questionHeading": "Is there any other information you'd like to submit with your request?",
+        "description": "<p>Please include information that might be relevant to a Security reviewer, and the Business Owner.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -429,7 +336,8 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       }
