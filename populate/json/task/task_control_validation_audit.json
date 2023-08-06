@@ -1,0 +1,11 @@
+{
+  "task": {
+    "name": "Control Validation Audit",
+    "taskType": "control validation audit",
+    "keyInformation": "",
+    "lockAnswersWhenComplete": false,
+    "isApprovalRequired": false,
+    "riskCalculation": null,
+    "approvalGroupName": ""
+  }
+}

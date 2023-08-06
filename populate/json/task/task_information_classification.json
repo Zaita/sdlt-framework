@@ -1,0 +1,118 @@
+{
+  "task": {
+    "name": "Information Classification",
+    "taskType": "questionnaire",
+    "keyInformation": "<p>Test<\/p>",
+    "lockAnswersWhenComplete": false,
+    "isApprovalRequired": false,
+    "approvalGroupName": "",
+    "questions": [
+      {
+        "title": "Information",
+        "questionHeading": "Information Classification",
+        "description": "The New Zealand Government Security Classification System protects official information through a series of security measures. Once in place, these measures apply to anyone with access to official information. Information Classification is a mandatory requirement for all New Zealand Government Agencies.\n\nThe SDLT will ask you to describe the information you are classifying, then a series of questions about that information. Based on the information and answers provided, the SDLT will generate an Information Classification for you. This classification will be generated with an audit of why it has been classified like this.\n\nFor more information about Information Classification, please visit: https:\/\/www.digital.govt.nz\/",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "I Understand, Let's Start",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Describe the information being handled",
+        "questionHeading": "Describe the information being classified",
+        "description": "Please ensure you describe the type of information, fields etc appropriately. The information classification generated will be against the data that is being described here. If in doubt, add more information here.",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Description",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 0,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Release could endanger a person?",
+        "questionHeading": "Release could endanger a person?",
+        "description": "Could the misuse of this information potentially endanger the safety or life of a person? This would be true if this product deals in any way with fire, life and safety systems or infrastructure (e.g. tunnels, traffic lights, intelligent speed signs).",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Yes",
+            "actionType": "finish"
+          },
+          {
+            "label": "No",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Personal Information",
+        "questionHeading": "Does this product store, transmit or receive Personal Information (PI)?",
+        "description": "<p>Personal Information is defined as any information about an identifiable individual (i.e. a living, natural person; not companies\/charities\/trusts etc). The information doesn\u2019t need to identify a person by their name to be personal information, and it also doesn\u2019t need to be private or sensitive. As long as there\u2019s a reasonable chance that someone could be identified from the information - even if it\u2019s only one person that makes the link between the information and the individual, and even if it\u2019s only by linking it with other information - then it\u2019s personal information. This includes information about other staff members and our customers.<\/p><p>All systems created, managed and used by the Agency that contain or use any form of Personal Information must go through a Privacy Threshold Assessment process. At the end of this questionnaire, a Privacy Threshold Assessment task will be completed. When completed, this task will be submitted to the Privacy Officers for review and approval.<\/p><p>For more information, and specific examples, please see the Privacy Page on OnRamp: https:\/\/onramp.example.co.nz\/what-we-do\/legal-services\/privacy\/<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Yes",
+            "actionType": "finish"
+          },
+          {
+            "label": "No",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Harm to Agency",
+        "questionHeading": "Could the release of this information cause harm to the Agency?",
+        "description": "Harm to the Agency could involve reputation or financial damage.",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Yes",
+            "actionType": "finish"
+          },
+          {
+            "label": "No",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Harm to Law Enforcement",
+        "questionHeading": "Could the release of this information cause harm to the Law Enforcement?",
+        "description": "Would the release of this information reduce the ability for Law Enforcement to do their job?",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Yes",
+            "actionType": "finish"
+          },
+          {
+            "label": "No",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Finished",
+        "questionHeading": "Default Classification",
+        "description": "Your classification has been determined to be the Government default of Unclassified.",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Finish",
+            "actionType": "finish"
+          }
+        ]
+      }
+    ]
+  }
+}

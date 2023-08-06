@@ -1,0 +1,84 @@
+{
+  "task": {
+    "name": "Digital Security Risk Assessment Tutorial",
+    "taskType": "questionnaire",
+    "keyInformation": "<p>This task explains how the new digital security risk assessment is done. It's used to give a breakdown for new people who have not had any training\/experience with it.<\/p>",
+    "lockAnswersWhenComplete": false,
+    "isApprovalRequired": false,
+    "riskCalculation": null,
+    "approvalGroupName": "",
+    "questions": [
+      {
+        "title": "Information",
+        "questionHeading": "Information",
+        "description": "<p>This task is a tutorial task. Each of the following screens will explain the different aspects of the Transport Agencies new Digital Security Risk Assessment (DSRA). The DSRA replaces the manual document based security risk assessment (SRA) process. All aspects of the process are handled within the SDLT.<\/p><p>&nbsp;The new DSRA is designed to:<\/p><ul><li>Provide a quick, easy and self-service end to end SRA process<\/li>\n<li>Classify risk based on the data and systems you'll be interacting with<\/li>\n<li>Provide clear expectations of the controls to be implemented and guidance on how to implement them<\/li>\n<li>Give a live view of the deliverables risk over the life of the project\/release<\/li>\n<li>Provide the ability for NZ Security Staff and external Auditors to audit control implementations<\/li>\n<li>Allow the Transport Agency to implement a re-certification process<\/li>\n<\/ul><p>&nbsp;The new DSRA is consists of 3 tasks that will be explained in the following screens. These tasks are:<\/p><ol><li>Initial Risk Impact Assessment<\/li>\n<li>Control Validation Audit<\/li>\n<li>Digital Security Risk Assessment<\/li>\n<\/ol>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Next",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Risk Impact Assessment",
+        "questionHeading": "Determining the potential impacts of a risk",
+        "description": "<p>In the previous SRA process, risk was determined by asking the delivery team to pick from a set of consequences in a <a href=\"https:\/\/infohub.example.co.nz\/otcs\/cs.dll?func=ll&amp;objaction=overview&amp;objid=38730114\">5x5 matrix<\/a>. This was problematic, as it required in-depth knowledge of potential consequences to the Agency. Many times, the delivery team did not have enough familiarity with the Agency to adequately determine potential consequences.<\/p><p>The Security team have worked to classify the Transport Agency systems based on criticality and potential impacts in the event of a security incident. This new pre-classification is used as the 'Impact' level when assigning risks to deliverables. As a user of the DSRA, you will be asked to select the types of data and systems you're reading\/writing. The SDLT will then assign the predetermined risk levels for you.<\/p><p>Completion of the Risk Impact Assessment task will require you to have knowledge of the types of data you'll be working with (e.g. first name, last name, date of birth) and the systems you'll be reading from\/writing to (e.g. DLR, MVR, CPS). Then it'll take &lt;5 minutes to determine the risk level of your deliverable.<\/p><p>Your solution will be assigned risk impact levels that have been calculated based on the worst-case consequence to the Agency in the event of a major security incident.<\/p><p>&nbsp;<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Next",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Control Validation Audit",
+        "questionHeading": "Attesting to and auditing the implementation of controls",
+        "description": "<p>A Control Validation Audit (CVA) task is where verification of control implementation is done. Previously, the Transport Agency would engage an external vendor to undertake the CVA. This process has been time consuming and expensive. The new DSRA process is going to rely firstly on self-attestation by the delivery team, with manual audits undertaken based on residual risk levels.<\/p><p>The CVA task will provide a list of controls that are to be implemented. You will need to determine what controls are applicable to your deliverable; and what controls you want to implement to lower your risk rating. Each control implemented will lower the likelihood and impact ratings for your deliverable. You can see the amount of reduction each control has in the Digital Security Risk Assessment task.<\/p><p>Within the CVA, you will see a list of controls, a plain English description of what that control is and why it's important, and some implementation guidance on how to implement it within the context of the Transport Agency and it's Enterprise Architecture. By changing the implementation status of each control to wither 'Yes', 'No' or 'Not Applicable' and selecting 'Submit'; you will cause the DSRA to automatically update it's values providing a live view of the current risk for your deliverable.<\/p><p>As part of your delivery it is recommended that you go through the Control Validation Task first to mark all of the controls \"Not Applicable\" that do not apply. This will give you a list of controls that will be scored in the DSRA allowing you to shop-down risk.<\/p><p><strong>Note: The controls will not show up in the DSRA until you go into the Control Validation Audit at least once and click the \"Submit\" button at the very bottom. <\/strong><\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Next",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Security Risk Assessment",
+        "questionHeading": "Having a live view of risk",
+        "description": "<p>The Digital Security Risk Assessment (DSRA) task is an informational task. It will show a table of risks, ratings and recommended treatments (controls to be implemented). The DSRA is based on a mathematical model that attempts to provide a quantitative approach to risk assessment, reduction and reporting. This means that the DSRA cannot be manually overridden by a member of the Security team. It is the responsibility of the person(s) completing the delivery to implement sufficient controls to bring the current risk rating down to low.<\/p><p>Updating of the DSRA is done by changing the implementation status of a control from 'No' to 'Yes' or 'Not Applicable' in the Control Validation Audit task. The DSRA is live, in that it shows the exact representation of risk based on the initially assessed impacts and current state of control implementation.<\/p><p>When you're happy with the level of risk the delivery has obtained, you can 'Finalize'. The DSRA will not be updated after you click the Finalize button. The finalized value is what will be presented for acceptance by the business owner.<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Next",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Finish",
+        "questionHeading": "All done",
+        "description": "<p>The SDLT will now create the appropriate digital security risk assessment tasks.<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Create and Finish",
+            "actionType": "continue",
+            "tasks": [
+              {
+                "name": "Initial Risk Impact Assessment"
+              },
+              {
+                "name": "Control Validation Audit"
+              },
+              {
+                "name": "Security Risk Assessment"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

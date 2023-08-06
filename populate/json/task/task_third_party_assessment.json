@@ -1,0 +1,318 @@
+{
+  "task": {
+    "name": "Third Party Assessment",
+    "taskType": "questionnaire",
+    "keyInformation": "<p>The purpose of this task is to provide a simplified but still effective GCIO105 questionnaire to be presented answered to\/by the SaaS providers.<\/p><p>&nbsp;<\/p>",
+    "lockAnswersWhenComplete": true,
+    "isApprovalRequired": false,
+    "riskCalculation": "NztaApproxRepresentation",
+    "approvalGroupName": "",
+    "questions": [
+      {
+        "title": "Information",
+        "questionHeading": "Information",
+        "description": "<p>This questionnaire has been designed by the Transport Agency to evaluate the security posture of your service and organisation.&nbsp; The Transport Agency is currently assessing the suitability of using your product and needs to determine the level of risk this exposes. As there is a possibility that your product will be storing or processing information that is classified under New Zealand law, the Transport Agency is obliged to conduct a security and risk assessment.<\/p><p>The following questions will cover Privacy, Compliance, Incident Management and Service Level Agreements. You'll be asked to provide basic information in each of these areas. Some of the questions will offer you the ability to provide a copy of existing documents via email to your Transport Agency contact. Where applicable, the key documents that we're looking to evaluate are:<\/p><ul><li>Privacy Policy<\/li>\n<li>Data Disposal Process Document<\/li>\n<li>Certificates of Compliance (e.g. ISO27001, NZISM, SOC2)<\/li>\n<li>Server Hardening Standard<\/li>\n<li>Recent Penetration Tests Results<\/li>\n<li>Patching and Vulnerability Management Processes<\/li>\n<\/ul><p>If you have any questions about this process, please feel free to reach out to the Transport Agency Security Architects. We can be reached via email at: <a href=\"mailto:security.architects@example.co.nz\">security.architects@example.co.nz<\/a><\/p><p>&nbsp;<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "I Understand, Let's Start",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Data Sovereignty",
+        "questionHeading": "Do you deliver your services from one of the following countries (NZ, Australia, Ireland)?",
+        "description": "<p>Please specify the country(ies) where you have a physical office or employees working remotely that will provide services to the Agency.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Countries",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Data Sovereignty",
+        "questionHeading": "Please list the country where the Agency's data will be stored (including backups, HAs, etc.).",
+        "description": "<p>Please list the country where the Agency's data will be stored (including backups, HAs, etc.).<\/p><p>Ensure all countries that you have cloud offerings located in, that are connected to, receive data from, transmit data to or store information in are listed.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Countries",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Data Sovereignty",
+        "questionHeading": "Please list any third-party provider organisations that you rely on to provide your services\n",
+        "description": "<p>Please list the third party and the country from where they provide the services to your organisation.<\/p><p>If you're using Amazon, Microsoft or Google, do not worry about specifying the countries.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "List",
+            "inputType": "textarea",
+            "required": false,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "Organisation - Country",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Privacy",
+        "questionHeading": "Use of Personal Information (PI) and Personally Identifiable Information (PII)\n",
+        "description": "<p>Please provide a link to your privacy policy. Ensure this policy clearly outlines the use of PI\/PII.<\/p><p><strong>Note:<\/strong> If your privacy policy does not exist as a link on your website. Please put your homepage in the URL field and provide the Privacy Policy via email to your Transport Agency contact.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Link",
+            "inputType": "url",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Privacy",
+        "questionHeading": "How would you handle a request for data from a local Government Agency?",
+        "description": "<p>Please describe:<\/p><ul><li>How you would respond to the request for data<\/li>\n<li>Would you comply with a request for data without a warrant\/court order?<\/li>\n<li>Would you notify the Transport Agency of such a request?<\/li>\n<li>What timeframe would you notify the Transport Agency in?<\/li>\n<\/ul>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Response",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Privacy",
+        "questionHeading": "Will the service provider use the data for any purpose other than the delivery of the service?",
+        "description": "<p>Please outline details of any other uses (e.g. data aggregation, business intelligence, third-party sharing etc).<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Response",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Compliance",
+        "questionHeading": "Please provide information on data disposal processes",
+        "description": "<p>The Transport Agency is required under New Zealand Privacy Law to dispose of any Personal Information at the end of the business requirement. Please describe how the data would be disposed at the end of the engagement with the Transport Agency.<\/p><p><strong>Note: <\/strong>If you have a formal data disposal process that is documented, email a copy of this document to your Transport Agency contact and note this in the response.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Response",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "Data Disposal Process",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Compliance",
+        "questionHeading": "Please list the appropriate security standards your organisation complies with (e.g. ISO 2700x, NZISM, SOC2 type 2, PCI-DSS, etc.).",
+        "description": "<p>Please email related certificates of compliance to your Transport Agency contact.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "List",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "ISO27001",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Standard Operating Environments",
+        "questionHeading": "Do you have appropriate build and hardening standards that meet the agency\u2019s security requirements (e.g. CIS)?",
+        "description": "<p>Please provide the server hardening standard you currently use.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Standards",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Standard Operating Environments",
+        "questionHeading": "Do you perform regular tests of your security processes and controls?",
+        "description": "<p>Please email your Transport Agency contact a copy of the associated reports.<\/p><p>These can be redacted penetration tests, remediation reports, a summary findings report or an attestation of a recently (&lt;12 months) completed penetration test where disclosure is not allowed.<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Yes",
+            "actionType": "continue"
+          },
+          {
+            "label": "No",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Patch and Vulnerability Management",
+        "questionHeading": "Do you utilise protocols and technologies that can protect against DDoS attacks?\u00a0",
+        "description": "<p>Please provide details of your DoS\/DDoS protection system<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Response",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Patch and Vulnerability Management",
+        "questionHeading": "Does your Terms of Service or SLA include service levels for patch and vulnerability management that includes a defined the maximum exposure window?",
+        "description": "<p>Please provide details of your patching and vulnerability management processes.<\/p><p><strong>Note: <\/strong>If these are formally documented, please state this in the response field and email a copy of the documentation to your Transport Agency contact.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Response",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Integration",
+        "questionHeading": "Can we federate our user identities through  Azure Active Directory or Okta?\n",
+        "description": "<p>Transport Agency prefers the use of Azure Active Directory primarily (using OAUTH2 or SAML). Okta is available if AAD is not suitable.<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Yes",
+            "actionType": "goto",
+            "gotoQuestionTitle": "Incident Response and Management"
+          },
+          {
+            "label": "No",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Multi-factor Authentication",
+        "questionHeading": "Does your service provide Multi-factor Authentication for users?",
+        "description": "<p>The Transport Agency has a requirement for external services that do not federate to use Multi-factor Authentication for staff accounts. Please ensure this is mandated for all Transport Agency staff accounts.<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Yes",
+            "actionType": "continue"
+          },
+          {
+            "label": "No",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Incident Response and Management",
+        "questionHeading": "Do you have a formal incident response and management process and plans that clearly define how you detect and respond to information security incidents?",
+        "description": "<p>Please provide a copy of your incident response plan to your Transport Agency contact.<\/p><p>Ensure it contains:<\/p><ul><li>Customer notification protocols (when, how, who)<\/li>\n<li>Incident pipeline<\/li>\n<li>Resolution timeframes<\/li>\n<li>Escalation paths and points of contact<\/li>\n<li>Details of your SIEM<\/li>\n<\/ul>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Yes",
+            "actionType": "continue"
+          },
+          {
+            "label": "No",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Terms of Service",
+        "questionHeading": "Please provide a link to your Service Level Agreement.",
+        "description": "<p>Please provide a link to your Service Level Agreement if it exists online. If it exists as a document, please email it to your Transport Agency contact.<\/p><p>Ensure it contains:<\/p><ul><li>Return to Operation Timeframes<\/li>\n<li>Maintenance Windows and Downtime Expectations<\/li>\n<li>Uptime Obligations<\/li>\n<li>Points of Contact<\/li>\n<li>Roles and Responsibilities<\/li>\n<li>Data Backup and Restoration Processes<\/li>\n<\/ul><p><strong>Note: <\/strong>If this is contained in an existing document, please email the document to your Transport Agency contact and enter the URL to your homepage as the response.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "SLA",
+            "inputType": "url",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Next Steps",
+        "questionHeading": "Nest Steps from here",
+        "description": "<p>After you submit this response form, it will be sent to the Transport Agency Security Architects for review. Please be aware that they may want to reach out with some follow up question.<\/p><p>If you have marked any questions with a response that indicates you will provide documentation. Please zip this and email to your Transport Agency contact, or subsequently provide them a secure URL to download the documentation. These documents will be stored for reference in the Transport Agency's document management system. This system has been thoroughly vetted and certified for storage of classified documents.<\/p><p>If you have any questions about this process, please feel free to reach out to the Transport Agency Security Architects. We can be reached via email at: <a href=\"mailto:security.architects@example.co.nz\">security.architects@example.co.nz<\/a><\/p><p>&nbsp;<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Finish",
+            "actionType": "continue"
+          }
+        ]
+      }
+    ]
+  }
+}

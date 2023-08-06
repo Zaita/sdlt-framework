@@ -1,0 +1,1047 @@
+{
+  "task": {
+    "name": "Initial Risk Impact Assessment",
+    "taskType": "risk questionnaire",
+    "keyInformation": "<p>This questionnaire is used as part of the SDLT's Digital Security Risk Assessment process. This part of the process is used to determine what types of data, and what systems the change impacts. Each piece of data and system have been assessed against the Agency's risks to determine a rating based on potential worse case consequences.<\/p>",
+    "lockAnswersWhenComplete": false,
+    "isApprovalRequired": false,
+    "riskCalculation": "NztaApproxRepresentation",
+    "approvalGroupName": "",
+    "questions": [
+      {
+        "title": "Information",
+        "questionHeading": "Information",
+        "description": "<p>This questionnaire will approximate the level of potential Impact\/Consequence your deliverable poses to the Transport Agency if a major Security incident were to occur. The Impact assessment will use pre-determined classifications of Transport Agency data and systems to determine the initial impact rating.<\/p><p>As there is no correlation between the size of a change and the level of risk introduced, the ratings have been defined using the \"New Zealand Government Business Impact Levels of Protective Security Risks\" and internal Criticality assessments.<\/p><p><strong>How does this work?<\/strong><\/p><p>If you select \"Motor Vehicle Register (MVR)\" as a system you will be reading to or writing from, then your deliverable will be included the classified risk impacts of MVR.<\/p><p>This means that by reading data from MVR, you're at risk of causing Information Disclosure (Information Leak or Privacy Breach) from MVR. If you're writing data to MVR, then you're at risk of changing the Accuracy of Information in MVR (Information Modification).<\/p><p>While your system maybe limited to reading or writing specific information, the connection between your system and MVR opens that line of communication that could be exploited by a malicious person(s).<\/p><p><strong>What does this mean for my delivery?<\/strong><\/p><p>While you will likely see a much higher risk impact rating from this process than the previous manual process, the end-to-end Digital Security Risk Assessment (DSRA) provides you clear information on how to reduce your overall risk level to a \"Low\" that would be acceptable to the Agency.<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "I Understand, Let's Start!",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Data",
+        "questionHeading": "What data will you be interacting with?",
+        "description": "<p>Please ensure you tick all boxes that have fields that your solution\/feature\/change will be <strong>transmitting<\/strong>, <strong>storing<\/strong> or <strong>receiving<\/strong>.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Fields",
+            "inputType": "multiple-choice: multiple selection",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 0,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false,
+            "multiChoiceSingleAnswerDefault": "",
+            "multiChoiceMultipleAnswerDefault": "",
+            "answerSelections": [
+              {
+                "label": "First Name",
+                "value": "First Name",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 4
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 13
+                  }
+                ]
+              },
+              {
+                "label": "Last Name",
+                "value": "Last Name",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 4
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 13
+                  }
+                ]
+              },
+              {
+                "label": "Date of Birth",
+                "value": "Date of Birth",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 29
+                  }
+                ]
+              },
+              {
+                "label": "Address",
+                "value": "Address",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 29
+                  }
+                ]
+              },
+              {
+                "label": "Phone Number",
+                "value": "Phone Number",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 13
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 13
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 13
+                  }
+                ]
+              },
+              {
+                "label": "Email",
+                "value": "Email",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 13
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 4
+                  }
+                ]
+              },
+              {
+                "label": "Medical Information",
+                "value": "Medical Information",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 44
+                  }
+                ]
+              },
+              {
+                "label": "Driver Licence Photo",
+                "value": "Driver Licence Photo",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 44
+                  }
+                ]
+              },
+              {
+                "label": "Driver Licence Information",
+                "value": "Driver Licence Information",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 69
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 44
+                  }
+                ]
+              },
+              {
+                "label": "Accident\/Death Information",
+                "value": "Accident\/Death Information",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 44
+                  }
+                ]
+              },
+              {
+                "label": "Fines Information",
+                "value": "Fines Information",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 44
+                  }
+                ]
+              },
+              {
+                "label": "Photo of person",
+                "value": "Photo of person",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 29
+                  }
+                ]
+              },
+              {
+                "label": "Credit Card Payment URL",
+                "value": "Credit Card Payment URL",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 9
+                  }
+                ]
+              },
+              {
+                "label": "Vehicle Information (Plate, Weight, Permits etc)",
+                "value": "Vehicle Information (Plate, Weight, Permits etc)",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 13
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "Traffic Camera or CCTV Footage",
+                "value": "Traffic Camera or CCTV Footage",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 44
+                  }
+                ]
+              },
+              {
+                "label": "Staff Payroll",
+                "value": "Staff Payroll",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 29
+                  }
+                ]
+              },
+              {
+                "label": "Other \/ None",
+                "value": "Other \/ None",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "System",
+        "questionHeading": "What systems will you be interacting with?",
+        "description": "<p>Please ensure you tick all boxes that have systems that your solution\/feature\/change will be <strong>transmitting to<\/strong>, <strong>storing in<\/strong> or <strong>receiving from<\/strong>.<\/p><p>Please include any systems where you will be making code or configuration changes.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Systems",
+            "inputType": "multiple-choice: multiple selection",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 0,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false,
+            "multiChoiceSingleAnswerDefault": "",
+            "multiChoiceMultipleAnswerDefault": "",
+            "answerSelections": [
+              {
+                "label": "System 1",
+                "value": "System 1",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 2",
+                "value": "System 2",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 3",
+                "value": "System 3",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 4",
+                "value": "System 4",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 69
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 5",
+                "value": "System 5",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 150
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 150
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 70
+                  }
+                ]
+              },
+              {
+                "label": "System 6",
+                "value": "System 6",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 69
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 69
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 7",
+                "value": "System 7",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 150
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 70
+                  }
+                ]
+              },
+              {
+                "label": "System 8",
+                "value": "System 8",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 9",
+                "value": "System 9",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 10",
+                "value": "System 10",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 11",
+                "value": "System 11",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 29
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 12",
+                "value": "System 12",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "System 13",
+                "value": "System 13",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 69
+                  }
+                ]
+              },
+              {
+                "label": "System 14",
+                "value": "System 14",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 69
+                  }
+                ]
+              },
+              {
+                "label": "System 15",
+                "value": "System 15",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 70
+                  }
+                ]
+              },
+              {
+                "label": "System 16",
+                "value": "System 16",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 70
+                  }
+                ]
+              },
+              {
+                "label": "System 17",
+                "value": "System 17",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 70
+                  }
+                ]
+              },
+              {
+                "label": "System 18",
+                "value": "System 18",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 4
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 13
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 150
+                  }
+                ]
+              },
+              {
+                "label": "System 19",
+                "value": "System 19",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 4
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 13
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 150
+                  }
+                ]
+              },
+              {
+                "label": "System 20",
+                "value": "System 20",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 69
+                  }
+                ]
+              },
+              {
+                "label": "System 21",
+                "value": "System 21",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 70
+                  }
+                ]
+              },
+              {
+                "label": "System 22",
+                "value": "System 22",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Human Damage or Loss of Life",
+                    "weight": 70
+                  }
+                ]
+              },
+              {
+                "label": "System 23",
+                "value": "System 23",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 44
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              },
+              {
+                "label": "Other \/ Not Listed",
+                "value": "Other \/ Not Listed",
+                "risks": [
+                  {
+                    "name": "Information Disclosure",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Modification",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Information Loss",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Sustained Service Unavailability",
+                    "weight": 31
+                  },
+                  {
+                    "name": "Degraded Service Performance",
+                    "weight": 31
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

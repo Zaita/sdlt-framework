@@ -3,10 +3,10 @@
 risk profile analysis",0,"question_answer",1,0,0
 2,"NZTA\SDLT\Model\Pillar","Proof of Concept","I want to trial a product for
 a short period of time",0,"lightbulb",1,1,0
-3,"NZTA\SDLT\Model\Pillar","Cloud Product Onboarding","I want to buy a cloud or
+3,"NZTA\SDLT\Model\Pillar","Cloud Product Onboarding","I want to use a cloud or
 SaaS product",0,"cloud_download",1,2,0
-4,"NZTA\SDLT\Model\Pillar","New Project or Product","I want to get my project/product
-reviewed by security",0,"shield",1,3,0
+4,"NZTA\SDLT\Model\Pillar","New Project or Product","I want to get my product/feature
+approved for release",0,"shield",1,3,0
 5,"NZTA\SDLT\Model\Pillar","Product Release","I want to release a change
 to an existing product",0,"bug",1,4,0
 

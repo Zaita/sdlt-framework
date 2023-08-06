@@ -2,7 +2,7 @@
   "questionnaire": {
     "name": "Proof of Concept",
     "type": "Questionnaire",
-    "keyInformation": "<p>This questionnaire will ask you contextual questions about a proof of concept you would like to undertake. This is used to create a record of the experiment. A documentation trail must be created to ensure any potential risks associated with this experiment are appropriately documented and accepted.<\/p><p>A proof of concept generally must not include the user of any data that is classified, or contains personal information. If your proof of concept requires this to function, you will be required to get a security exemption as part of the SDLT process.<\/p><p>While it is unlikely that this submission will create any SDLT tasks, this will depend on the potential risk profile of your experiment. All tasks will need to be completed and\/or approved prior to starting your experiment.<\/p><p>If you do not complete this questionnaire within 14 days, it will automatically expire.<\/p>",
+    "keyInformation": "<p>This questionnaire will ask you contextual questions about a proof of concept you would like to undertake. This is used to create a record of the experiment. A documentation trail must be created to ensure any potential risks associated with this experiment are appropriately documented and accepted.<\/p><p>A proof of concept generally must not include the use of any data that is classified, or contains personal information. If your proof of concept requires this to function, you will be required to get a security exemption as part of the SDLT process.<\/p><p>While it is unlikely that this submission will create any SDLT tasks, this will depend on the potential risk of your experiment. All tasks will need to be completed and\/or approved prior to starting your experiment.<\/p><p>If you do not complete this questionnaire within 14 days, it will automatically expire.<\/p>",
     "bypassApproval": false,
     "doesSubmissionExpire": "Yes",
     "expireAfterDays ": 14,
@@ -81,7 +81,7 @@
       {
         "title": "Proof of Concept or Trial",
         "questionHeading": "Is this a proof of concept, or are you performing a product trial?",
-        "description": "<p>A Proof of Concept (POC) is testing product to prove a concept. After the experiment ends, all installation\/configuration information and data will be destroyed.<\/p><p>A product trial will be used to test the validity of a specific product. A successful product trial may lead to continued use after completing the appropriate risk and security onboarding processes.<\/p>",
+        "description": "<p>A Proof of Concept (POC) is testing product to prove a concept. After the experiment ends, all installation\/configurations and data will be destroyed.<\/p><p>A product trial will be used to test the validity of a specific product. A successful product trial may lead to continued use after completing the appropriate risk and security onboarding processes.<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {

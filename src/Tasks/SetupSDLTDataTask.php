@@ -65,27 +65,29 @@ class SetupSDLTDataTask extends BuildTask
      * Note: the order is important!
      * @var array
      */
-    private static $paths = [
+    private $paths = [
         'Dashboard' => 'populate/csv/Dashboard.csv',
         'Pillar' => 'populate/csv/Pillar.csv',
         'Questionnaire' => 'populate/csv/Questionnaire.csv',
         'Task' => 'populate/csv/Task.csv',
-        'Question' => 'populate/csv/Question.csv',
-        'AnswerInputField' => 'populate/csv/AnswerInputField.csv',
-        'AnswerActionField' => 'populate/csv/AnswerActionField.csv',
+        
+        // 'Question' => 'populate/csv/Question.csv',
+        // 'AnswerInputField' => 'populate/csv/AnswerInputField.csv',
+        // 'AnswerActionField' => 'populate/csv/AnswerActionField.csv',
         'Risk' => 'populate/csv/Risk.csv',
         'ImpactThreshold' => 'populate/csv/ImpactThreshold.csv',
         'LikelihoodThreshold' => 'populate/csv/LikelihoodThreshold.csv',
+        
         'RiskRating' => 'populate/csv/RiskRating.csv',
-        'SecurityComponent' => 'populate/csv/SecurityComponent.csv',
-        'SecurityControl' => 'populate/csv/SecurityControl.csv',
+        // 'SecurityComponent' => 'populate/csv/archive/SecurityComponent.csv',
+        // 'SecurityControl' => 'populate/csv/archive/SecurityControl.csv',
 
-        //must import after AnswerInputField and Risk
-        'AnswerInputBlock' => 'populate/csv/AnswerInputBlock.csv',
+        // //must import after AnswerInputField and Risk
+        // 'AnswerInputBlock' => 'populate/csv/AnswerInputBlock.csv',
 
-        //ControlWeightSet can't exist until Risk, SecurityControl,
-        //and SecurityComponent are loaded
-        'ControlWeightSet' => 'populate/csv/ControlWeightSet.csv',
+        // //ControlWeightSet can't exist until Risk, SecurityControl,
+        // //and SecurityComponent are loaded
+        // 'ControlWeightSet' => 'populate/csv/archive/ControlWeightSet.csv',
     ];
 
     /**
@@ -94,27 +96,27 @@ class SetupSDLTDataTask extends BuildTask
      * @var array
      */
     private static $relation_paths = [
-        'SecurityComponent_SecurityControls' => [
-            'path' => 'populate/csv/SecurityComponent_SecurityControl.csv',
-        ],
-        'AnswerActionField_Tasks' => [
-            'path' => 'populate/csv/AnswerActionField_Tasks.csv',
-        ],
-        'AnswerInputBlock_Risks' => [
-            'path' => 'populate/csv/AnswerInputBlock_Risks.csv',
-        ],
-        'AnswerActionField_Risks' => [
-            'path' => 'populate/csv/AnswerActionField_Risks.csv',
-        ],
-        'Dashboard_Tasks' => [
-            'path' => 'populate/csv/Dashboard_Tasks.csv',
-        ],
-        'Questionnaire_Tasks' => [
-            'path' => 'populate/csv/Questionnaire_Tasks.csv',
-        ],
-        'Task_DefaultSecurityComponents' => [
-            'path' => 'populate/csv/Task_DefaultSecurityComponents.csv',
-        ],
+        // 'SecurityComponent_SecurityControls' => [
+        //     'path' => 'populate/csv/SecurityComponent_SecurityControl.csv',
+        // ],
+        // 'AnswerActionField_Tasks' => [
+        //     'path' => 'populate/csv/AnswerActionField_Tasks.csv',
+        // ],
+        // 'AnswerInputBlock_Risks' => [
+        //     'path' => 'populate/csv/AnswerInputBlock_Risks.csv',
+        // ],
+        // 'AnswerActionField_Risks' => [
+        //     'path' => 'populate/csv/AnswerActionField_Risks.csv',
+        // ],
+        // 'Dashboard_Tasks' => [
+        //     'path' => 'populate/csv/Dashboard_Tasks.csv',
+        // ],
+        // 'Questionnaire_Tasks' => [
+        //     'path' => 'populate/csv/Questionnaire_Tasks.csv',
+        // ],
+        // 'Task_DefaultSecurityComponents' => [
+        //     'path' => 'populate/csv/Task_DefaultSecurityComponents.csv',
+        // ],
     ];
 
     /**
@@ -155,7 +157,15 @@ class SetupSDLTDataTask extends BuildTask
      * @var array
      */
     private $json_task_paths = [
-        'Task: Web Security Configuration' => 'populate/json/task/task_web_security_configuration.json'
+        'Task: Web Security Configuration' => 'populate/json/task/task_web_security_configuration.json',
+        'Task: PCI-DSS Assessment (SAQ-A)' => 'populate/json/task/task_pci_dss_assessment.json',
+        'Task: Information Classification' => 'populate/json/task/task_information_classification.json',
+        'Task: Privacy Threshold Assessment' => 'populate/json/task/task_privacy_threshold_assessment.json',
+        'Task: Third Party Assessment' => 'populate/json/task/task_third_party_assessment.json',
+        'Task: Penetration Test' => 'populate/json/task/task_penetration_test.json',
+        'Task: Initial Risk Impact Assessment' => 'populate/json/task/task_initial_risk_impact_assessment.json',
+        'Task: Digital Security Risk Assessment Tutorial' => 'populate/json/task/task_dsra_tutorial.json',
+        'Task: Release Notes' => 'populate/json/task/task_release_notes.json'
     ];
 
     /**
@@ -199,8 +209,7 @@ class SetupSDLTDataTask extends BuildTask
             . DIRECTORY_SEPARATOR
             .'sdlt-framework';
 
-        foreach ($this->config()->paths as $model => $csvpath) {
-
+        foreach ($this->paths as $model => $csvpath) {
             if (!file_exists($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath)) {
                 throw new \Exception($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath . ' does not exist');
             }
@@ -221,6 +230,7 @@ class SetupSDLTDataTask extends BuildTask
 
                 if (count($keys) !== count($vals)) {
                     DB::alteration_message($model.$vals[0]."\tHeader/row mismatch");
+                    printf("Skipping");
                     continue;
                 }
 
@@ -228,12 +238,14 @@ class SetupSDLTDataTask extends BuildTask
                     $keys,
                     $vals
                 );
+
                 $processMethod = 'process'.$model;
                 if (method_exists($this, $processMethod)) {
                     $record = $this->$processMethod($record);
                 }
 
                 if (!$record) {
+                    printf("Failed to store record");
                     continue;
                 }
 
@@ -252,46 +264,46 @@ class SetupSDLTDataTask extends BuildTask
                 );
         }
 
-        foreach ($this->config()->relation_paths as $model => $csvArray) {
-            $csvpath = $csvArray['path'] ?? null;
-            if ($csvpath && !file_exists($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath)) {
-                throw new \Exception($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath . ' does not exist');
-            }
-            $csv = Reader::createFromPath($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath, 'r');
-            $csv->setHeaderOffset(0);
+        // foreach ($this->config()->relation_paths as $model => $csvArray) {
+        //     $csvpath = $csvArray['path'] ?? null;
+        //     if ($csvpath && !file_exists($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath)) {
+        //         throw new \Exception($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath . ' does not exist');
+        //     }
+        //     $csv = Reader::createFromPath($sdltFrameworkPath . DIRECTORY_SEPARATOR . $csvpath, 'r');
+        //     $csv->setHeaderOffset(0);
 
-            //get the first row, usually the CSV header
-            $headers = $csv->getHeader();
+        //     //get the first row, usually the CSV header
+        //     $headers = $csv->getHeader();
 
-            // $res = $csv->setOffset(1)->fetchAll();
-            $res = $csv->getRecords();
+        //     // $res = $csv->setOffset(1)->fetchAll();
+        //     $res = $csv->getRecords();
 
-            $className = '';
-            foreach ($res as $row) {
-                $record = array_combine(
-                    array_values($headers),
-                    array_values($row)
-                );
-                $joinMethod = 'join'.$model;
-                if (method_exists($this, $joinMethod)) {
-                    $record = $this->$joinMethod($record);
-                }
+        //     $className = '';
+        //     foreach ($res as $row) {
+        //         $record = array_combine(
+        //             array_values($headers),
+        //             array_values($row)
+        //         );
+        //         $joinMethod = 'join'.$model;
+        //         if (method_exists($this, $joinMethod)) {
+        //             $record = $this->$joinMethod($record);
+        //         }
 
-                $className = $model;
-                $id = (int) $record['ID'];
-                $this->records[$model][$id] = $record['ID'];
-            }
+        //         $className = $model;
+        //         $id = (int) $record['ID'];
+        //         $this->records[$model][$id] = $record['ID'];
+        //     }
 
-            DB::alteration_message(
-                sprintf(
-                    "Linked %d %s records",
-                    isset($this->records[$className])
-                        ? count($this->records[$className])
-                        : 0,
-                    $model
-                )
-            );
-        }
+        //     DB::alteration_message(
+        //         sprintf(
+        //             "Linked %d %s records",
+        //             isset($this->records[$className])
+        //                 ? count($this->records[$className])
+        //                 : 0,
+        //             $model
+        //         )
+        //     );
+        // }
 
         /**
          * Now that the CSV Import has been done, we'll import

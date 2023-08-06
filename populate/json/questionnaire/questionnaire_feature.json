@@ -1,17 +1,16 @@
 {
   "questionnaire": {
-    "name": "Product Release, Technical Change or Bug Fix Request Form",
+    "name": "Product Release",
     "type": "Questionnaire",
-    "keyInformation": "<ol><li>This form will ask you a series of questions about the feature or bug fix you wish to implement. Please ensure you have key information about the feature and people using it available before you start.<\/li>\n<li>Completion of this form should take 15-30 minutes depending on the complexity of the product. This form will email you supplementary forms to fill out covering Privacy Impact Assessments etc.<\/li>\n<li>This form will be emailed to the relevant Transport Agency staff for approval. Approvals will be handled automatically through this process and you will be contacted when they have been completed.<\/li>\n<li>By clicking 'Start', you will be emailed a link to this questionnaire with a unique ID. This can be used to review your answers, or finish the questionnaire at a later date if you cannot complete it in one sitting.<\/li>\n<\/ol>",
-    "riskCalculation": "NztaApproxRepresentation",
+    "keyInformation": "<p>This questionnaire will ask you contextual questions about the change you wish to release. This is used to create a record of the release completing our security and change management processes.<\/p><p>This submission will create tasks for your complete after the initial set of questions. These tasks will need to be completed before the submission can be approved. All approvals are handled within the SDLT.<\/p><p>The number and amount of tasks created will be tailored based on the complexity and risk level of your change. A low risk and low complexity change will likely not have any required tasks.<\/p><p>If you do not complete the initial set of questions within 14 days, it will automatically expire.<\/p>",
     "bypassApproval": false,
     "doesSubmissionExpire": "Yes",
     "expireAfterDays ": 14,
     "questions": [
       {
         "title": "Product Information",
-        "questionHeading": "Please enter the name of the project and product and project\/manager name",
-        "description": "Please enter the name of the project and product and project\/manager name",
+        "questionHeading": "Please enter the name of the product you are changing",
+        "description": "<p>Please enter the name of the product and change leader.<\/p><p>The change leader can be the technical lead, product manager or feature lead. It is the person who is overseeing the business outcomes for this change.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -22,24 +21,26 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": true
+            "isProductName": true,
+            "isTicketLink": false
           },
           {
-            "label": "Project\/Product Manager",
+            "label": "Change Leader",
             "inputType": "text",
             "required": true,
             "minLength": 0,
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Business Owner",
         "questionHeading": "Please enter details of the business owner for this product",
-        "description": "The business owner is the person who can formally accept risk to the data used in this product. This is a business line manager, not security.",
+        "description": "<p>When deploying a change, it is important to ensure appropriate risks are assessed. The business owner is responsible for accepting the risks. The business owner is the person is who accountable for protecting our organisation from creating risks above tolerance.<\/p><p>The business owner will be required to approve this submission before this release can go into production.<\/p><p>If your change is a low complexity or low risk change, it is likely that it will be endorsed by the security team and won't require business owner approval.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -50,17 +51,8 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
-          },
-          {
-            "label": "Role at the Agency",
-            "inputType": "text",
-            "required": true,
-            "minLength": 0,
-            "maxLength": 0,
-            "placeHolder": "",
-            "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           },
           {
             "label": "Email",
@@ -70,14 +62,34 @@
             "maxLength": 0,
             "placeHolder": "person@example.co.nz",
             "isBusinessOwner": true,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
+          }
+        ]
+      },
+      {
+        "title": "Change Ticket",
+        "questionHeading": "Please provide a link to your change ticket",
+        "description": "<p>Please provide the link to your ticket (e.g., JIRA). Please include the full URL and not just the ticket number.<\/p><p>This link will be made accessible within the summary of your submission for reviewers.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Ticket",
+            "inputType": "url",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false,
+            "isTicketLink": true
           }
         ]
       },
       {
         "title": "Release Notes Known",
-        "questionHeading": "Do you currently have release notes for this deliverable?",
-        "description": "<p>If you have the release notes, please click \"Yes\". You'll be asked in the next question to provide the release notes as part of this submission.<\/p><p>If you do not have the release notes, please click \"No\". A Release Notes will be created at the end of the submission for you to provide them prior to submitting for approval.<\/p>",
+        "questionHeading": "Do you currently have release notes for this change?",
+        "description": "<p>If you have the release notes, please click \"Yes\". You'll be asked in the next question to provide the release notes as part of this submission.<\/p><p>If you do not have the release notes, please click \"No\". A Release Notes will be created at the end of the submission for you to provide them prior to submitting for approval.<\/p><p>If your release notes are contained within the change ticket, please click \"In Ticket\".<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -93,6 +105,11 @@
                 "name": "Release Notes"
               }
             ]
+          },
+          {
+            "label": "In Ticket",
+            "actionType": "goto",
+            "gotoQuestionTitle": "Release Date"
           }
         ]
       },
@@ -110,14 +127,15 @@
             "maxLength": 4096,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Change Description",
         "questionHeading": "Please provide a description of the change",
-        "description": "<p>Please provide a description of the change in plain English. If you have a high level design document that covers the scope of this change, you can enter the link to this document.<\/p><p>Ensure your description covers enough information for<\/p><ul><li>The Security Team to review the potential impacts of this change<\/li>\n<li>The Business Owner to review and accept any changes to the risk profile<\/li>\n<\/ul>",
+        "description": "<p>Please provide a description of the change in plain English. If you have a high level design document that covers the scope of this change, you can enter the link to this document. The change description will be used in place of release notes.<\/p><p>Ensure your description covers enough information for<\/p><ul>\n<li>The Security Team to review the potential impacts of this change<\/li>\n<li>The Business Owner to review and accept any changes to the risk profile<\/li>\n<\/ul>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -128,14 +146,15 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "Release Date",
         "questionHeading": "What is the release date for this deliverable?",
-        "description": "",
+        "description": "<p>Please select a date that is near to when you wish to go live. This does not have to be accurate, but should be an indicator to the reviewers of how to prioritise this.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -146,14 +165,15 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
       {
         "title": "New Transfers of Data",
-        "questionHeading": "Does this delivery add new data or information that belongs to the Transport Agency?",
-        "description": "<p>Is this change going to be adding any new data sources or targets of data\/information?<\/p><p>This would include:<\/p><ul><li>Data\/Information being received by the product<\/li>\n<li>Data\/Information being sent by the product<\/li>\n<li>Data\/Information being loaded\/imported into the product<\/li>\n<li>Data\/Information being exported from the product<\/li>\n<\/ul><p>Alert information is used for Logging\/Operations\/SIEM platforms. An alert is a notification of an issue with operations that is reported for support. If you're adding Alert\/Logging Information <strong>AND<\/strong> other information, please click 'Yes'.<\/p>",
+        "questionHeading": "Does this delivery add new data or information?",
+        "description": "<p>Is this change going to be adding any new data sources or targets of data\/information?<\/p><p>This would include:<\/p><ul>\n<li>Data\/Information being received by the product<\/li>\n<li>Data\/Information being sent by the product<\/li>\n<li>Data\/Information being loaded\/imported into the product<\/li>\n<li>Data\/Information being exported from the product<\/li>\n<\/ul><p>Alert information is used for Logging\/Operations\/SIEM platforms. An alert is a notification of an issue with operations that is reported for support. If you're adding Alert\/Logging Information <strong>AND<\/strong> other information, please click 'Yes'.<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -179,8 +199,8 @@
       },
       {
         "title": "Information Classification",
-        "questionHeading": "Does this new data have an information classification yet?",
-        "description": "<p>Do you know the Information Classification for this new data?<\/p><p>AND;<\/p><p>Is this information classification different to what the product already handles?<\/p>",
+        "questionHeading": "Do you know the Information Classification already?",
+        "description": "<p>We classify data based on potential sensitivity and value to a malicious actor. Applying appropriate classifications allows us to maintain appropriate records of the data we hold, and the security controls we should be applying.<\/p><p>The SDLT will classify your data based on the New Zealand Government Information Classification guidelines.<\/p><p>If you are unsure, click \"No\" and the SDLT will generate your information classification for you as a task at the end of this questionnaire.<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -210,7 +230,7 @@
       {
         "title": "Personal Information",
         "questionHeading": "Does this new information contain Personal Information (PI)?",
-        "description": "<p>Personal Information is defined as any information about an identifiable individual (i.e. a living, natural person; not companies\/charities\/trusts etc). The information doesn\u2019t need to identify a person by their name to be personal information, and it also doesn\u2019t need to be private or sensitive. As long as there\u2019s a reasonable chance that someone could be identified from the information - even if it\u2019s only one person that makes the link between the information and the individual, and even if it\u2019s only by linking it with other information - then it\u2019s personal information. This includes information about other staff members and our customers.<\/p><p>All systems created, managed and used by the Agency that contain or use any form of Personal Information must go through a Privacy Threshold Assessment process. At the end of this questionnaire, a Privacy Threshold Assessment task will be completed. When completed, this task will be submitted to the Privacy Officers for review and approval.<\/p><p>For more information, and specific examples, please see the Privacy Page on OnRamp: https:\/\/onramp.example.co.nz\/what-we-do\/legal-services\/privacy\/<\/p>",
+        "description": "<p>Personal Information is defined as any information about an identifiable individual (i.e. a living, natural person; not companies\/charities\/trusts etc). The information doesn\u2019t need to identify a person by their name to be personal information, and it also doesn\u2019t need to be private or sensitive. As long as there\u2019s a reasonable chance that someone could be identified from the information - even if it\u2019s only one person that makes the link between the information and the individual, and even if it\u2019s only by linking it with other information - then it\u2019s personal information. This includes information about other staff members and our customers.<\/p><p>All systems created, managed and used by the Agency that contain or use any form of Personal Information must go through a Privacy Threshold Assessment process. At the end of this questionnaire, a Privacy Threshold Assessment task will be completed. When completed, this task will be submitted to the Privacy Officers for review and approval.<\/p><p>&nbsp;<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -218,7 +238,7 @@
             "actionType": "continue",
             "tasks": [
               {
-                "name": "Privacy Threshold Assessment Link"
+                "name": "Privacy Threshold Assessment"
               }
             ]
           },
@@ -232,7 +252,7 @@
       {
         "title": "Existing Personal Information",
         "questionHeading": "Did the product previously transmit, receive or store Personal Information (PI)?",
-        "description": "<p>Personal Information is defined as any information about an identifiable individual (i.e. a living, natural person; not companies\/charities\/trusts etc). The information doesn\u2019t need to identify a person by their name to be personal information, and it also doesn\u2019t need to be private or sensitive. As long as there\u2019s a reasonable chance that someone could be identified from the information - even if it\u2019s only one person that makes the link between the information and the individual, and even if it\u2019s only by linking it with other information - then it\u2019s personal information. This includes information about other staff members and our customers.<\/p><p>For more information, and specific examples, please see the Privacy Page on OnRamp: https:\/\/onramp.example.co.nz\/what-we-do\/legal-services\/privacy\/<\/p>",
+        "description": "<p>Personal Information is defined as any information about an identifiable individual (i.e. a living, natural person; not companies\/charities\/trusts etc). The information doesn\u2019t need to identify a person by their name to be personal information, and it also doesn\u2019t need to be private or sensitive. As long as there\u2019s a reasonable chance that someone could be identified from the information - even if it\u2019s only one person that makes the link between the information and the individual, and even if it\u2019s only by linking it with other information - then it\u2019s personal information. This includes information about other staff members and our customers.<\/p><p>All systems created, managed and used by the Agency that contain or use any form of Personal Information must go through a Privacy Threshold Assessment process. At the end of this questionnaire, a Privacy Threshold Assessment task will be completed. When completed, this task will be submitted to the Privacy Officers for review and approval.<\/p><p>&nbsp;<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -244,7 +264,7 @@
             "actionType": "continue",
             "tasks": [
               {
-                "name": "Privacy Threshold Assessment Link"
+                "name": "Privacy Threshold Assessment"
               }
             ]
           }
@@ -252,8 +272,8 @@
       },
       {
         "title": "External Data",
-        "questionHeading": "Will this new data being transferred to a new external location?",
-        "description": "<p>Will the product be transferring data to a <strong>new<\/strong> external location?<\/p><p>An external location is defined as somewhere that is physically different to where the product is hosted. If you're exporting data for a backup to a difference cloud location\/region\/zone or a different data centre then please click 'Yes'. If this external location has been previously used by this product for data storage, please click 'No'.<\/p><p>&nbsp;<\/p><p>&nbsp;<\/p>",
+        "questionHeading": "Will data being transferred to an external party, cloud provider, or mobile app for storage or processing (e.g. Google\/Azure\/Amazon)",
+        "description": "<p>We must ensure we keep a record of what data we are transferring to external sources. This will ensure we can appropriately audit data access and respond to privacy related requests.<\/p><p>An external location is defined as somewhere that is physically different to where the product is hosted. If you're exporting data for a backup to a difference cloud location\/region\/zone or a different data centre then please click 'Yes'. If this external location has been previously used by this product for data storage, please click 'No'.<\/p><p>&nbsp;<\/p><p>&nbsp;<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -280,7 +300,8 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
@@ -299,7 +320,7 @@
             "actionType": "continue",
             "tasks": [
               {
-                "name": "GCIO 105"
+                "name": "Third Party Assessment"
               }
             ]
           },
@@ -308,7 +329,7 @@
             "actionType": "continue",
             "tasks": [
               {
-                "name": "GCIO 105"
+                "name": "Third Party Assessment"
               }
             ]
           }
@@ -460,7 +481,8 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
@@ -478,7 +500,8 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       },
@@ -496,7 +519,8 @@
             "maxLength": 0,
             "placeHolder": "",
             "isBusinessOwner": false,
-            "isProductName": false
+            "isProductName": false,
+            "isTicketLink": false
           }
         ]
       }

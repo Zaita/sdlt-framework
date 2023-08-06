@@ -1,0 +1,42 @@
+{
+  "task": {
+    "name": "Release Notes",
+    "taskType": "questionnaire",
+    "keyInformation": "",
+    "lockAnswersWhenComplete": false,
+    "isApprovalRequired": false,
+    "approvalGroupName": "",
+    "questions": [
+      {
+        "title": "Information",
+        "questionHeading": "Information",
+        "description": "<p>This task requires that you provide the release notes for this change. This task has been spawned as you were unable to provide them at the time of completing the initial questionnaire.<\/p><p>&nbsp;<\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "I Understand, Let's Start!",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Release Notes",
+        "questionHeading": "Please provide the release notes",
+        "description": "<p>Please provide the release notes.<\/p><p>You can copy+paste the contents of the release notes if they're small,<\/p><p>or<\/p><p>you can provide links to the release notes where they're accessible to the Security team for review on InfoHub or Confluence.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Notes",
+            "inputType": "textarea",
+            "required": true,
+            "minLength": 10,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      }
+    ]
+  }
+}

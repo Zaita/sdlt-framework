@@ -1,0 +1,111 @@
+{
+  "task": {
+    "name": "Penetration Test",
+    "taskType": "questionnaire",
+    "keyInformation": "",
+    "lockAnswersWhenComplete": false,
+    "isApprovalRequired": false,
+    "approvalGroupName": "",
+    "questions": [
+      {
+        "title": "Information",
+        "questionHeading": "Penetration Test Information",
+        "description": "<p>The Transport Agency has an obligation to ensure that all information that it is accountable for is kept safe, especially when that information is being provided to external parties through web-facing services. The threat of someone gaining access to a low-priority system, then leveraging that internal access to break into a high-priority system (i.e. lateral movement) must be avoided.<\/p><p>Your deliverable is required to undertake or provide a recently completed penetration test for the service you're using. If you're adding new APIs (etc) to an existing API management platform please provide a recent penetration test (less than 12 months old). If none can be found, or does not exist, you will be required to undertake a penetration test of this service to validate it's security rating.<\/p><p>Penetration test findings that are Medium or higher in the penetration test will be required to be remediated in line with the Agencies position on risk. Please ensure you have documented remediation evidence and attestations from the vendor that all appropriate remediation work has been completed.<\/p><p>If you're assessing an external vendor. Please provide a copy of their latest penetration test report and remediation response. If you're assessing an internal product, please use an approved penetration test vendor to complete this work. If you do not know of an approved vendor, please contact <a href=\"mailto:security.architects@example.co.nz\">security.architects@example.co.nz.<\/a><\/p>",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Start",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Exemption",
+        "questionHeading": "Do you have an exemption from completing a penetration test?",
+        "description": "An exemption from completing a penetration test and remediation maybe given by a Security Architect or Chief Information Security Officer (CISO)",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "Yes",
+            "actionType": "continue"
+          },
+          {
+            "label": "No",
+            "actionType": "goto",
+            "gotoQuestionTitle": "Penetration Test Report"
+          }
+        ]
+      },
+      {
+        "title": "Exemption Link",
+        "questionHeading": "Please provide a link to the exemption",
+        "description": "Please provide a link to the exemption. If this is in an email, please store the email in the Agency's document management system and ensure the link is accessible to Cyber Security staff.",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Link",
+            "inputType": "url",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 0,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Exemption Confirmation",
+        "questionHeading": "Please confirm that you have provided sufficient exemption information",
+        "description": "",
+        "answerFieldType": "action",
+        "answerActionFields": [
+          {
+            "label": "I Confirm",
+            "actionType": "finish"
+          },
+          {
+            "label": "No",
+            "actionType": "continue"
+          }
+        ]
+      },
+      {
+        "title": "Penetration Test Report",
+        "questionHeading": "Please provide the URL of your penetration test report",
+        "description": "Please ensure it's stored in a Transport Agency document management system and is accessible to the Cyber Security team.",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "URL",
+            "inputType": "url",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 0,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      },
+      {
+        "title": "Remediation Report",
+        "questionHeading": "Please provide the URL of your remediation report",
+        "description": "<p>Please provide a link to your remediation report outlining the remediation work undertaken in response to the Penetration Test report. Please ensure this link is available to the Transport Agency Cyber Security team.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "URL",
+            "inputType": "url",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 0,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false
+          }
+        ]
+      }
+    ]
+  }
+}

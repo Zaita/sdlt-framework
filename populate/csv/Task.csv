@@ -1,0 +1,3 @@
+"ID","ClassName","Name","QuestionnaireID","KeyInformation","TaskType","LockAnswersWhenComplete","IsApprovalRequired","ApprovalGroupID","RiskCalculation","ComponentTarget","RiskQuestionnaireDataSourceID"
+1,"NZTA\SDLT\Model\Task","Control Validation Audit",0,"","control validation audit",0,0,0,"","",0
+2,"NZTA\SDLT\Model\Task","Security Risk Assessment",0,"","security risk assessment",0,0,0,"","Control Validation Audit",50

@@ -127,10 +127,10 @@
             "actionType": "continue",
             "tasks": [
               {
-                "name": "Privacy Threshold Assessment Link"
+                "name": "Privacy Threshold Assessment"
               },
               {
-                "name": "GCIO 105"
+                "name": "Third Party Assessment"
               },
               {
                 "name": "Security Risk Assessment Link"
@@ -180,7 +180,7 @@
                 "name": "Information and Data Management Assessment"
               },
               {
-                "name": "GCIO 105"
+                "name": "Third Party Assessment"
               },
               {
                 "name": "Security Risk Assessment Link"
