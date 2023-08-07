@@ -13,7 +13,7 @@ class GridFieldCustomEditAction extends GridFieldEditButton
      * @inheritdoc
      * change the edit link
      */
-    public function getUrl($gridField, $record, $columnName)
+    public function getUrl($gridField, $record, $columnName, $addState = true)
     {
         return $record->Link;
     }
