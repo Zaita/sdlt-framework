@@ -5,7 +5,7 @@
     "license": "BSD-3-Clause",
     "require": {
         "php": ">=7.4",
-        "silverstripe/recipe-cms": "4.8.0",
+        "silverstripe/recipe-cms": "^4.8.0",
         "silverstripe/postgresql": "^2.1.0",
         "unclecheese/display-logic": "^2.0",
         "symbiote/silverstripe-gridfieldextensions": "^3.2",
