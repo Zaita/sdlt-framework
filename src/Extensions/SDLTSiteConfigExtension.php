@@ -63,8 +63,18 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'ThemeBGColour' => 'Color',
         'ThemeHeaderColour' => 'Color',
         'ThemeSubHeaderColour' => 'Color',
+        'ThemeSubHeaderBreadcrumbColour' => 'Color',
         'ThemeLinkColour' => 'Color',
         'ThemeHomePageTextColour' => 'Color'
+    ];
+
+    private static $defaults = [
+      'ThemeBGColour' => '000000',
+      'ThemeHeaderColour' => '800000',
+      'ThemeSubHeaderColour' => 'ab0000',
+      'ThemeSubHeaderBreadcrumbColour' => 'adadad',
+      'ThemeLinkColour' => '000ea8',
+      'ThemeHomePageTextColour' => '000000'
     ];
 
     /**
@@ -87,7 +97,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
         'AssuranceAdminGroup' => Group::class,
         'CertificationAuthorityGroup' => Group::class,
         'AccreditationAuthorityGroup' => Group::class,
-        'HomePageSubHeaderImage' => Image::class,
+        'HomePageSubHeaderImage' => Image::class
     ];
 
     /**
@@ -149,6 +159,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
             ColorField::create('ThemeBGColour', 'Background color'),
             ColorField::create('ThemeHeaderColour', 'Header color'),
             ColorField::create('ThemeSubHeaderColour', 'Sub-Header color'),
+            ColorField::create('ThemeSubHeaderBreadcrumbColour', 'Breadcrumb color'),
             ColorField::create('ThemeLinkColour', 'Hyperlink color'),
             ColorField::create('ThemeHomePageTextColour', 'Home Page Text color'),
           ]
@@ -415,6 +426,7 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
                 'ThemeBGColour',
                 'ThemeHeaderColour',
                 'ThemeSubHeaderColour',
+                'ThemeSubHeaderBreadcrumbColour',
                 'ThemeLinkColour',
                 'ThemeHomePageTextColour'
             ])
@@ -496,4 +508,13 @@ class SDLTSiteConfigExtension extends DataExtension implements ScaffoldingProvid
     {
         return (string) $this->owner->HomePageSubHeaderImage()->Link();
     }
+
+    // public function getThemeBGColour() : string
+    // {
+    //   if (is_null($this->owner->getField('ThemeLinkColour')))
+    //   {
+    //     echo "NULL BABY";
+    //   }
+    //   return $config->owner->ThemeBGColour;
+    // }
 }

@@ -9,7 +9,7 @@
         "silverstripe/postgresql": "^2.1.0",
         "unclecheese/display-logic": "^2.0",
         "symbiote/silverstripe-gridfieldextensions": "^3.2",
-        "symbiote/silverstripe-queuedjobs": "~4.6.4",
+        "symbiote/silverstripe-queuedjobs": "^4.6.4",
         "ramsey/uuid": "^3.8",
         "symbiote/silverstripe-multivaluefield": "^5.0",
         "tractorcow/silverstripe-colorpicker": "^4.0",
