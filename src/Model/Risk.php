@@ -125,6 +125,10 @@ class Risk extends DataObject
     {
         $result = parent::validate();
 
+        if (is_null($this->Weight)) {
+          return $result;
+        }
+
         if (strlen($this->Weight) && $this->Weight < 0) {
             $result->addError('Weight values should be >= 0.');
         }

@@ -297,7 +297,11 @@ class AnswerInputField extends DataObject implements ScaffoldingProvider
      */
     public function isMultipleChoice() : bool
     {
-        return strstr($this->InputType, 'multiple-choice');
+      if (is_null($this->InputType)) {
+        return false;
+      }
+        
+      return strstr($this->InputType, 'multiple-choice');
     }
 
     /**
