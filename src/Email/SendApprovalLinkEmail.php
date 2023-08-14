@@ -79,7 +79,7 @@ class SendApprovalLinkEmail
      *                                 template fields.
      * @return null
      */
-    public function sendEmail($name = '', $toEmail = '', $isBusinessOwner = false, $memberRole)
+    public function sendEmail($name = '', $toEmail = '', $isBusinessOwner = false, $memberRole = '')
     {
         $emailDetails = QuestionnaireEmail::get()->first();
         $subjField = "{$memberRole}ApprovalLinkEmailSubject";

@@ -358,7 +358,7 @@ class SDLTReports_TasksPerYear extends Report
         }
          $year = array_column($grouped, 'Year');
          $taskName = array_column($grouped, 'TaskName');
-         $count = array_column($grouped, 'Num');\
+         $count = array_column($grouped, 'Num');
          array_multisort($year, SORT_DESC, $taskName, SORT_ASC, $count, SORT_DESC, $grouped);
 
         return ArrayList::create($grouped);

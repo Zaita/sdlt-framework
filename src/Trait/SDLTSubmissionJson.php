@@ -37,6 +37,9 @@ trait SDLTSubmissionJson
         if ($submissionType !== 'qs' && $submissionType !== 'ts') {
             throw new InvalidArgumentException(sprintf('"%s" is not a valid type.', $submissionType));
         }
+        if (is_null($this->QuestionnaireData) || is_null($this->AnswerData)) {
+          return '';
+        }
 
         $questionnaireData = json_decode($this->QuestionnaireData, true);
         $answerData = json_decode($this->AnswerData, true);

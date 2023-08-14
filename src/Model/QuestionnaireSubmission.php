@@ -2963,7 +2963,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
 
             if ($businessOwner) {
                 return $name = trim($businessOwner->FirstName . ' ' . $businessOwner->Surname);
-            } else {
+            } else if (!is_null($email)) {
                 $emailParts = explode("@", $email);
 
                 if (isset($emailParts[0])) {
@@ -2979,6 +2979,8 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
 
                     return $name;
                 }
+            } else {
+              return ""; // $email is null
             }
 
             return $email;
@@ -3115,6 +3117,9 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
 
         if (!$member) {
             return false;
+        }
+        if (is_null($member->Email) || is_null($this->isBusinessOwnerEmailAddress)) {
+          return false;
         }
 
         if (strtolower($member->Email) === strtolower($this->BusinessOwnerEmailAddress)) {
