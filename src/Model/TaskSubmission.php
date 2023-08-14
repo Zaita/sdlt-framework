@@ -1011,7 +1011,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
                     // if everything is ok, then please add/update AnswerData
                     $allAnswerData = [];
                     if (!is_null($submission->AnswerData)) {
-                      json_decode($submission->AnswerData, true);
+                      $allAnswerData = json_decode($submission->AnswerData, true);
                     }
 
                     if ($submission->checkForMultiComponent($component)) {
