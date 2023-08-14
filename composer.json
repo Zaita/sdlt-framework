@@ -4,7 +4,7 @@
     "description": "NZTA Security Development Lifecycle Tool Framework",
     "license": "BSD-3-Clause",
     "require": {
-        "php": ">=7.4",
+        "php": ">=8.1",
         "silverstripe/recipe-cms": "^4.13.0",
         "silverstripe/postgresql": "^2.3.3",
         "unclecheese/display-logic": "^2.0",
