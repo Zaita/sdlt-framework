@@ -205,7 +205,7 @@ class SetupSDLTDataTask extends BuildTask
             . DIRECTORY_SEPARATOR
             . 'vendor'
             . DIRECTORY_SEPARATOR
-            .'nzta'
+            .'zaita'
             . DIRECTORY_SEPARATOR
             .'sdlt-framework';
 
