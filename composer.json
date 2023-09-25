@@ -1,7 +1,7 @@
 {
-    "name": "nzta/sdlt-framework",
+    "name": "zaita/sdlt-framework",
     "type": "silverstripe-vendormodule",
-    "description": "NZTA Security Development Lifecycle Tool Framework",
+    "description": "Zaita SDLT Framework",
     "license": "BSD-3-Clause",
     "require": {
         "php": ">=8.1",
@@ -9,7 +9,7 @@
         "silverstripe/postgresql": "^2.3.3",
         "unclecheese/display-logic": "^2.0",
         "symbiote/silverstripe-gridfieldextensions": "^3.2",
-        "symbiote/silverstripe-queuedjobs": "^4.6.4",
+        "symbiote/silverstripe-queuedjobs": "^4.12.2",
         "ramsey/uuid": "^3.8",
         "symbiote/silverstripe-multivaluefield": "^5.0",
         "tractorcow/silverstripe-colorpicker": "^4.0",
