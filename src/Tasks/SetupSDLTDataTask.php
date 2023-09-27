@@ -147,6 +147,7 @@ class SetupSDLTDataTask extends BuildTask
      * @var array
      */
     private $json_questionnaire_paths = [
+        'Questionnaire: Risk Profile' => 'populate/json/questionnaire/questionnaire_riskprofile.json',
         'Questionnaire: Proof of Concept' => 'populate/json/questionnaire/questionnaire_poc.json',
         'Questionnaire: Solution' => 'populate/json/questionnaire/questionnaire_solution.json',
         'Questionnaire: SaaS' => 'populate/json/questionnaire/questionnaire_saas.json',

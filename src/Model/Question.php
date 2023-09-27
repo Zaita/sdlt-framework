@@ -396,9 +396,11 @@ class Question extends DataObject implements ScaffoldingProvider
         }
 
         // add the questionnaire level tasks id in the $taskList array
-        if (strlen($questionnaireLevelTask)) {
-            $taskIDs = json_decode($questionnaireLevelTask);
-            $taskList = array_merge($taskList, $taskIDs);
+        if (!is_null($questionnaireLevelTask)) {
+          if (strlen($questionnaireLevelTask)) {
+              $taskIDs = json_decode($questionnaireLevelTask);
+              $taskList = array_merge($taskList, $taskIDs);
+          }
         }
 
         // create task-submissions
