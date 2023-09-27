@@ -1,0 +1,231 @@
+{
+  "questionnaire": {
+    "name": "Risk Profile",
+    "type": "RiskQuestionnaire",
+    "keyInformation": "<p>This questionnaire will ask you contextual questions about a potential delivery. This is used to create a high level risk profile of a potential project or product. This technique can be used early in the planning to appropriate scope security resourcing and engagement<\/p>\n<p>A risk profile is a useful tool for organisations that have large or long running delivery timelines and want to embrace increased planning and engagement.<\/p>\n<p>The questions here are only some sample questions. You should customise these for your organisation if you wish to implement a Risk Profile process.<\/p>\n<p>This questionnaire will not create any SDLT tasks and the submission will automatically be marked as approved<\/p>\n<p>If you do not complete this questionnaire within 14 days, it will automatically expire<\/p>",
+    "riskCalculation": "Maximum",
+    "bypassApproval": true,
+    "doesSubmissionExpire": "Yes",
+    "expireAfterDays ": 14,
+    "questions": [
+      {
+        "title": "Project Name",
+        "questionHeading": "Please enter project name",
+        "description": "<p>Please enter the name of the project or product you are deliverying<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Name",
+            "inputType": "text",
+            "required": true,
+            "minLength": 2,
+            "maxLength": 4096,
+            "placeHolder": "Project Name",
+            "isBusinessOwner": false,
+            "isProductName": true,
+            "isTicketLink": false
+          }
+        ]
+      },
+      {
+        "title": "Go-Live Date",
+        "questionHeading": "Please enter expected go-live date",
+        "description": "<p>Please enter the date you expect this project to go-live.<\/p>\n<p>If you do not have a definite date, please estimate one.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Date",
+            "inputType": "release date",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false,
+            "isTicketLink": false
+          }
+        ]
+      },
+      {
+        "title": "Compliance Requirement",
+        "questionHeading": "Is this project a compliance requirement?",
+        "description": "<p>Is this project important to the successful delivery of a major compliance requirement for the organisation?<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Answer",
+            "inputType": "multiple-choice: single selection",
+            "required": false,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false,
+            "isTicketLink": false,
+            "multiChoiceSingleAnswerDefault": "",
+            "multiChoiceMultipleAnswerDefault": "",
+            "answerSelections": [
+              {
+                "label": "Yes",
+                "value": "Yes",
+                "risks": [
+                  {
+                    "name": "Compliance failure",
+                    "weight": 100
+                  }
+                ]
+              },
+              {
+                "label": "No",
+                "value": "No",
+                "risks": [
+                  {
+                    "name": "Compliance failure",
+                    "weight": 5
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Business Continuity",
+        "questionHeading": "Would project failure impact the businesses ability to operate?",
+        "description": "<p>Would project failure have significant implications for the continued success of the business?<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Answer",
+            "inputType": "multiple-choice: single selection",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false,
+            "isTicketLink": false,
+            "multiChoiceSingleAnswerDefault": "",
+            "multiChoiceMultipleAnswerDefault": "",
+            "answerSelections": [
+              {
+                "label": "Yes",
+                "value": "Yes",
+                "risks": [
+                  {
+                    "name": "Business continuity",
+                    "weight": 60
+                  }
+                ]
+              },
+              {
+                "label": "No",
+                "value": "No",
+                "risks": [
+                  {
+                    "name": "Business continuity",
+                    "weight": 5
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Customer Impact",
+        "questionHeading": "Will this have a significant impact on customers?",
+        "description": "<p>Will this change have a significant impact on customers?<\/p>\n<p>This can include any impact to the customer engagement or using our products. A significant change to the user interface or release of major new functionality should be marked as \"Yes\"<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Answer",
+            "inputType": "multiple-choice: single selection",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false,
+            "isTicketLink": false,
+            "multiChoiceSingleAnswerDefault": "",
+            "multiChoiceMultipleAnswerDefault": "",
+            "answerSelections": [
+              {
+                "label": "Yes",
+                "value": "Yes",
+                "risks": [
+                  {
+                    "name": "User dissatisfaction",
+                    "weight": 60
+                  }
+                ]
+              },
+              {
+                "label": "No",
+                "value": "No",
+                "risks": [
+                  {
+                    "name": "User dissatisfaction",
+                    "weight": 5
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "title": "Clear Requirements",
+        "questionHeading": "Does the project have clear requirements?",
+        "description": "<p>Does the project have clear requirements that can be easily articulated and measured for success?<\/p>\n<p>A clear requirement must be something that can be tangibly measured once achieved.<\/p>",
+        "answerFieldType": "input",
+        "answerInputFields": [
+          {
+            "label": "Answer",
+            "inputType": "multiple-choice: single selection",
+            "required": true,
+            "minLength": 0,
+            "maxLength": 4096,
+            "placeHolder": "",
+            "isBusinessOwner": false,
+            "isProductName": false,
+            "isTicketLink": false,
+            "multiChoiceSingleAnswerDefault": "",
+            "multiChoiceMultipleAnswerDefault": "",
+            "answerSelections": [
+              {
+                "label": "Yes",
+                "value": "Yes",
+                "risks": [
+                  {
+                    "name": "Functional failure",
+                    "weight": 70
+                  },
+                  {
+                    "name": "Cost overrun",
+                    "weight": 65
+                  }
+                ]
+              },
+              {
+                "label": "No",
+                "value": "No",
+                "risks": [
+                  {
+                    "name": "Functional failure",
+                    "weight": 0
+                  },
+                  {
+                    "name": "Cost overrun",
+                    "weight": 0
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

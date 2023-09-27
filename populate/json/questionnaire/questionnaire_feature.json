@@ -2,15 +2,15 @@
   "questionnaire": {
     "name": "Product Release",
     "type": "Questionnaire",
-    "keyInformation": "<p>This questionnaire will ask you contextual questions about the change you wish to release. This is used to create a record of the release completing our security and change management processes.<\/p><p>This submission will create tasks for your complete after the initial set of questions. These tasks will need to be completed before the submission can be approved. All approvals are handled within the SDLT.<\/p><p>The number and amount of tasks created will be tailored based on the complexity and risk level of your change. A low risk and low complexity change will likely not have any required tasks.<\/p><p>If you do not complete the initial set of questions within 14 days, it will automatically expire.<\/p>",
+    "keyInformation": "<p>This questionnaire will ask you contextual questions about the change you wish to release. This is used to create a record of the release completing our security and change management processes.<\/p>\n<p>This submission will create tasks for your complete after the initial set of questions. These tasks will need to be completed before the submission can be approved. All approvals are handled within the SDLT.<\/p>\n<p>The number and amount of tasks created will be tailored based on the complexity and risk level of your change. A low risk and low complexity change will likely not have any required tasks.<\/p>\n<p>If you do not complete the initial set of questions within 14 days, it will automatically expire.<\/p>",
     "bypassApproval": false,
     "doesSubmissionExpire": "Yes",
     "expireAfterDays ": 14,
     "questions": [
       {
-        "title": "Product Information",
-        "questionHeading": "Please enter the name of the product you are changing",
-        "description": "<p>Please enter the name of the product and change leader.<\/p><p>The change leader can be the technical lead, product manager or feature lead. It is the person who is overseeing the business outcomes for this change.<\/p>",
+        "title": "Change Information",
+        "questionHeading": "Please enter the name of the product and change lead",
+        "description": "<p>Please enter the name of the product and change lead.<\/p>\n<p>The change leader can be the technical lead, product manager or feature lead. It is the person who is overseeing the business outcomes for this change.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -25,12 +25,12 @@
             "isTicketLink": false
           },
           {
-            "label": "Change Leader",
+            "label": "Change Lead",
             "inputType": "text",
             "required": true,
             "minLength": 0,
             "maxLength": 0,
-            "placeHolder": "",
+            "placeHolder": "Bob Bobson",
             "isBusinessOwner": false,
             "isProductName": false,
             "isTicketLink": false
@@ -159,7 +159,7 @@
         "answerInputFields": [
           {
             "label": "Date",
-            "inputType": "date",
+            "inputType": "release date",
             "required": true,
             "minLength": 0,
             "maxLength": 0,
@@ -230,7 +230,7 @@
       {
         "title": "Personal Information",
         "questionHeading": "Does this new information contain Personal Information (PI)?",
-        "description": "<p>Personal Information is defined as any information about an identifiable individual (i.e. a living, natural person; not companies\/charities\/trusts etc). The information doesn\u2019t need to identify a person by their name to be personal information, and it also doesn\u2019t need to be private or sensitive. As long as there\u2019s a reasonable chance that someone could be identified from the information - even if it\u2019s only one person that makes the link between the information and the individual, and even if it\u2019s only by linking it with other information - then it\u2019s personal information. This includes information about other staff members and our customers.<\/p><p>All systems created, managed and used by the Agency that contain or use any form of Personal Information must go through a Privacy Threshold Assessment process. At the end of this questionnaire, a Privacy Threshold Assessment task will be completed. When completed, this task will be submitted to the Privacy Officers for review and approval.<\/p><p>&nbsp;<\/p>",
+        "description": "<p>Personal Information is defined as any information about an identifiable individual (i.e. a living, natural person; not companies\/charities\/trusts etc). The information doesn\u2019t need to identify a person by their name to be personal information, and it also doesn\u2019t need to be private or sensitive. As long as there\u2019s a reasonable chance that someone could be identified from the information - even if it\u2019s only one person that makes the link between the information and the individual, and even if it\u2019s only by linking it with other information - then it\u2019s personal information. This includes information about other staff members and our customers.<\/p>\n<p>All systems created, managed and used by our organisation that contain or use any form of Personal Information must go through a Privacy Threshold Assessment process. <\/p>\n<p>&nbsp;<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -252,7 +252,7 @@
       {
         "title": "Existing Personal Information",
         "questionHeading": "Did the product previously transmit, receive or store Personal Information (PI)?",
-        "description": "<p>Personal Information is defined as any information about an identifiable individual (i.e. a living, natural person; not companies\/charities\/trusts etc). The information doesn\u2019t need to identify a person by their name to be personal information, and it also doesn\u2019t need to be private or sensitive. As long as there\u2019s a reasonable chance that someone could be identified from the information - even if it\u2019s only one person that makes the link between the information and the individual, and even if it\u2019s only by linking it with other information - then it\u2019s personal information. This includes information about other staff members and our customers.<\/p><p>All systems created, managed and used by the Agency that contain or use any form of Personal Information must go through a Privacy Threshold Assessment process. At the end of this questionnaire, a Privacy Threshold Assessment task will be completed. When completed, this task will be submitted to the Privacy Officers for review and approval.<\/p><p>&nbsp;<\/p>",
+        "description": "<p>Personal Information is defined as any information about an identifiable individual (i.e. a living, natural person; not companies\/charities\/trusts etc). The information doesn\u2019t need to identify a person by their name to be personal information, and it also doesn\u2019t need to be private or sensitive. As long as there\u2019s a reasonable chance that someone could be identified from the information - even if it\u2019s only one person that makes the link between the information and the individual, and even if it\u2019s only by linking it with other information - then it\u2019s personal information. This includes information about other staff members and our customers.<\/p>\n<p>All systems introducing any new forms of Personal Information must go through a Privacy Threshold Assessment process. At the end of this questionnaire, a Privacy Threshold Assessment task will be completed. When completed, this task will be submitted to the Privacy representative for review and approval.<\/p>\n<p>&nbsp;<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -288,8 +288,8 @@
       },
       {
         "title": "Data Storage Location",
-        "questionHeading": "Where will Transport Agency data be physically located\/stored?",
-        "description": "<p>What countries and cities will Transport Agency data be held in by this product?<\/p><p>The Transport Agency must adhere to guidance from the Department of Internal Affairs (DIA). This determines what countries are acceptable for storing information the Transport Agency is accountable. In general, the Transport Agency is allowed to story information in:<\/p><ul><li>New Zealand<\/li>\n<li>Australia<\/li>\n<li>United States of America<\/li>\n<li>Canada<\/li>\n<li>Germany<\/li>\n<li>Netherlands<\/li>\n<li>United Kingdom<\/li>\n<\/ul><p>Other countries\/jurisdictions can be considered, but these will need to go through a separate data risk assessment to ensure the target jurisdiction's Information and Privacy laws are compatible with New Zealand's.<\/p>",
+        "questionHeading": "Where will data be physically located\/stored?",
+        "description": "<p>What countries and cities will data be held in by this product?<\/p>\n<p>We must ensure data is being held in countries that are have similar security and privacy laws as ours. The current list of endorsed countries is:<\/p>\n<ul>\n<li>New Zealand<\/li>\n<li>Australia<\/li>\n<li>United States of America<\/li>\n<li>Canada<\/li>\n<li>Germany<\/li>\n<li>Netherlands<\/li>\n<li>United Kingdom<\/li>\n<\/ul>\n<p>Other countries\/jurisdictions can be considered, but these will need to go through a separate data risk assessment to ensure the target jurisdiction's Information and Privacy laws are compatible with New Zealand's.<\/p>",
         "answerFieldType": "input",
         "answerInputFields": [
           {
@@ -307,8 +307,8 @@
       },
       {
         "title": "Existing Provider",
-        "questionHeading": "Has the Transport Agency used this service provider previously?",
-        "description": "<p>When engaging new providers of SaaS or Cloud Services, all NZ Government Agencies are required to complete a Government Digital Communication Office Cloud Risk Assessment (GCDO\/GCIO). Once complete and assessed, a copy of this assessment will be provided to the NZ Department of Internal Affairs (DIA) and made available to all NZ Government Agencies. Each external organisation should only have to ever complete this process once.<\/p><p>This assessment is designed to solicit information about potential risks to NZ Government Data and Agencies. If the vendor in question has not completed an assessment before, a new GCIO105 task will be created on completion of this questionnaire.<\/p>",
+        "questionHeading": "Have we used this service provider previously?",
+        "description": "<p>When engaging new providers of SaaS or Cloud Services, We will conduct an assessment of them to ensure they are a legitimate company operating our of jurisdictional regions friendly to our business.<\/p>\n<p>&nbsp;<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -338,7 +338,7 @@
       {
         "title": "Public Facing Interfaces",
         "questionHeading": "Does this deliverable expose new public facing interfaces?",
-        "description": "<p>Will this solution be exposing new web-facing services? Including APIs through an existing API management platform (e.g. Mulesoft, CDI, CloudFlare, RedShield). The Transport Agency has an obligation to ensure that all information under it's jurisdiction is kept safe, especially when that information is being provided to external parties through web-facing services.<\/p><p>If you are moving an existing service from one location to another and this does have public facing services (website or API) then the answer to this is 'Yes'.<\/p><p>&nbsp;<\/p><p>If you answer 'Yes', two tasks will be created at the end of this questionnaire.<\/p><p>A Penetration Test task will be created. You'll be asked to either conduct a penetration test on the services or provide a recently completed penetration test report and summary of remediation work that has been undertaken. More information about this is explained in the Penetration Test task.<\/p><p>A Web Security Configuration task will be created. You'll be asked to test your web facing services against some industry best practices to ensure it's secure. This task will take approximately 10 minutes complete.<\/p><p>&nbsp;<\/p>",
+        "description": "<p>Will this solution be exposing new web-facing services? Including APIs through an existing API management platform (e.g. Mulesoft, CloudFlare, RedShield). We have an obligation to ensure that all information we manage is kept safe, especially when that information is being provided to external parties through web-facing services.<\/p>\n<p>If you are moving an existing service from one location to another and this does have public facing services (website or API) then the answer to this is 'Yes'.<\/p>\n<p>If you answer 'Yes', two tasks will be created at the end of this questionnaire.<\/p>\n<p>A Penetration Test task will be created. You'll be asked to either conduct a penetration test on the services or provide a recently completed penetration test report and summary of remediation work that has been undertaken. More information about this is explained in the Penetration Test task.<\/p>\n<p>A Web Security Configuration task will be created. You'll be asked to test your web facing services against some industry best practices to ensure it's secure. This task will take approximately 10 minutes complete.<\/p>\n<p>&nbsp;<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -350,48 +350,6 @@
               },
               {
                 "name": "Web Security Configuration"
-              }
-            ]
-          },
-          {
-            "label": "No",
-            "actionType": "continue"
-          }
-        ]
-      },
-      {
-        "title": "Credit Card Payments",
-        "questionHeading": "Does this deliverable add or modify credit card processing?",
-        "description": "<p>Select yes if this deliverable modifies any component that handles credit card processing.<\/p><p>The Transport Agency is required by VISA and our Bank to maintain compliance with the Payment Card Industry - Data Security Standards (PCI-DSS). Vendors that accept credit cards on behalf of the Transport Agency will need to provide evidence of PCI-DSS compliance that can be forwarded to our bank. If this product is going to accept credit card payments, at the end of this questionnaire a PCI-DSS assessment task will be created. This task will ask you to go through each of the PCI-DSS requirements and ensure they're being met within this solution.<\/p>",
-        "answerFieldType": "action",
-        "answerActionFields": [
-          {
-            "label": "Yes",
-            "actionType": "continue",
-            "tasks": [
-              {
-                "name": "PCI-DSS Assessment"
-              }
-            ]
-          },
-          {
-            "label": "No",
-            "actionType": "continue"
-          }
-        ]
-      },
-      {
-        "title": "Credit Card Connection",
-        "questionHeading": "Will this deliverable talk to the Agency Common Payment Services (CPS) system or impact it's security?",
-        "description": "<p>Does this product deal with credit card payments in any way? or talk to Transport Agency systems that do? This includes the Payment Micro-site and Common Payment Services (CPS).<\/p><p>The Transport Agency is required by VISA and our Bank to maintain compliance with the Payment Card Industry - Data Security Standards (PCI-DSS). These products sit within the Transport Agencies PCI-DSS environment. Any changes to this environment will require validation against the current PCI-DSS requirements to ensure no compliance obligations are being compromised. At the end of this questionnaire a PCI-DSS assessment task will be created. This task will ask you to go through each of the PCI-DSS requirements and ensure they're being met within this product integration.<\/p>",
-        "answerFieldType": "action",
-        "answerActionFields": [
-          {
-            "label": "Yes",
-            "actionType": "continue",
-            "tasks": [
-              {
-                "name": "PCI-DSS Assessment"
               }
             ]
           },
@@ -421,7 +379,7 @@
       {
         "title": "Security Risk Assessment",
         "questionHeading": "Security Risk Assessment Required",
-        "description": "<p>As this change is a significant change, you will be required to complete a Digital Security Risk Assessment.<\/p><p>The Transport Agency uses a new Digital Security Risk Assessment (DSRA) methodology. If you're familiar with this approach and do not need the Tutorial please click 'Ok'. If you would like the Tutorial to give you some background information on how to use the DSRA please click the 'With Tutorial' button.<\/p>",
+        "description": "<p>As this change is a significant change, you will be required to complete a Digital Security Risk Assessment.<\/p>\n<p>The SDLT uses a new Digital Security Risk Assessment (DSRA) methodology. If you're familiar with this approach and do not need the Tutorial please click 'Ok'. If you would like the Tutorial to give you some background information on how to use the DSRA please click the 'With Tutorial' button.<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {
@@ -453,7 +411,7 @@
       {
         "title": "Firewall Changes",
         "questionHeading": "Will this deliverable require firewall changes?",
-        "description": "If this deliverable requires connections from Transport Agency systems that are not Web (e.g. chrome\/firefox) the answer is probably Yes",
+        "description": "<p>If this deliverable requires connections to or from systems that are not Web connected (e.g. chrome\/firefox) the answer is probably Yes.<\/p>",
         "answerFieldType": "action",
         "answerActionFields": [
           {

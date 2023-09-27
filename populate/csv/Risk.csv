@@ -2,6 +2,12 @@
 1,"NZTA\SDLT\Model\Risk","Information disclosure",""
 2,"NZTA\SDLT\Model\Risk","Information modification",""
 3,"NZTA\SDLT\Model\Risk","Information loss",""
-4,"NZTA\SDLT\Model\Risk","Sustained service unavailable",""
+4,"NZTA\SDLT\Model\Risk","Sustained service unavailability",""
 5,"NZTA\SDLT\Model\Risk","Degraded service performance",""
 6,"NZTA\SDLT\Model\Risk","Harm to, or death of a person",""
+7,"NZTA\SDLT\Model\Risk","Compliance failure","Not completing this would result in a compliance failure"
+8,"NZTA\SDLT\Model\Risk","Business continuity","Not completing this could jeopadise the businesses viability"
+9,"NZTA\SDLT\Model\Risk","User dissatisfaction","The customers will be dissatisfied with our changes if we do not appropriate engage with things like training etc"
+10,"NZTA\SDLT\Model\Risk","Functional failure","A failure to deliver the required functionality from the project"
+11,"NZTA\SDLT\Model\Risk","Cost overrun","The project will not be able to deliver on budget"
+
