@@ -3328,6 +3328,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
 
         // get questions and answers from submission json
         $questionnaireData = json_decode($this->QuestionnaireData, true);
+        if ($this->AnswerData == null) {
+          return "[]";
+        }
         $answerData = json_decode($this->AnswerData, true);
         $questionnaireSubmission = $this->QuestionnaireSubmission();
         $member = Security::getCurrentUser();
@@ -3572,7 +3575,7 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
      */
     public function updateSecurityRiskAssessmentData($productAspect = '', $status = '', $sraTask = '') : string
     {
-        if (empty($sraTask)) {
+        if (empty($sraTask) || $sraTask->AnswerData == null) {
             return '';
         }
 
@@ -3674,6 +3677,9 @@ class TaskSubmission extends DataObject implements ScaffoldingProvider
      */
     public function findSraResult($productAspect) : string
     {
+        if ($this->AnswerData == null) {
+          return '';
+        }
         $answerDataArray = json_decode($this->AnswerData, true);
 
         if (!empty($answerDataArray)) {

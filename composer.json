@@ -6,7 +6,6 @@
     "require": {
         "php": ">=8.1",
         "silverstripe/recipe-cms": "^4.13.0",
-        "silverstripe/postgresql": "^2.3.3",
         "unclecheese/display-logic": "^2.0",
         "symbiote/silverstripe-gridfieldextensions": "^3.2",
         "symbiote/silverstripe-queuedjobs": "^4.12.2",
@@ -15,7 +14,8 @@
         "tractorcow/silverstripe-colorpicker": "^4.0",
         "swaggest/json-schema": "^0.12.24",
         "ergebnis/json-printer": "^3.0",
-        "silverstripe/versioned-snapshot-admin": "^0.3",
+        "silverstripe/versioned-snapshot-admin": "1.0.0",
+        "silverstripe/vendor-plugin": "1.6.0",
         "silverstripe/crontask": "^2.0"
     },
     "require-dev": {
