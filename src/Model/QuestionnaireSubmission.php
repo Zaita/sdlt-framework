@@ -3118,7 +3118,7 @@ class QuestionnaireSubmission extends DataObject implements ScaffoldingProvider
         if (!$member) {
             return false;
         }
-        if (is_null($member->Email) || is_null($this->isBusinessOwnerEmailAddress)) {
+        if (is_null($member->Email) || is_null($this->BusinessOwnerEmailAddress)) {
           return false;
         }
 
